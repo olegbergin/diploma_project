@@ -3,12 +3,12 @@ const cors = require("cors");
 require("dotenv").config(); // טוען משתני סביבה
 
 // התחברות למסד הנתונים
-require("./db"); // Singleton מתבצע עם require
+require("../db"); // Singleton מתבצע עם require
 
 // ייבוא ראוטים
-const userRoutes = require("./routes/users");
-const businessRoutes = require("./routes/businesses");
-const appointmentRoutes = require("./routes/appointments");
+const userRoutes = require("../routes/users");
+const businessRoutes = require("../routes/businesses");
+const appointmentRoutes = require("../routes/appointments");
 
 const app = express();
 
