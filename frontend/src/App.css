@@ -1,0 +1,30 @@
+/* src/index.css или src/App.css */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f3e0f7;
+  /* Светло-фиолетовый фон из вашего макета */
+}
+
+#root {
+  /* Или другой корневой элемент вашего React-приложения */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  /* Выравнивание по центру вертикально */
+  justify-content: center;
+  /* Выравнивание по центру горизонтально */
+}
+
+.AppContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  /* Background might be set on body in index.css */
+  /* background-color: #f3e0f7; */
+}

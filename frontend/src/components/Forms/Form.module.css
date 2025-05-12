@@ -1,0 +1,190 @@
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; <-- Let's remove this, elements will stretch */
+  padding: 2rem 2.5rem;
+  /* Increased padding slightly */
+  background-color: white;
+  border-radius: 16px;
+  /* More pronounced rounding like screenshot */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  /* Softer shadow */
+  max-width: 420px;
+  /* Adjusted max-width for login form */
+  margin: 1rem;
+  width: 90%;
+  box-sizing: border-box;
+}
+
+.title {
+  color: #333;
+  /* Darker text */
+  margin-bottom: 0.75rem;
+  /* Less space below title */
+  font-size: 2rem;
+  /* Larger title */
+  font-weight: 600;
+  /* Slightly bolder */
+  text-align: center;
+}
+
+.subtitle {
+  color: #555;
+  margin-bottom: 2rem;
+  /* More space below subtitle */
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  /* Increased line-height */
+}
+
+/* Styles for error/success messages (keep as is or adjust colors if needed) */
+.errorMessage,
+.successMessage {
+  width: 100%;
+  text-align: center;
+  padding: 0.6rem;
+  /* Slightly more padding */
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  /* Match rounding */
+  font-size: 0.9rem;
+}
+
+.errorMessage {
+  color: #D8000C;
+  background-color: #FFD2D2;
+}
+
+.successMessage {
+  color: #4F8A10;
+  background-color: #DFF2BF;
+}
+
+
+/* --- Input Grid (Only relevant for SignUp on wider screens) --- */
+.inputGrid {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr;
+  /* Mobile default: 1 column */
+  gap: 1rem;
+  /* Consistent gap for mobile */
+  margin-bottom: 1.5rem;
+  /* Space below the grid/inputs */
+}
+
+/* --- Input Field (Applies to both Login and SignUp) --- */
+.inputField {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  /* Adjust padding */
+  /* Separate inputs visually - apply margin if NOT using inputGrid or gap isn't enough */
+  margin-bottom: 1rem;
+  /* Add margin for Login separation */
+  border: 1px solid #dcdcdc;
+  /* Lighter border */
+  border-radius: 8px;
+  /* Rounded corners like screenshot */
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  /* Add focus transition */
+}
+
+
+.inputField:focus {
+  border-color: #a6e3a1;
+  /* Highlight border on focus */
+  box-shadow: 0 0 0 2px rgba(166, 227, 161, 0.3);
+  /* Subtle glow on focus */
+  outline: none;
+  /* Remove default outline */
+}
+
+
+/* Media query for SignUp grid */
+@media (min-width: 600px) {
+
+  /* Apply only to forms with the grid */
+  .inputGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem 1.5rem;
+
+    /* Row gap and Column gap */
+    /* Remove individual input margins when grid is active */
+    &>.inputField {
+      margin-bottom: 0;
+    }
+  }
+
+  /* Adjust container width for SignUp grid */
+  /* We might need a specific class for the SignUp container */
+  /* Or target based on presence of grid (less robust) */
+  /* Let's stick to adjusting max-width generally for now */
+  /* .formContainer { max-width: 550px; } */
+  /* Re-evaluate if needed */
+}
+
+
+/* --- Submit Button --- */
+.submitButton {
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  margin-top: 0.5rem;
+  /* Space above button */
+  background-color: #a6e3a1;
+  /* Match screenshot green */
+  color: #3a6b35;
+  /* Darker text color for contrast on light green */
+  border: none;
+  border-radius: 30px;
+  /* Very rounded corners ("pill" shape) */
+  cursor: pointer;
+  font-weight: 600;
+  /* Bolder text */
+  font-size: 1.05rem;
+  /* Slightly larger font */
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  /* Add transitions */
+  text-align: center;
+  /* Ensure text is centered */
+}
+
+.submitButton:hover {
+  background-color: #93cc94;
+  /* Consistent hover */
+}
+
+.submitButton:active {
+  transform: scale(0.98);
+  /* Click effect */
+}
+
+.submitButton:disabled {
+  background-color: #e0e0e0;
+  /* Lighter grey for disabled */
+  color: #a0a0a0;
+  /* Lighter text for disabled */
+  cursor: not-allowed;
+}
+
+/* --- Switch Link (e.g., "Sign up here") --- */
+.switchLink {
+  margin-top: 1.75rem;
+  /* More space above link */
+  color: #007bff;
+  /* Standard link blue */
+  text-decoration: none;
+  /* No underline by default */
+  font-size: 0.9rem;
+  text-align: center;
+  /* Center align link */
+  width: 100%;
+  /* Ensure it takes full width for centering */
+}
+
+.switchLink:hover {
+  text-decoration: underline;
+  /* Underline on hover */
+}
