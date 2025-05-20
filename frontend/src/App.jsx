@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'; // Import routing co
 import Login from './components/Login/Login';
 import SignUp from './components/SignUp/SignUp';
 import './App.css'; // You might have App specific styles here, or just rely on index.css
+import HomePage from './components/HomePage/HomePage';
 
 function App() {
   return (
@@ -12,16 +13,10 @@ function App() {
     // If in App.css, keep a container class like below
     <div className="AppContainer">
       <Routes>
-        {/* Default route redirects to login */}
         <Route path="/" element={<Navigate replace to="/login" />} />
-
-        {/* Login route */}
         <Route path="/login" element={<Login />} />
-
-        {/* SignUp route */}
         <Route path="/signup" element={<SignUp />} />
-
-        {/* Optional: Add a 404 Not Found Route */}
+        <Route path="/home" element={<HomePage />} />
         {/* <Route path="*" element={<div>Page Not Found</div>} /> */}
       </Routes>
     </div>

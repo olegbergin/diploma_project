@@ -1,0 +1,97 @@
+/* src/components/HomePage/BusinessCard.module.css */
+.cardLink {
+  text-decoration: none; /* Remove underline from link */
+  color: inherit;       /* Inherit text color */
+  display: block;       /* Make the link a block for easier styling of the card */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.cardLink:hover,
+.cardLink:focus-within { /* Apply hover/focus styles to the link wrapper */
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover, 0 8px 16px rgba(0, 0, 0, 0.12));
+}
+.cardLink:focus-within {
+  outline: 2px solid var(--accent-color-primary, #a6e3a1); /* Focus outline */
+  outline-offset: 2px;
+}
+
+
+.card {
+  background-color: var(--background-content, #fff);
+  border-radius: var(--border-radius-large, 16px); /* Consistent with HomePage header */
+  overflow: hidden; /* Clip image corners if they are not rounded */
+  box-shadow: var(--shadow-soft, 0 4px 12px rgba(0, 0, 0, 0.08));
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Ensure cards in a grid row have same height if desired */
+}
+
+.imageContainer {
+  width: 100%;
+  aspect-ratio: 16 / 10; /* Maintain aspect ratio for images */
+  background-color: #f0f0f0; /* Placeholder background */
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Cover the container, might crop */
+}
+
+.content {
+  padding: 1rem 1.25rem;
+  flex-grow: 1; /* Allow content to take remaining space */
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-size: 1.25rem;
+  font-weight: 600; /* Bolder name */
+  color: var(--text-primary, #333);
+  margin-bottom: 0.25rem;
+}
+
+.category,
+.location {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #555);
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+.location {
+    margin-bottom: 0.5rem;
+}
+
+
+.ratingContainer {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #555);
+  margin-top: auto; /* Push rating to the bottom if card content varies */
+  padding-top: 0.5rem; /* Space above rating */
+}
+
+.ratingValue {
+  font-weight: bold;
+  color: var(--text-primary, #333);
+  margin-right: 0.25rem; /* Margin to the right in LTR, adjust for RTL */
+}
+
+.stars {
+  color: #ffc107; /* Gold color for stars */
+  letter-spacing: 1px; /* Space out stars slightly */
+}
+.star { /* Common star style */ }
+.starFull { /* Filled star (usually default char) */ }
+.starHalf { /* Style for half star if using a specific icon or technique */ }
+.starEmpty {
+  color: #e0e0e0; /* Lighter color for empty stars */
+}
+
+
+.reviewCount {
+  margin-left: 0.5rem; /* Margin to the left in LTR, adjust for RTL */
+  font-size: 0.8rem;
+}

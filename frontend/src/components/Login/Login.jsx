@@ -43,6 +43,9 @@ function Login() {
       // navigate('/dashboard'); // Example redirection
       alert('Login Successful! Token received.'); // Placeholder success feedback
 
+      console.log('Attempting to navigate to /home'); // Лог перед навигацией
+      navigate('/home');
+
     } catch (err) {
       // --- Handle Errors ---
       console.error('Login failed:', err);
