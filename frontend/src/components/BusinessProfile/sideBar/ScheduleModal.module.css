@@ -1,0 +1,9 @@
+.backdrop { position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; justify-content:center; align-items:center; z-index:1000; }
+
+.card { background:#fff; width:460px; padding:24px 32px; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,.15); display:flex; flex-direction:column; gap:20px; direction:rtl; }
+
+.dot { display:block; margin-inline:auto; margin-top:2px; width:6px; height:6px; border-radius:50%; background:#0077cc; }
+
+.list { text-align:right; }
+
+.closeBtn { align-self:flex-end; background:#0077cc; color:#fff; border:none; padding:8px 18px; border-radius:6px; cursor:pointer }

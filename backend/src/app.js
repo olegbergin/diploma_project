@@ -1,28 +1,28 @@
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config(); // טוען משתני סביבה
+require("dotenv").config(); // Load environment variables
 
-// התחברות למסד הנתונים
-require("../dbSingleton"); // Singleton מתבצע עם require
+// Connect to the database (singleton)
+require("../dbSingleton");
 
-// ייבוא ראוטים
-const userRoutes = require("../routes/users");
+// Import routes
+//const userRoutes = require("../../routes/users");
 const businessRoutes = require("../routes/businesses");
 const appointmentRoutes = require("../routes/appointments");
 
 const app = express();
 
-// שימוש ב־Middleware
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// ניתוב API
-app.use("/api/users", userRoutes);
+// API routes
+//app.use("/api/users", userRoutes);
 app.use("/api/businesses", businessRoutes);
 app.use("/api/appointments", appointmentRoutes);
 
-// הרצת השרת
-const PORT = process.env.PORT || 5000;
+// Start server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
 });

@@ -11,6 +11,7 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(''); // To display errors from backend
   const [loading, setLoading] = useState(false); // To disable button during request
+  // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate(); // Hook for navigation
 
   const handleLogin = async (event) => {
@@ -38,6 +39,7 @@ function Login() {
       console.log('Login successful:', data);
       // Store the token (e.g., in localStorage)
       localStorage.setItem('authToken', data.token);
+
 
       // TODO: Redirect user to a protected dashboard or home page
       // navigate('/dashboard'); // Example redirection
