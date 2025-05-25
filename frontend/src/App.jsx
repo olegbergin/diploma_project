@@ -18,13 +18,8 @@ function App() {
     // If in App.css, keep a container class like below
     <div className="AppContainer">
       <Routes>
-        <Route path="/" element={<Navigate replace to="/login" />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/home" element={<HomePage />} />
-        {/* <Route path="*" element={<div>Page Not Found</div>} /> */}
+        
       </Routes>
-    <div className="app">
       {" "}
       {/* היה AppContainer */}
       <Header />
@@ -33,8 +28,12 @@ function App() {
         {/* עטיפה שמקבלת flex:1 */}
         <Routes>
           <Route path="/" element={<BusinessProfile />} />
+          <Route path="/business/:id" element={<BusinessProfile />} />
+
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/home" element={<HomePage />} />
+          {/* <Route path="*" element={<div>Page Not Found</div>} /> */}
         </Routes>
       </div>
       <Footer /> {/* יידבק למטה בזכות flex-column */}
