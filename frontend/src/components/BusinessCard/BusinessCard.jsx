@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import styles from './BusinessCard.module.css';
 
 // Default placeholder image path (place in public folder or import if in src/assets)
-const DEFAULT_PLACEHOLDER_IMAGE = '/placeholder-business.svg';
+const DEFAULT_PLACEHOLDER_IMAGE = '../public/images/placeholder_buisness.png'; // Adjust path as necessary
 
 /**
  * Renders stars based on the rating.
