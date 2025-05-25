@@ -1,0 +1,46 @@
+/* עטיפת כל הלוח + רשימה */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  direction: rtl;            /* זרימת RTL נוחה */
+}
+
+/* רשת חודשית 7×N */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+/* תא יחיד */
+.cell {
+  position: relative;
+  aspect-ratio: 1;           /* ריבוע */
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* תא שנבחר */
+.selected {
+  outline: 3px solid #0077cc;
+}
+
+/* נקודה קטנה שמסמנת שיש תור ביום הזה */
+.dot {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: #0077cc;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+/* רשימת התורים ליום */
+.list {
+  text-align: right;
+}
