@@ -9,9 +9,21 @@ import Header from "./components/layout/Header/Header";
 import Footer from "./components/layout/Footer/Footer";
 
 import "./App.css";
+import HomePage from './components/HomePage/HomePage';
 
 function App() {
   return (
+    // The centering logic might be in App.css or index.css
+    // If in index.css targeting #root, this div might not be needed for layout
+    // If in App.css, keep a container class like below
+    <div className="AppContainer">
+      <Routes>
+        <Route path="/" element={<Navigate replace to="/login" />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/home" element={<HomePage />} />
+        {/* <Route path="*" element={<div>Page Not Found</div>} /> */}
+      </Routes>
     <div className="app">
       {" "}
       {/* היה AppContainer */}
