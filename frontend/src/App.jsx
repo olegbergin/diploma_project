@@ -17,19 +17,13 @@ function App() {
     // If in index.css targeting #root, this div might not be needed for layout
     // If in App.css, keep a container class like below
     <div className="AppContainer">
-      <Routes>
-        
-      </Routes>
-      {" "}
-      {/* היה AppContainer */}
       <Header />
       <div className="content">
         {" "}
         {/* עטיפה שמקבלת flex:1 */}
         <Routes>
-          <Route path="/" element={<BusinessProfile />} />
+          <Route path="/" element={<Login />} />
           <Route path="/business/:id" element={<BusinessProfile />} />
-
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/home" element={<HomePage />} />
