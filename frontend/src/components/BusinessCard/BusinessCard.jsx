@@ -1,10 +1,12 @@
 // src/components/HomePage/BusinessCard.jsx
-import React from 'react';
+import React, { useMemo } from 'react'; // Added useMemo
+import PropTypes from 'prop-types'; // Added PropTypes
 import { Link } from 'react-router-dom';
 import styles from './BusinessCard.module.css';
 
 // Default placeholder image path (place in public folder or import if in src/assets)
-const DEFAULT_PLACEHOLDER_IMAGE = '../public/images/placeholder_buisness.png'; // Adjust path as necessary
+// IMPORTANT: The actual image file 'placeholder_buisness.png' needs to be placed in the 'public/images/' directory for this path to work.
+const DEFAULT_PLACEHOLDER_IMAGE = '/images/placeholder_buisness.png';
 
 /**
  * Renders stars based on the rating.
@@ -61,20 +63,22 @@ function BusinessCard({ business }) {
     // description = "" // If you plan to show a snippet
   } = business;
 
-  // --- Image Handling ---
-  let imageUrl = DEFAULT_PLACEHOLDER_IMAGE;
-  if (photos) {
-    try {
-      // Attempt to parse photos if it's a JSON string
-      const parsedPhotos = typeof photos === 'string' ? JSON.parse(photos) : photos;
-      if (Array.isArray(parsedPhotos) && parsedPhotos.length > 0 && parsedPhotos[0]) {
-        imageUrl = parsedPhotos[0]; // Use the first photo
+  // --- Image Handling using useMemo for optimization ---
+  const imageUrl = useMemo(() => {
+    let tempImageUrl = DEFAULT_PLACEHOLDER_IMAGE;
+    if (photos) {
+      try {
+        const parsedPhotos = typeof photos === 'string' ? JSON.parse(photos) : photos;
+        if (Array.isArray(parsedPhotos) && parsedPhotos.length > 0 && parsedPhotos[0]) {
+          tempImageUrl = parsedPhotos[0]; // Use the first photo
+        }
+      } catch (e) {
+        console.warn(`Could not parse photos for business ID ${business_id}:`, photos, e);
+        // tempImageUrl remains DEFAULT_PLACEHOLDER_IMAGE
       }
-    } catch (e) {
-      console.warn(`Could not parse photos for business ID ${business_id}:`, photos, e);
-      // imageUrl remains DEFAULT_PLACEHOLDER_IMAGE
     }
-  }
+    return tempImageUrl;
+  }, [photos, business_id]);
 
   // --- Fallback for Image onError ---
   const handleImageError = (event) => {
@@ -129,3 +133,17 @@ function BusinessCard({ business }) {
 }
 
 export default BusinessCard;
+
+// PropTypes definition for type checking and documentation
+BusinessCard.propTypes = {
+  business: PropTypes.shape({
+    business_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    name: PropTypes.string,
+    category: PropTypes.string,
+    location: PropTypes.string,
+    photos: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
+    average_rating: PropTypes.number,
+    review_count: PropTypes.number,
+    // description: PropTypes.string, // Uncomment if description is used
+  }).isRequired,
+};
