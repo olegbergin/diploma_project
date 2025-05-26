@@ -1,30 +1,43 @@
+/* src/components/BusinessProfile/BusinessProfile.jsx */
 import { useEffect, useState } from "react";
 import styles from "./BusinessProfile.module.css";
 import BusinessDetailsForm from "./sideBar/BusinessDetailsForm";
-import Calendar from "./tabs/Calendar/Calendar"; // לוח-חודש ללקוחות
-import ScheduleModal from "./sideBar/ScheduleModal"; // פופ-אפ לוח זמנים
+import Calendar from "./tabs/Calendar/Calendar";
+import ScheduleModal from "./sideBar/ScheduleModal";
+import { fetchAppointments } from "./api/appointments";
 
 export default function BusinessProfile() {
+  /* ───────────── קונטרולרים ───────────── */
   const [business, setBusiness] = useState(null);
-  const [activeTab, setActiveTab] = useState("info"); // כפתורי הסייד-בר
-  const [innerTab, setInnerTab] = useState("calendar"); // הטאבים ללקוחות
-
-  const [showEdit, setShowEdit] = useState(false); // מודאל “פרטי העסק”
+  const [activeTab, setActiveTab] = useState("info"); // כפתורי Sidebar
+  const [innerTab, setInnerTab] = useState("calendar"); // טאב-בר ללקוחות
+  const [showEdit, setShowEdit] = useState(false); // מודאל פרטי-עסק
   const [showSchedule, setShowSchedule] = useState(false); // מודאל לוח-זמנים
+  const [appointments, setAppointments] = useState([]); // תורים מה-DB
 
-  /* --- טעינת נתוני העסק פעם אחת --- */
+  /* ───────────── טעינת העסק פעם אחת ───────────── */
   useEffect(() => {
-    fetch("http://localhost:3000/api/businesses/1")
+    fetch("/api/businesses/1")
       .then((r) => r.json())
       .then(setBusiness)
       .catch(console.error);
   }, []);
 
+  /* ───────────── טעינת תורים לאחר שהעסק נטען ───────────── */
+  useEffect(() => {
+    if (!business) return;
+    const monthIso = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+    fetchAppointments(business.business_id, monthIso)
+      .then(setAppointments)
+      .catch(console.error);
+  }, [business]);
+
   if (!business) return <p className={styles.loading}>טוען נתוני עסק…</p>;
 
+  /* ───────────── JSX ───────────── */
   return (
     <div className={styles.pageLayout}>
-      {/* ---------- Sidebar ---------- */}
+      {/* ----- Sidebar ----- */}
       <aside className={styles.sidebar}>
         <img
           src={business.image_url || "https://via.placeholder.com/150"}
@@ -65,7 +78,7 @@ export default function BusinessProfile() {
         </button>
       </aside>
 
-      {/* ---------- תוכן ראשי ---------- */}
+      {/* ----- תוכן ראשי ----- */}
       <main className={styles.profileContent}>
         <h1 className={styles.title}>{business.name}</h1>
         <p className={styles.category}>{business.category}</p>
@@ -73,7 +86,7 @@ export default function BusinessProfile() {
           <strong>תיאור:</strong> {business.description}
         </p>
 
-        {/* === TabBar ללקוחות === */}
+        {/* TabBar ללקוחות */}
         <div className={styles.tabBar}>
           <button
             className={innerTab === "calendar" ? styles.activeTab : ""}
@@ -100,11 +113,11 @@ export default function BusinessProfile() {
           <section className={styles.section}>
             <h2>לוח שנה</h2>
             <Calendar
-              appointments={[
-                { day: 3, time: "10:00", customer: "מיכל לוי" },
-                { day: 3, time: "14:00", customer: "דוד כהן" },
-                { day: 7, time: "09:30", customer: "נועה בן-דוד" },
-              ]}
+              appointments={appointments.map((a) => ({
+                date: a.date, // 'YYYY-MM-DD'
+                time: a.time, // 'HH:MM'
+                customer: `#${a.customer_id}`, // או שם הלקוח כשתהיה הטבלה
+              }))}
             />
           </section>
         )}
@@ -164,13 +177,13 @@ export default function BusinessProfile() {
         )}
       </main>
 
-      {/* ---------- מודאל “פרטי העסק” ---------- */}
+      {/* ----- מודאל “פרטי העסק” ----- */}
       {showEdit && (
         <BusinessDetailsForm
           initialData={business}
           onSave={async (data) => {
             try {
-              await fetch(`/api/businesses/${business.id}`, {
+              await fetch(`/api/businesses/${business.business_id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),
@@ -187,14 +200,10 @@ export default function BusinessProfile() {
         />
       )}
 
-      {/* ---------- מודאל “לוח זמנים” ---------- */}
+      {/* ----- מודאל “לוח זמנים” (בעל-עסק) ----- */}
       {showSchedule && (
         <ScheduleModal
-          appointments={[
-            { date: "2025-05-03", time: "10:00", customer: "מיכל לוי" },
-            { date: "2025-05-03", time: "14:00", customer: "דוד כהן" },
-            { date: "2025-05-07", time: "09:30", customer: "נועה בן-דוד" },
-          ]}
+          appointments={appointments}
           onClose={() => setShowSchedule(false)}
         />
       )}

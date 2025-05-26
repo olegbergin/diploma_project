@@ -2,8 +2,8 @@
 const express = require("express");
 const router = express.Router();
 
-/*  getConnection() שלך כבר מחזיר Promise-Pool  */
-const db = require("../dbSingleton").getConnection();
+/* ───── חיבור לבסיס הנתונים ───── */
+const getDb = require("../dbSingleton").getConnection; // ← לשים את הפונקציה, לא התוצאה
 
 /* ───────────────────────────────
    1. יצירת עסק חדש  (POST /api/businesses)
@@ -16,7 +16,7 @@ router.post("/", async (req, res) => {
     phone,
     email,
     address,
-    image_url = "", // ברירת-מחדל אם לא מגיע
+    image_url = "",
     opening_hours = "",
   } = req.body;
 
@@ -26,6 +26,7 @@ router.post("/", async (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
   try {
+    const db = await getDb(); // ← await
     const [result] = await db.query(sql, [
       name,
       category,
@@ -48,6 +49,7 @@ router.post("/", async (req, res) => {
    ─────────────────────────────── */
 router.get("/", async (_req, res) => {
   try {
+    const db = await getDb(); // ← await
     const [rows] = await db.query("SELECT * FROM businesses");
     res.json(rows);
   } catch (err) {
@@ -61,6 +63,7 @@ router.get("/", async (_req, res) => {
    ─────────────────────────────── */
 router.get("/:id", async (req, res) => {
   try {
+    const db = await getDb(); // ← await
     const [rows] = await db.query(
       "SELECT * FROM businesses WHERE business_id = ?",
       [req.params.id]
@@ -102,6 +105,7 @@ router.put("/:id", async (req, res) => {
      WHERE business_id   = ?
   `;
   try {
+    const db = await getDb(); // ← await
     const [result] = await db.query(sql, [
       name,
       category,
