@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 /*  getConnection() שלך כבר מחזיר Promise-Pool  */
-const db = require("../dbSingleton").getConnection();
+const db = require("../dbSingleton_old").getConnection();
 
 /* ───────────────────────────────
    1. יצירת עסק חדש  (POST /api/businesses)

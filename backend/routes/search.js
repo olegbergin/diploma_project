@@ -2,7 +2,7 @@
 
 const express = require("express");
 const router = express.Router();
-const db = require("../dbSingleton").getConnection(); // Import your database connection module
+const db = require("../dbSingleton_old").getConnection(); // Import your database connection module
 
 // Define a GET route for '/businesses'
 router.get("/businesses", (req, res) => {

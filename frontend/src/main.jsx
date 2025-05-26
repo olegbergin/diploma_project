@@ -1,14 +1,16 @@
-// src/main.jsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom'; // Import BrowserRouter
+import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
-import './index.css'; // Keep global styles
+import { UserProvider } from './context/UserContext'; // Import UserProvider
+import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter> {/* Wrap App with BrowserRouter */}
-      <App />
+    <BrowserRouter>
+      <UserProvider>
+        <App />
+      </UserProvider>
     </BrowserRouter>
   </React.StrictMode>,
 );

@@ -1,99 +1,162 @@
 // src/components/Login/Login.jsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
-import styles from '../Forms/Form.module.css';
+import { Link, useNavigate } from 'react-router-dom';
+import { useUser } from '../../context/UserContext'; // Step 1: Import useUser hook
+import commonFormStyles from '../Forms/Form.module.css'; // Assuming your common form styles are here
+// It's good to be specific with style imports if you have multiple style files.
 
-// Get API URL from environment variables or fallback
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/auth';
+// Define the API URL for authentication.
+// It's good practice to use environment variables for this.
+// VITE_API_AUTH_URL would be more specific than VITE_API_BASE_URL if you have multiple base URLs.
+const API_AUTH_URL = import.meta.env.VITE_API_AUTH_URL || 'http://localhost:3000/api/auth'; // Adjusted port from your example
 
 function Login() {
+  // --- State Hooks ---
+  // State for the email input field
   const [email, setEmail] = useState('');
+  // State for the password input field
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(''); // To display errors from backend
-  const [loading, setLoading] = useState(false); // To disable button during request
-  // eslint-disable-next-line no-unused-vars
-  const navigate = useNavigate(); // Hook for navigation
+  // State to store and display any login errors
+  const [error, setError] = useState('');
+  // State to indicate if a login request is in progress (for disabling UI elements)
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (event) => {
-    event.preventDefault(); // Prevent default form submission
-    setError(''); // Clear previous errors
-    setLoading(true); // Set loading state
+  // --- Hooks from Libraries ---
+  // useNavigate hook from react-router-dom for programmatic navigation
+  const navigate = useNavigate();
+  // useUser hook from our custom UserContext to access loginUser function
+  const { loginUser } = useUser(); // Step 2: Get loginUser from context
+
+  // --- Event Handler for Form Submission ---
+  const handleLoginSubmit = async (event) => {
+    event.preventDefault(); // Prevent the default browser form submission (which causes a page reload)
+    setError('');           // Clear any previous error messages
+    setIsLoading(true);     // Set loading state to true to indicate request is in progress
 
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      // Make the API call to the login endpoint
+      const response = await fetch(`${API_AUTH_URL}/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json', // Specify that we're sending JSON data
         },
-        body: JSON.stringify({ email, password }), // Send email and password
+        body: JSON.stringify({ email, password }), // Send email and password in the request body
       });
 
-      const data = await response.json(); // Parse the JSON response body
+      // Parse the JSON response from the server
+      const responseData = await response.json();
 
+      // Check if the HTTP response status is not OK (e.g., 400, 401, 500)
       if (!response.ok) {
-        // If response status is not 2xx, throw an error
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        // If not OK, throw an error. Use the error message from the server if available.
+        throw new Error(responseData.error || `HTTP error! Status: ${response.status}`);
       }
 
       // --- Login Successful ---
-      console.log('Login successful:', data);
-      // Store the token (e.g., in localStorage)
-      localStorage.setItem('authToken', data.token);
+      console.log('Login successful. API Response:', responseData);
 
+      // TODO for JWT implementation:
+      // localStorage.setItem('authToken', responseData.token);
 
-      // TODO: Redirect user to a protected dashboard or home page
-      // navigate('/dashboard'); // Example redirection
-      alert('Login Successful! Token received.'); // Placeholder success feedback
+      // Step 3: Prepare user data for the context
+      // Ideally, your backend's /login endpoint should return user details (id, name, role, email)
+      // along with the token.
+      // Example: responseData = { token: "...", user: { user_id: 1, first_name: "Test", role: "customer" } }
 
-      console.log('Attempting to navigate to /home'); // Лог перед навигацией
-      navigate('/home');
+      let userDataForContext;
+
+      if (responseData.user && responseData.user.user_id && responseData.user.role) {
+        // If backend provides user details
+        userDataForContext = {
+          id: responseData.user.user_id,
+          name: responseData.user.first_name || email.split('@')[0], // Fallback for name
+          email: responseData.user.email || email, // Fallback for email
+          role: responseData.user.role,
+        };
+      } else {
+        // --- TEMPORARY SIMULATION if backend ONLY returns a token ---
+        // This part should be removed or adjusted once your backend /login returns full user info.
+        console.warn("Backend /login did not return full user details. Simulating role based on email for now.");
+        userDataForContext = {
+          id: Date.now(), // Temporary ID
+          name: email.split('@')[0],
+          email: email,
+          role: 'customer', // Default role
+        };
+        if (email.toLowerCase() === 'gleb@example.com') {
+          userDataForContext.role = 'business_owner';
+        } else if (email.toLowerCase() === 'admin@example.com') {
+          userDataForContext.role = 'admin';
+        }
+        // --- END OF TEMPORARY SIMULATION ---
+      }
+
+      loginUser(userDataForContext); // Update the global user state via context
+
+      console.log('User context updated. Navigating to /home...');
+      navigate('/home'); // Redirect to the home page
 
     } catch (err) {
       // --- Handle Errors ---
-      console.error('Login failed:', err);
-      // Set error message from backend response or a generic one
-      setError(err.message || 'Login failed. Please check your credentials.');
+      console.error('Login process failed:', err);
+      // Set a user-friendly error message.
+      setError(err.message || 'Login failed. Please check your credentials and try again.');
     } finally {
-      setLoading(false); // Reset loading state regardless of outcome
+      // This block will always execute, regardless of success or failure
+      setIsLoading(false); // Reset loading state
     }
   };
 
+  // --- JSX for Rendering ---
   return (
-    // Use onSubmit on the form element for better accessibility
-    <form className={styles.formContainer} onSubmit={handleLogin}>
-      <h1 className={styles.title}>ברוכים הבאים</h1>
-      <p className={styles.subtitle}>הזן את האימייל והסיסמה שלך להתחברות</p>
+    // Use the common form container style
+    // Attach the submit handler to the form's onSubmit event
+    <form className={commonFormStyles.formContainer} onSubmit={handleLoginSubmit}>
+      <h1 className={commonFormStyles.title}>ברוכים הבאים</h1> {/* Welcome */}
+      <p className={commonFormStyles.subtitle}>הזן את האימייל והסיסמה שלך להתחברות</p> {/* Enter email/password */}
 
-      {error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error message */}
+      {/* Display error message if 'error' state is not empty */}
+      {error && <p className={commonFormStyles.errorMessage}>{error}</p>}
 
+      {/* Email Input Field */}
       <input
         type="email"
-        placeholder="אימייל"
-        className={styles.inputField}
-        aria-label="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)} // Update email state
-        required // Basic HTML5 validation
-        disabled={loading} // Disable input when loading
+        placeholder="אימייל" // Email
+        className={commonFormStyles.inputField}
+        aria-label="Email" // Accessibility: for screen readers
+        value={email} // Controlled component: value is tied to state
+        onChange={(e) => setEmail(e.target.value)} // Update state on change
+        required // HTML5 built-in validation: field must be filled
+        disabled={isLoading} // Disable input during loading
+        autoComplete="email" // Helps with browser autofill
       />
+
+      {/* Password Input Field */}
       <input
         type="password"
-        placeholder="סיסמה"
-        className={styles.inputField}
-        aria-label="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)} // Update password state
-        required
-        disabled={loading} // Disable input when loading
+        placeholder="סיסמה" // Password
+        className={commonFormStyles.inputField}
+        aria-label="Password" // Accessibility
+        value={password} // Controlled component
+        onChange={(e) => setPassword(e.target.value)} // Update state
+        required // HTML5 validation
+        disabled={isLoading} // Disable input during loading
+        autoComplete="current-password" // Helps with browser autofill for login forms
       />
 
-      {/* Disable button when loading */}
-      <button type="submit" className={styles.submitButton} disabled={loading}>
-        {loading ? 'מתחבר...' : 'התחבר'} {/* Show loading text */}
+      {/* Submit Button */}
+      <button
+        type="submit"
+        className={commonFormStyles.submitButton}
+        disabled={isLoading} // Disable button during loading
+      >
+        {/* Change button text based on loading state */}
+        {isLoading ? 'מתחבר...' : 'התחבר'} {/* Logging in... / Login */}
       </button>
 
-      <Link to="/signup" className={styles.switchLink}>
-        אין לך חשבון? הרשם כאן
+      {/* Link to Registration Page */}
+      <Link to="/signup" className={commonFormStyles.switchLink}>
+        אין לך חשבון? הרשם כאן {/* Don't have an account? Sign up here */}
       </Link>
     </form>
   );
