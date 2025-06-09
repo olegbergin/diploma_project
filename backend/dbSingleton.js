@@ -82,5 +82,3 @@ const dbSingleton = {
     return connection; // Return the current (hopefully valid) connection
   },
 };
-
-module.exports = dbSingleton;

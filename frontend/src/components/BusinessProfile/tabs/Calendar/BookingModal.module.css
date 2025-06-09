@@ -1,0 +1,164 @@
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  padding: 36px 28px;
+  min-width: 340px;
+  max-width: 98vw;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  animation: popUp 0.22s;
+}
+
+@keyframes popUp {
+  from { transform: scale(0.98) translateY(30px); opacity: 0.7; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modal h3 {
+  margin-top: 0;
+  margin-bottom: 22px;
+  font-size: 1.3em;
+  color: #1a3760;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.modal ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 18px 0;
+}
+
+/* שירותים קיימים */
+.serviceRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  background: #f6f8fc;
+  border-radius: 8px;
+  padding: 6px 8px;
+  transition: background 0.17s;
+}
+.serviceRow:focus-within {
+  background: #eaf2ff;
+}
+.nameInput {
+  flex: 2;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #c9e5ff;
+  font-size: 1em;
+  direction: rtl;
+}
+.durationSelect {
+  width: 110px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #c9e5ff;
+  font-size: 1em;
+  direction: rtl;
+}
+.removeBtn {
+  background: none;
+  border: none;
+  color: #ff4160;
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: color 0.2s;
+  margin-right: 5px;
+}
+.removeBtn:hover {
+  color: #c3002f;
+}
+
+/* הוספת שירות חדש */
+.addServiceRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  margin-bottom: 18px;
+}
+.addBtn {
+  background: #0172af;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 16px;
+  font-size: 1em;
+  cursor: pointer;
+  margin-left: 6px;
+  transition: background 0.2s;
+}
+.addBtn:hover {
+  background: #1a3760;
+}
+.addServiceRow input[type="text"],
+.addServiceRow input[type="number"] {
+  background: #f7faff;
+}
+
+/* כפתורים תחתונים */
+.bottomBtns {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.bottomBtns button {
+  background: #e6f2ff;
+  color: #1a3760;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.18s;
+}
+.bottomBtns button:hover {
+  background: #0172af;
+  color: white;
+}
+
+/* -------- רספונסיביות למובייל -------- */
+@media (max-width: 520px) {
+  .modal {
+    min-width: 0;
+    max-width: 98vw;
+    padding: 18px 5vw;
+  }
+  .serviceRow,
+  .addServiceRow {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 7px;
+  }
+  .addBtn, .removeBtn, .durationSelect, .nameInput {
+    width: 100%;
+    min-width: 0;
+  }
+  .bottomBtns {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
