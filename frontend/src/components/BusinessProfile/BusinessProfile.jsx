@@ -6,19 +6,20 @@ import ScheduleModal from "./sideBar/ScheduleModal";
 import AppointmentForm from "./AppointmentForm/AppointmentForm";
 import ServicesModal from "./sideBar/ServicesModal";
 import RequestsTab from "./sideBar/RequestsTab";
+import ExistingAppointments from "./sideBar/ExistingAppointments";
 import { fetchAppointments } from "./api/appointments";
 
 export default function BusinessProfile() {
   const [business, setBusiness] = useState(null);
-  const [activeTab, setActiveTab] = useState("info");
   const [innerTab, setInnerTab] = useState("calendar");
   const [showEdit, setShowEdit] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [booking, setBooking] = useState(null);
   const [showServices, setShowServices] = useState(false);
-  const [services, setServices] = useState([]); // <-- כאן נשמרים השירותים
   const [showRequestsModal, setShowRequestsModal] = useState(false);
+  const [showAppointmentsModal, setShowAppointmentsModal] = useState(false); // ✅ חדש
+  const [services, setServices] = useState([]);
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
@@ -35,7 +36,6 @@ export default function BusinessProfile() {
       .then(setAppointments)
       .catch(console.error);
 
-    // שליפת מספר בקשות "pending" עבור הבאדג'
     fetch(
       `/api/appointments?businessId=${business.business_id}&month=${monthIso}&status=pending`
     )
@@ -43,11 +43,49 @@ export default function BusinessProfile() {
       .then((requests) => setPendingCount(requests.length));
   }, [business]);
 
+  const refreshAppointments = async () => {
+    const monthIso = new Date().toISOString().slice(0, 7);
+    const refreshed = await fetchAppointments(business.business_id, monthIso);
+    setAppointments(refreshed);
+  };
+
+  const handleUpdateAppointment = async (updated) => {
+    try {
+      const res = await fetch(`/api/appointments/${updated.appointment_id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
+
+      if (!res.ok) {
+        const { message } = await res.json();
+        alert("שגיאה: " + message);
+        return;
+      }
+
+      await refreshAppointments();
+    } catch (err) {
+      console.error(err);
+      alert("קרתה שגיאה בעת שמירת התור");
+    }
+  };
+
+  const handleCancelAppointment = async (appt) => {
+    try {
+      await fetch(`/api/appointments/${appt.appointment_id}/cancel`, {
+        method: "POST",
+      });
+      await refreshAppointments();
+    } catch (err) {
+      console.error(err);
+      alert("שגיאה בביטול תור");
+    }
+  };
+
   if (!business) return <p className={styles.loading}>טוען נתוני עסק…</p>;
 
   return (
     <div className={styles.pageLayout}>
-      {/* ----- Sidebar ----- */}
       <aside className={styles.sidebar}>
         <img
           src={business.image_url || "https://via.placeholder.com/150"}
@@ -79,7 +117,6 @@ export default function BusinessProfile() {
         >
           גלריה (עריכה)
         </button>
-        {/* --- בקשות חדשות כמודאל עם באדג' --- */}
         <button
           className={styles.sidebarButton}
           onClick={() => setShowRequestsModal(true)}
@@ -92,13 +129,12 @@ export default function BusinessProfile() {
         </button>
         <button
           className={styles.sidebarButton}
-          onClick={() => setActiveTab("appointments")}
+          onClick={() => setShowAppointmentsModal(true)}
         >
           תורים קיימים
         </button>
       </aside>
 
-      {/* ----- Main Content ----- */}
       <main className={styles.profileContent}>
         <h1 className={styles.title}>{business.name}</h1>
         <p className={styles.category}>{business.category}</p>
@@ -106,7 +142,6 @@ export default function BusinessProfile() {
           <strong>תיאור:</strong> {business.description}
         </p>
 
-        {/* TabBar ללקוחות */}
         <div className={styles.tabBar}>
           <button
             className={innerTab === "calendar" ? styles.activeTab : ""}
@@ -128,7 +163,6 @@ export default function BusinessProfile() {
           </button>
         </div>
 
-        {/* טאבים ללקוחות */}
         {innerTab === "calendar" && (
           <section className={styles.section}>
             <h2>לוח שנה</h2>
@@ -149,17 +183,15 @@ export default function BusinessProfile() {
         {innerTab === "contact" && (
           <section className={styles.section}>
             <h2>פרטי יצירת קשר</h2>
-            <div className={styles.contactInfo}>
-              <p>
-                <strong>אימייל:</strong> {business.email}
-              </p>
-              <p>
-                <strong>טלפון:</strong> {business.phone}
-              </p>
-              <p>
-                <strong>כתובת:</strong> {business.address}
-              </p>
-            </div>
+            <p>
+              <strong>אימייל:</strong> {business.email}
+            </p>
+            <p>
+              <strong>טלפון:</strong> {business.phone}
+            </p>
+            <p>
+              <strong>כתובת:</strong> {business.address}
+            </p>
           </section>
         )}
 
@@ -177,23 +209,28 @@ export default function BusinessProfile() {
             )}
           </section>
         )}
-
-        {/* ---- אזורי ניהול לבעל-עסק ---- */}
-        {activeTab === "galleryEdit" && (
-          <section className={styles.section}>
-            <h2>גלריה (עריכה)</h2>
-            <p>כאן יופיעו כלי העלאה/מחיקה.</p>
-          </section>
-        )}
-        {activeTab === "appointments" && (
-          <section className={styles.section}>
-            <h2>תורים קיימים</h2>
-            <p>אין תורים להצגה.</p>
-          </section>
-        )}
       </main>
 
-      {/* ----- מודאל “פרטי העסק” ----- */}
+      {/* מודאל “תורים קיימים” */}
+      {showAppointmentsModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <button
+              className={styles.closeModal}
+              onClick={() => setShowAppointmentsModal(false)}
+            >
+              ✕
+            </button>
+            <ExistingAppointments
+              appointments={appointments}
+              onUpdate={handleUpdateAppointment}
+              onCancel={handleCancelAppointment}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* שאר המודאלים */}
       {showEdit && (
         <BusinessDetailsForm
           initialData={business}
@@ -215,7 +252,6 @@ export default function BusinessProfile() {
         />
       )}
 
-      {/* ----- מודאל “לוח זמנים” (בעל-עסק) ----- */}
       {showSchedule && (
         <ScheduleModal
           appointments={appointments}
@@ -223,25 +259,22 @@ export default function BusinessProfile() {
         />
       )}
 
-      {/* --- מודאל ניהול שירותים --- */}
       {showServices && (
         <ServicesModal
           services={services}
           onSave={(newList) => {
             setServices(newList);
             setShowServices(false);
-            // בעתיד: לשמור גם לשרת
           }}
           onClose={() => setShowServices(false)}
         />
       )}
 
-      {/* ----- מודאל קביעת תור (לקוח) ----- */}
       {booking && (
         <AppointmentForm
           date={booking.dateIso}
           takenSlots={booking.taken}
-          services={services} // <<<< ---- הוספנו
+          services={services}
           onSubmit={async ({ date, time, name, phone, email, service }) => {
             try {
               await fetch("/api/appointments", {
@@ -254,16 +287,10 @@ export default function BusinessProfile() {
                   name,
                   phone,
                   email,
-                  service, // <<-- שלח את השירות גם לשרת
+                  service,
                 }),
               });
-              // לרענן תורים:
-              const monthIso = new Date().toISOString().slice(0, 7);
-              const newAppointments = await fetchAppointments(
-                business.business_id,
-                monthIso
-              );
-              setAppointments(newAppointments);
+              await refreshAppointments();
               alert("התור נשמר בהצלחה!");
             } catch {
               alert("שגיאה בשמירת תור.");
@@ -275,7 +302,6 @@ export default function BusinessProfile() {
         />
       )}
 
-      {/* ----- מודאל בקשות חדשות ----- */}
       {showRequestsModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
