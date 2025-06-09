@@ -47,6 +47,10 @@ const dbSingleton = {
     // This function will simply return the existing connection object
     return connection;
   },
+  // This gives us a "promisified" version of the connection, perfect for async/await
+  getPromise: () => {
+    return connection.promise();
+  },
 };
 
 module.exports = dbSingleton;

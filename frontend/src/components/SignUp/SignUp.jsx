@@ -1,12 +1,17 @@
 // src/components/SignUp/SignUp.jsx
+
+// --- Imports ---
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+// --- ИЗМЕНЕНИЕ 1: Импортируем наш инстанс axios ---
+import axiosInstance from '../../api/axiosInstance'; // Adjust path if needed
 import styles from '../Forms/Form.module.css'; // Use common styles
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/auth';
-
+/**
+ * SignUp component for user registration.
+ */
 function SignUp() {
-  // ... (keep existing useState hooks for fields, error, success, loading)
+  // --- State Hooks (без изменений) ---
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -18,66 +23,79 @@ function SignUp() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // --- Event Handler for Form Submission (РЕФАКТОРИНГ ЗДЕСЬ) ---
   const handleRegister = async (event) => {
-    // ... (keep existing handleRegister logic)
     event.preventDefault();
     setError('');
     setSuccess('');
 
+    // --- Client-side Validation ---
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
-      setLoading(false);
-      return;
+      return; // Stop submission
     }
-    setLoading(true); // Set loading true here before try block
+    // You can add more client-side validation here (e.g., password strength)
 
+    setIsLoading(true);
+
+    // Prepare data payload for the API request
     const userData = {
       first_name: firstName,
       last_name: lastName,
       email: email,
       phone: phone,
       password: password,
-      role: "user", // Default role
+      role: "customer", // Default role for new sign-ups
     };
 
     try {
-      const response = await fetch(`${API_URL}/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
-      }
+      // --- ИЗМЕНЕНИЕ 2: Используем axios.post ---
+      // The endpoint is relative to our baseURL in axiosInstance.
+      // axios will automatically handle JSON stringification and headers.
+      await axiosInstance.post('/auth/register', userData);
+
+      // --- Registration Successful ---
       setSuccess('Registration successful! Redirecting to login...');
-      setTimeout(() => navigate('/login'), 2000);
+
+      // Redirect to the login page after a short delay
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+
     } catch (err) {
+      // --- ИЗМЕНЕНИЕ 3: Улучшенная обработка ошибок ---
       console.error('Registration failed:', err);
-      setError(err.message || 'Registration failed. Please try again.');
-      setSuccess('');
+
+      // Extract a user-friendly error message from the axios error object.
+      let errorMessage = 'Registration failed. Please try again.';
+      if (err.response && err.response.data && err.response.data.error) {
+        // Use the specific error message from the server (e.g., "Email already exists")
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
+      setSuccess(''); // Clear any previous success message
+
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-
+  // --- JSX for Rendering (без изменений) ---
   return (
-    // The main container still uses formContainer styles
     <form className={styles.formContainer} onSubmit={handleRegister}>
       <h1 className={styles.title}>הרשמה</h1>
       <p className={styles.subtitle}>מלא את הפרטים ליצירת חשבון חדש</p>
 
-      {/* Display messages above the grid */}
       {error && <p className={styles.errorMessage}>{error}</p>}
       {success && <p className={styles.successMessage}>{success}</p>}
 
-      {/* Wrap input fields in the grid container */}
       <div className={styles.inputGrid}>
         <input
           type="text"
-          placeholder="שם פרטי" // First Name
-          className={styles.inputField} // Keep inputField for individual styling
+          placeholder="שם פרטי"
+          className={styles.inputField}
           aria-label="First Name"
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
@@ -86,7 +104,7 @@ function SignUp() {
         />
         <input
           type="text"
-          placeholder="שם משפחה" // Last Name
+          placeholder="שם משפחה"
           className={styles.inputField}
           aria-label="Last Name"
           value={lastName}
@@ -96,7 +114,7 @@ function SignUp() {
         />
         <input
           type="tel"
-          placeholder="מספר טלפון" // Phone Number
+          placeholder="מספר טלפון"
           className={styles.inputField}
           aria-label="Phone Number"
           value={phone}
@@ -106,7 +124,7 @@ function SignUp() {
         />
         <input
           type="email"
-          placeholder="אימייל" // Email
+          placeholder="אימייל"
           className={styles.inputField}
           aria-label="Email"
           value={email}
@@ -116,7 +134,7 @@ function SignUp() {
         />
         <input
           type="password"
-          placeholder="סיסמה" // Password
+          placeholder="סיסמה"
           className={styles.inputField}
           aria-label="Password"
           value={password}
@@ -127,7 +145,7 @@ function SignUp() {
         />
         <input
           type="password"
-          placeholder="אימות סיסמה" // Confirm Password
+          placeholder="אימות סיסמה"
           className={styles.inputField}
           aria-label="Confirm Password"
           value={confirmPassword}
@@ -135,9 +153,8 @@ function SignUp() {
           required
           disabled={loading}
         />
-      </div> {/* End of inputGrid */}
+      </div>
 
-      {/* Button and link remain below the grid */}
       <button type="submit" className={styles.submitButton} disabled={loading}>
         {loading ? 'רושם...' : 'הרשם'}
       </button>

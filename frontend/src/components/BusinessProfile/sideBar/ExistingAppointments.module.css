@@ -1,0 +1,127 @@
+.wrapper {
+  padding: 1rem;
+  direction: rtl;
+  font-family: Arial, sans-serif;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.tabs button {
+  padding: 0.5rem 1rem;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.tabs .active {
+  background: #ccc;
+  font-weight: bold;
+}
+
+.search {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem;
+  border-bottom: 1px solid #ddd;
+  background-color: #fafafa;
+  margin-bottom: 4px;
+  border-radius: 4px;
+}
+
+.list li button {
+  padding: 0.3rem 0.6rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.list li button:hover {
+  background-color: #0056b3;
+}
+
+.popup {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 1px solid #ccc;
+  padding: 1.5rem;
+  z-index: 1000;
+  width: 300px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.popup h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 20px;
+}
+
+.popup label {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+.popup input {
+  width: 100%;
+  padding: 0.4rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.popupButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.popupButtons button {
+  flex: 1;
+  margin: 0 4px;
+  padding: 0.4rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.popupButtons button:first-child {
+  background-color: #28a745; /* שמור */
+  color: white;
+}
+
+.popupButtons button:nth-child(2) {
+  background-color: #dc3545; /* ביטול */
+  color: white;
+}
+
+.popupButtons button:last-child {
+  background-color: #6c757d; /* סגור */
+  color: white;
+}

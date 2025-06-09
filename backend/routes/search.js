@@ -1,109 +1,77 @@
-// routes/search.js
+// routes/search.js (new, simplified version)
 const express = require("express");
 const router = express.Router();
-// Get the database connection object once
-const db = require("../dbSingleton").getConnection();
+const db = require("../dbSingleton").getPromise(); // Use our new method!
 
-// Define a GET route for '/businesses'
-router.get("/businesses", (req, res) => {
-  console.log("GET /api/search/businesses - Received request.");
-  console.log("Query parameters:", req.query);
+router.get("/businesses", async (req, res) => {
+  // <-- Add async
+  try {
+    // --- Step 1: Build the WHERE clauses and parameters just ONCE ---
+    const whereClauses = [];
+    const params = [];
 
-  let sql = `
-    SELECT 
-      b.business_id, b.name, b.category, b.description, b.location, b.photos, b.schedule,
-      COALESCE(AVG(r.rating), 0) as average_rating, 
-      COUNT(r.review_id) as review_count
-    FROM businesses b
-    LEFT JOIN reviews r ON b.business_id = r.business_id
-  `;
-
-  const queryParams = [];
-  const whereClauses = [];
-
-  if (req.query.searchTerm && req.query.searchTerm.trim() !== "") {
-    whereClauses.push(`(b.name LIKE ? OR b.description LIKE ?)`);
-    queryParams.push(
-      `%${req.query.searchTerm.trim()}%`,
-      `%${req.query.searchTerm.trim()}%`
-    );
-  }
-  if (req.query.category && req.query.category.trim() !== "") {
-    whereClauses.push(`b.category = ?`);
-    queryParams.push(req.query.category.trim());
-  }
-
-  if (whereClauses.length > 0) {
-    sql += ` WHERE ${whereClauses.join(" AND ")}`;
-  }
-
-  sql += ` GROUP BY b.business_id`;
-
-  if (req.query.min_rating && parseFloat(req.query.min_rating) > 0) {
-    sql += ` HAVING COALESCE(AVG(r.rating), 0) >= ?`;
-    queryParams.push(parseFloat(req.query.min_rating));
-  }
-
-  sql += ` ORDER BY b.name ASC`;
-
-  const limit = parseInt(req.query.limit) || 10;
-  const offset = parseInt(req.query.offset) || 0;
-  sql += ` LIMIT ? OFFSET ?`;
-  queryParams.push(limit, offset);
-
-  console.log("Executing SQL:", sql);
-  console.log("With parameters:", queryParams);
-
-  // Execute the main query
-  db.query(sql, queryParams, (err, results) => {
-    if (err) {
-      console.error("Error executing main SQL query:", err);
-      return res.status(500).json({ error: "Database query failed." });
+    if (req.query.searchTerm) {
+      whereClauses.push(`(b.name LIKE ? OR b.description LIKE ?)`);
+      const searchTerm = `%${req.query.searchTerm.trim()}%`;
+      params.push(searchTerm, searchTerm);
+    }
+    if (req.query.category) {
+      whereClauses.push(`b.category = ?`);
+      params.push(req.query.category.trim());
     }
 
-    console.log(
-      "Successfully fetched businesses from DB. Count:",
-      results.length
-    );
+    // Combine clauses into a string, e.g., "WHERE (b.name LIKE ...) AND b.category = ?"
+    const whereSql =
+      whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
 
-    // Now, execute the count query inside the callback of the first query
-    let countSql = `SELECT COUNT(DISTINCT b.business_id) as total
-                    FROM businesses b
-                    LEFT JOIN reviews r ON b.business_id = r.business_id`;
-    const countSqlParams = [];
-    const countWhereClauses = [];
+    // --- Step 2: Build the query for counting total items ---
+    let countSql = `SELECT COUNT(DISTINCT b.business_id) as total FROM businesses b ${whereSql}`;
 
-    if (req.query.searchTerm && req.query.searchTerm.trim() !== "") {
-      countWhereClauses.push(`(b.name LIKE ? OR b.description LIKE ?)`);
-      countSqlParams.push(
-        `%${req.query.searchTerm.trim()}%`,
-        `%${req.query.searchTerm.trim()}%`
-      );
+    // --- Step 3: Build the main query for getting the page results ---
+    let resultsSql = `
+      SELECT 
+        b.business_id, b.name, b.category, b.description, b.location, b.photos,
+        COALESCE(AVG(r.rating), 0) as average_rating, 
+        COUNT(r.review_id) as review_count
+      FROM businesses b
+      LEFT JOIN reviews r ON b.business_id = r.business_id
+      ${whereSql}
+      GROUP BY b.business_id
+    `;
+
+    const resultsParams = [...params]; // Copy params for the results query
+
+    if (req.query.min_rating && parseFloat(req.query.min_rating) > 0) {
+      resultsSql += ` HAVING average_rating >= ?`; // Use the alias here
+      resultsParams.push(parseFloat(req.query.min_rating));
     }
-    if (req.query.category && req.query.category.trim() !== "") {
-      countWhereClauses.push(`b.category = ?`);
-      countSqlParams.push(req.query.category.trim());
-    }
-    if (countWhereClauses.length > 0) {
-      countSql += ` WHERE ${countWhereClauses.join(" AND ")}`;
-    }
 
-    db.query(countSql, countSqlParams, (countErr, countResults) => {
-      if (countErr) {
-        console.error("Error executing count SQL query:", countErr);
-        // If count fails, still send the main results with a fallback total
-        return res.json({ results: results, total: results.length });
-      }
+    resultsSql += ` ORDER BY b.name ASC`;
 
-      const totalItems = countResults[0] ? countResults[0].total : 0;
-      console.log("Total items matching filter (for pagination):", totalItems);
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
+    resultsSql += ` LIMIT ? OFFSET ?`;
+    resultsParams.push(limit, offset);
 
-      res.json({
-        results: results,
-        total: totalItems,
-      });
+    // --- Step 4: Execute both queries at the same time ---
+    // Promise.all runs both queries in parallel, which is more efficient.
+    const [
+      [countResult], // The result from the first query (count)
+      [results], // The result from the second query (data)
+    ] = await Promise.all([
+      db.query(countSql, params),
+      db.query(resultsSql, resultsParams),
+    ]);
+
+    // --- Step 5: Send the combined response ---
+    res.json({
+      results: results,
+      total: countResult[0].total,
     });
-  });
+  } catch (err) {
+    console.error("Error in /search/businesses:", err);
+    res.status(500).json({ error: "Database query failed." });
+  }
 });
 
 module.exports = router;
