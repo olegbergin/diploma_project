@@ -1,85 +1,51 @@
 // dbSingleton.js
 const mysql = require("mysql2");
 
-let connection = null; // Initialize connection as null
-let isConnecting = false; // Flag to prevent multiple connection attempts
+let connection; // Variable for storing the single connection
 
-const dbConfig = {
-  host: process.env.DB_HOST || "localhost", // Use environment variables
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "project_db",
-  charset: "utf8mb4", // Good for international characters
-};
+// Function to handle creating/recreating the connection
+function handleConnect() {
+  // Create a connection only if one doesn't exist
+  connection = mysql.createConnection({
+    host: process.env.DB_HOST || "localhost",
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
+    database: process.env.DB_NAME || "project_db",
+    charset: "utf8mb4",
+  });
 
-function establishConnection() {
-  if (connection && connection.state === "authenticated") {
-    // Check if already connected and authenticated
-    console.log("Already connected to MySQL.");
-    return connection;
-  }
-
-  if (isConnecting) {
-    console.log("Connection attempt already in progress.");
-    // Optionally, return a promise that resolves when connection is established,
-    // or simply let subsequent calls wait / fail. For simplicity, we don't add complex queueing here.
-    return null; // Or handle this case as needed
-  }
-
-  isConnecting = true;
-  console.log("Attempting to connect to MySQL...");
-  const newConnection = mysql.createConnection(dbConfig);
-
-  newConnection.connect((err) => {
-    isConnecting = false; // Reset flag regardless of outcome
+  // Connect to the database
+  connection.connect((err) => {
     if (err) {
-      console.error("Error connecting to database:", err.message);
-      connection = null; // Ensure connection is null on failure
-      // throw err; // Throwing here might crash the app if not handled by caller
+      console.error("Error connecting to database:", err);
+      // In case of a connection error, try to reconnect after 2 seconds
+      setTimeout(handleConnect, 2000);
       return;
     }
-    console.log(
-      "Successfully connected to MySQL as id " + newConnection.threadId
-    );
-    connection = newConnection; // Assign the successfully established connection
-
-    // Handle connection errors after successful connection
-    connection.on("error", (error) => {
-      console.error("Database connection error:", error.message);
-      if (
-        error.code === "PROTOCOL_CONNECTION_LOST" ||
-        error.code === "ECONNRESET"
-      ) {
-        console.log("Connection lost. Setting connection to null.");
-        connection = null; // Invalidate the connection
-        // Optionally, attempt to reconnect or implement a more robust strategy
-      } else {
-        // For other errors, you might not want to nullify the connection immediately
-        // throw error; // Or handle as appropriate
-      }
-    });
+    console.log("Successfully connected to MySQL!");
   });
-  // Note: newConnection.connect is asynchronous.
-  // The `connection` variable might not be set immediately when getConnection is first called.
-  // This singleton pattern with mysql.createConnection has its limitations for initial calls.
-  // A pool (`mysql.createPool`) is generally more robust.
-  return newConnection; // Return the connection object being connected
+
+  // Handle connection errors after the initial connection
+  connection.on("error", (err) => {
+    console.error("Database connection error:", err);
+    // If the connection is lost, try to reconnect
+    if (err.code === "PROTOCOL_CONNECTION_LOST") {
+      console.log("Reconnecting to the database...");
+      handleConnect();
+    } else {
+      throw err;
+    }
+  });
 }
 
+// Initial call to connect
+handleConnect();
+
+// The singleton object that we export
 const dbSingleton = {
   getConnection: () => {
-    // If connection is lost or not established, try to establish it.
-    // This is a very basic retry, a pool handles this much better.
-    if (
-      !connection ||
-      (connection.state !== "authenticated" && connection.state !== "connected")
-    ) {
-      console.log(
-        "Connection not available or lost, attempting to establish a new one."
-      );
-      return establishConnection(); // This will set the global `connection` if successful
-    }
-    return connection; // Return the current (hopefully valid) connection
+    // This function will simply return the existing connection object
+    return connection;
   },
 };
 

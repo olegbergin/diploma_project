@@ -4,7 +4,7 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 // Get the database connection object from the singleton
-const dbConnection = require("../dbSingleton").getConnection();
+const dbConnection = require("../dbSingleton").getConnection(); // This line is correct
 
 // It's better to store JWT_SECRET in an environment variable
 const JWT_SECRET = process.env.JWT_SECRET || "my_name_is_oleg"; // CHANGE THIS!
