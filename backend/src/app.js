@@ -6,6 +6,9 @@ require("dotenv").config();
 // Middleware
 app.use(cors());
 app.use(express.json());
+const path = require("path");
+app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
+
 
 // Import routes
 const authRoutes = require("../routes/auth");
@@ -18,6 +21,7 @@ app.use("/api/businesses", businessRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/upload", require("../routes/upload"));
 
 // 404 handler
 app.use((req, res, next) => {

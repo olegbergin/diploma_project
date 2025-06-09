@@ -7,6 +7,7 @@ import AppointmentForm from "./AppointmentForm/AppointmentForm";
 import ServicesModal from "./sideBar/ServicesModal";
 import RequestsTab from "./sideBar/RequestsTab";
 import ExistingAppointments from "./sideBar/ExistingAppointments";
+import GalleryEdit from "./sideBar/GalleryEdit";
 import { fetchAppointments } from "./api/appointments";
 
 export default function BusinessProfile() {
@@ -18,7 +19,8 @@ export default function BusinessProfile() {
   const [booking, setBooking] = useState(null);
   const [showServices, setShowServices] = useState(false);
   const [showRequestsModal, setShowRequestsModal] = useState(false);
-  const [showAppointmentsModal, setShowAppointmentsModal] = useState(false); // ✅ חדש
+  const [showAppointmentsModal, setShowAppointmentsModal] = useState(false);
+  const [showGalleryEditModal, setShowGalleryEditModal] = useState(false);
   const [services, setServices] = useState([]);
   const [pendingCount, setPendingCount] = useState(0);
 
@@ -82,6 +84,16 @@ export default function BusinessProfile() {
     }
   };
 
+  const handleUpdateGallery = async (updatedGallery) => {
+    const updated = { ...business, gallery: updatedGallery };
+    await fetch(`/api/businesses/${business.business_id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated),
+    });
+    setBusiness(updated);
+  };
+
   if (!business) return <p className={styles.loading}>טוען נתוני עסק…</p>;
 
   return (
@@ -113,7 +125,7 @@ export default function BusinessProfile() {
         </button>
         <button
           className={styles.sidebarButton}
-          onClick={() => setActiveTab("galleryEdit")}
+          onClick={() => setShowGalleryEditModal(true)}
         >
           גלריה (עריכה)
         </button>
@@ -211,7 +223,6 @@ export default function BusinessProfile() {
         )}
       </main>
 
-      {/* מודאל “תורים קיימים” */}
       {showAppointmentsModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
@@ -230,7 +241,23 @@ export default function BusinessProfile() {
         </div>
       )}
 
-      {/* שאר המודאלים */}
+      {showGalleryEditModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <button
+              className={styles.closeModal}
+              onClick={() => setShowGalleryEditModal(false)}
+            >
+              ✕
+            </button>
+            <GalleryEdit
+              gallery={business.gallery || []}
+              onSave={handleUpdateGallery}
+            />
+          </div>
+        </div>
+      )}
+
       {showEdit && (
         <BusinessDetailsForm
           initialData={business}
