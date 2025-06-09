@@ -1,97 +1,146 @@
 /* src/components/HomePage/BusinessCard.module.css */
+
+/* The main link wrapper for the card.
+   Applying hover/focus styles here affects the whole card. */
 .cardLink {
-  text-decoration: none; /* Remove underline from link */
-  color: inherit;       /* Inherit text color */
-  display: block;       /* Make the link a block for easier styling of the card */
+  text-decoration: none;
+  /* Removes underline from the link */
+  color: inherit;
+  /* Inherits text color from parent */
+  display: block;
+  /* Makes the link a block element for easier styling */
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border-radius: var(--border-radius-large, 16px);
+  /* Apply radius here for focus outline to match */
 }
+
 .cardLink:hover,
-.cardLink:focus-within { /* Apply hover/focus styles to the link wrapper */
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-hover, 0 8px 16px rgba(0, 0, 0, 0.12));
-}
 .cardLink:focus-within {
-  outline: 2px solid var(--accent-color-primary, #a6e3a1); /* Focus outline */
+  transform: translateY(-5px);
+  /* Slightly lift the card on hover/focus */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  /* Make shadow more pronounced */
+}
+
+/* Add a visible focus outline for accessibility */
+.cardLink:focus-visible {
+  outline: 3px solid var(--accent-color-primary, #a6e3a1);
   outline-offset: 2px;
 }
 
+.cardLink:focus {
+  outline: none;
+  /* Remove default focus outline if you only want focus-visible */
+}
 
+
+/* The card itself */
 .card {
   background-color: var(--background-content, #fff);
-  border-radius: var(--border-radius-large, 16px); /* Consistent with HomePage header */
-  overflow: hidden; /* Clip image corners if they are not rounded */
+  border-radius: var(--border-radius-large, 16px);
+  overflow: hidden;
+  /* Clips the image corners to match the card's border-radius */
   box-shadow: var(--shadow-soft, 0 4px 12px rgba(0, 0, 0, 0.08));
   display: flex;
   flex-direction: column;
-  height: 100%; /* Ensure cards in a grid row have same height if desired */
+  height: 100%;
+  /* Ensures cards in a grid row have the same height */
 }
 
+/* --- ИЗМЕНЕНИЕ ЗДЕСЬ (Image Container) --- */
 .imageContainer {
   width: 100%;
-  aspect-ratio: 16 / 10; /* Maintain aspect ratio for images */
-  background-color: #f0f0f0; /* Placeholder background */
+  /* Reduce the aspect ratio to make the image shorter.
+       16 / 9 or 16 / 10 is a common widescreen ratio.
+       Let's try something closer to 2 / 1 or 2.5 / 1 to make it less tall. */
+  aspect-ratio: 2 / 1;
+  /* This will make the image twice as wide as it is tall */
+  background-color: #f0f0f0;
+  /* Light grey background for placeholder area */
+  /* You can also use a fixed height, but aspect-ratio is more responsive. */
+  /* For example: height: 150px; */
 }
 
 .image {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Cover the container, might crop */
+  object-fit: cover;
+  /* This will cover the area, potentially cropping the image, which is usually desired. */
+  /* If your placeholder icon looks bad with 'cover', you can use 'contain' and a background color. */
+  /* object-fit: contain; */
 }
 
+/* --- ИЗМЕНЕНИЕ ЗДЕСЬ (Content Area) --- */
 .content {
-  padding: 1rem 1.25rem;
-  flex-grow: 1; /* Allow content to take remaining space */
+  /* Increase padding for more space around the text */
+  padding: 1rem 1.25rem 1.25rem;
+  flex-grow: 1;
+  /* Allows this section to fill the remaining space */
   display: flex;
   flex-direction: column;
 }
 
 .name {
-  font-size: 1.25rem;
-  font-weight: 600; /* Bolder name */
+  /* Increase font size for the business name */
+  font-size: 1.125rem;
+  /* ~18px */
+  font-weight: 600;
+  /* Semi-bold for emphasis */
   color: var(--text-primary, #333);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
+  /* Adjust spacing */
+  line-height: 1.3;
 }
 
 .category,
 .location {
-  font-size: 0.875rem;
+  /* Increase font size for secondary text */
+  font-size: 0.9rem;
+  /* ~14.4px */
   color: var(--text-secondary, #555);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
   line-height: 1.4;
 }
+
 .location {
-    margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  /* More space after the location */
 }
 
-
+/* --- ИЗМЕНЕНИЕ ЗДЕСЬ (Rating Container) --- */
 .ratingContainer {
   display: flex;
   align-items: center;
-  font-size: 0.875rem;
+  /* Increase font size for rating text */
+  font-size: 0.9rem;
   color: var(--text-secondary, #555);
-  margin-top: auto; /* Push rating to the bottom if card content varies */
-  padding-top: 0.5rem; /* Space above rating */
+  margin-top: auto;
+  /* Pushes the rating to the bottom if card content varies */
+  padding-top: 0.5rem;
+  /* Space above the rating section */
 }
 
 .ratingValue {
   font-weight: bold;
   color: var(--text-primary, #333);
-  margin-right: 0.25rem; /* Margin to the right in LTR, adjust for RTL */
+  margin-right: 0.35rem;
+  /* Adjust for LTR, check RTL */
 }
 
 .stars {
-  color: #ffc107; /* Gold color for stars */
-  letter-spacing: 1px; /* Space out stars slightly */
-}
-.star { /* Common star style */ }
-.starFull { /* Filled star (usually default char) */ }
-.starHalf { /* Style for half star if using a specific icon or technique */ }
-.starEmpty {
-  color: #e0e0e0; /* Lighter color for empty stars */
+  color: #ffc107;
+  /* Gold color for stars */
+  letter-spacing: 1px;
 }
 
+.starEmpty {
+  color: #e0e0e0;
+  /* Lighter color for empty stars */
+}
 
 .reviewCount {
-  margin-left: 0.5rem; /* Margin to the left in LTR, adjust for RTL */
-  font-size: 0.8rem;
+  margin-left: 0.5rem;
+  /* Adjust for LTR, check RTL */
+  font-size: 0.85rem;
+  /* Slightly larger review count text */
 }
