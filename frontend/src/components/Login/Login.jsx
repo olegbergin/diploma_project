@@ -4,14 +4,13 @@ import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 import styles from '../Forms/Form.module.css';
 
 // Get API URL from environment variables or fallback
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/auth';
+const API_URL = "/api/auth";
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(''); // To display errors from backend
   const [loading, setLoading] = useState(false); // To disable button during request
-  // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate(); // Hook for navigation
 
   const handleLogin = async (event) => {

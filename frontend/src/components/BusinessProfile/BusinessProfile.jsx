@@ -1,21 +1,26 @@
-/* src/components/BusinessProfile/BusinessProfile.jsx */
 import { useEffect, useState } from "react";
 import styles from "./BusinessProfile.module.css";
 import BusinessDetailsForm from "./sideBar/BusinessDetailsForm";
 import Calendar from "./tabs/Calendar/Calendar";
 import ScheduleModal from "./sideBar/ScheduleModal";
+import AppointmentForm from "./AppointmentForm/AppointmentForm";
+import ServicesModal from "./sideBar/ServicesModal";
+import RequestsTab from "./sideBar/RequestsTab";
 import { fetchAppointments } from "./api/appointments";
 
 export default function BusinessProfile() {
-  /* ───────────── קונטרולרים ───────────── */
   const [business, setBusiness] = useState(null);
-  const [activeTab, setActiveTab] = useState("info"); // כפתורי Sidebar
-  const [innerTab, setInnerTab] = useState("calendar"); // טאב-בר ללקוחות
-  const [showEdit, setShowEdit] = useState(false); // מודאל פרטי-עסק
-  const [showSchedule, setShowSchedule] = useState(false); // מודאל לוח-זמנים
-  const [appointments, setAppointments] = useState([]); // תורים מה-DB
+  const [activeTab, setActiveTab] = useState("info");
+  const [innerTab, setInnerTab] = useState("calendar");
+  const [showEdit, setShowEdit] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [appointments, setAppointments] = useState([]);
+  const [booking, setBooking] = useState(null);
+  const [showServices, setShowServices] = useState(false);
+  const [services, setServices] = useState([]); // <-- כאן נשמרים השירותים
+  const [showRequestsModal, setShowRequestsModal] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
-  /* ───────────── טעינת העסק פעם אחת ───────────── */
   useEffect(() => {
     fetch("/api/businesses/1")
       .then((r) => r.json())
@@ -23,18 +28,23 @@ export default function BusinessProfile() {
       .catch(console.error);
   }, []);
 
-  /* ───────────── טעינת תורים לאחר שהעסק נטען ───────────── */
   useEffect(() => {
     if (!business) return;
-    const monthIso = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+    const monthIso = new Date().toISOString().slice(0, 7);
     fetchAppointments(business.business_id, monthIso)
       .then(setAppointments)
       .catch(console.error);
+
+    // שליפת מספר בקשות "pending" עבור הבאדג'
+    fetch(
+      `/api/appointments?businessId=${business.business_id}&month=${monthIso}&status=pending`
+    )
+      .then((r) => r.json())
+      .then((requests) => setPendingCount(requests.length));
   }, [business]);
 
   if (!business) return <p className={styles.loading}>טוען נתוני עסק…</p>;
 
-  /* ───────────── JSX ───────────── */
   return (
     <div className={styles.pageLayout}>
       {/* ----- Sidebar ----- */}
@@ -45,7 +55,6 @@ export default function BusinessProfile() {
           className={styles.profileImage}
         />
         <h2 className={styles.sidebarName}>{business.name}</h2>
-
         <button
           className={styles.sidebarButton}
           onClick={() => setShowEdit(true)}
@@ -60,15 +69,26 @@ export default function BusinessProfile() {
         </button>
         <button
           className={styles.sidebarButton}
+          onClick={() => setShowServices(true)}
+        >
+          ניהול שירותים
+        </button>
+        <button
+          className={styles.sidebarButton}
           onClick={() => setActiveTab("galleryEdit")}
         >
           גלריה (עריכה)
         </button>
+        {/* --- בקשות חדשות כמודאל עם באדג' --- */}
         <button
           className={styles.sidebarButton}
-          onClick={() => setActiveTab("requests")}
+          onClick={() => setShowRequestsModal(true)}
+          style={{ position: "relative" }}
         >
           בקשות חדשות
+          {pendingCount > 0 && (
+            <span className={styles.badge}>{pendingCount}</span>
+          )}
         </button>
         <button
           className={styles.sidebarButton}
@@ -78,7 +98,7 @@ export default function BusinessProfile() {
         </button>
       </aside>
 
-      {/* ----- תוכן ראשי ----- */}
+      {/* ----- Main Content ----- */}
       <main className={styles.profileContent}>
         <h1 className={styles.title}>{business.name}</h1>
         <p className={styles.category}>{business.category}</p>
@@ -108,16 +128,20 @@ export default function BusinessProfile() {
           </button>
         </div>
 
-        {/* ---- טאבים ללקוחות ---- */}
+        {/* טאבים ללקוחות */}
         {innerTab === "calendar" && (
           <section className={styles.section}>
             <h2>לוח שנה</h2>
             <Calendar
               appointments={appointments.map((a) => ({
-                date: a.date, // 'YYYY-MM-DD'
-                time: a.time, // 'HH:MM'
-                customer: `#${a.customer_id}`, // או שם הלקוח כשתהיה הטבלה
+                date: a.date,
+                time: a.time,
+                customer: `#${a.customer_id}`,
               }))}
+              onDaySelect={(iso, dayAppts) => {
+                const taken = dayAppts.map((a) => a.time);
+                setBooking({ dateIso: iso, taken });
+              }}
             />
           </section>
         )}
@@ -161,14 +185,6 @@ export default function BusinessProfile() {
             <p>כאן יופיעו כלי העלאה/מחיקה.</p>
           </section>
         )}
-
-        {activeTab === "requests" && (
-          <section className={styles.section}>
-            <h2>בקשות תור חדשות</h2>
-            <p>אין בקשות חדשות.</p>
-          </section>
-        )}
-
         {activeTab === "appointments" && (
           <section className={styles.section}>
             <h2>תורים קיימים</h2>
@@ -189,8 +205,7 @@ export default function BusinessProfile() {
                 body: JSON.stringify(data),
               });
               setBusiness(data);
-            } catch (err) {
-              console.error(err);
+            } catch {
               alert("שמירה נכשלה");
             } finally {
               setShowEdit(false);
@@ -206,6 +221,76 @@ export default function BusinessProfile() {
           appointments={appointments}
           onClose={() => setShowSchedule(false)}
         />
+      )}
+
+      {/* --- מודאל ניהול שירותים --- */}
+      {showServices && (
+        <ServicesModal
+          services={services}
+          onSave={(newList) => {
+            setServices(newList);
+            setShowServices(false);
+            // בעתיד: לשמור גם לשרת
+          }}
+          onClose={() => setShowServices(false)}
+        />
+      )}
+
+      {/* ----- מודאל קביעת תור (לקוח) ----- */}
+      {booking && (
+        <AppointmentForm
+          date={booking.dateIso}
+          takenSlots={booking.taken}
+          services={services} // <<<< ---- הוספנו
+          onSubmit={async ({ date, time, name, phone, email, service }) => {
+            try {
+              await fetch("/api/appointments", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  business_id: business.business_id,
+                  date,
+                  time,
+                  name,
+                  phone,
+                  email,
+                  service, // <<-- שלח את השירות גם לשרת
+                }),
+              });
+              // לרענן תורים:
+              const monthIso = new Date().toISOString().slice(0, 7);
+              const newAppointments = await fetchAppointments(
+                business.business_id,
+                monthIso
+              );
+              setAppointments(newAppointments);
+              alert("התור נשמר בהצלחה!");
+            } catch {
+              alert("שגיאה בשמירת תור.");
+            } finally {
+              setBooking(null);
+            }
+          }}
+          onCancel={() => setBooking(null)}
+        />
+      )}
+
+      {/* ----- מודאל בקשות חדשות ----- */}
+      {showRequestsModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <button
+              className={styles.closeModal}
+              onClick={() => setShowRequestsModal(false)}
+            >
+              ✕
+            </button>
+            <RequestsTab
+              businessId={business.business_id}
+              onAction={() => setPendingCount((prev) => Math.max(0, prev - 1))}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
