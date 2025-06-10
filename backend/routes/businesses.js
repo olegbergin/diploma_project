@@ -2,130 +2,101 @@
 const express = require("express");
 const router = express.Router();
 
-/* ───── חיבור לבסיס הנתונים ───── */
-const getDb = require("../dbSingleton").getConnection; // ← לשים את הפונקציה, לא התוצאה
+// --- CHANGE 1: Use the promise-based connection ---
+// Get the promise-based connection object for async/await support.
+const db = require("../dbSingleton").getPromise();
 
 /* ───────────────────────────────
-   1. יצירת עסק חדש  (POST /api/businesses)
+   1. Create a new business (POST /api/businesses)
+   Refactored with async/await.
    ─────────────────────────────── */
-router.post("/", async (req, res) => {
+router.post("/", async (req, res) => { // <-- Add async
   const {
-    name,
-    category,
-    description,
-    phone,
-    email,
-    address,
-    image_url = "",
-    opening_hours = "",
+    name, category, description, phone, email, address, image_url = "", opening_hours = "",
   } = req.body;
 
   const sql = `
-    INSERT INTO businesses
-      (name, category, description, phone, email, address, image_url, opening_hours)
+    INSERT INTO businesses (name, category, description, phone, email, address, image_url, opening_hours)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
+  const params = [name, category, description, phone, email, address, image_url, opening_hours];
+
   try {
-    const db = await getDb(); // ← await
-    const [result] = await db.query(sql, [
-      name,
-      category,
-      description,
-      phone,
-      email,
-      address,
-      image_url,
-      opening_hours,
-    ]);
+    // --- CHANGE 2: Use await and a try...catch block ---
+    const [result] = await db.query(sql, params); // <-- Use await
     res.status(201).json({ id: result.insertId, message: "Business created" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "DB error" });
+    console.error("DB error creating business:", err);
+    res.status(500).json({ error: "Failed to create business." });
   }
 });
 
 /* ───────────────────────────────
-   2. שליפת כל העסקים  (GET /api/businesses)
+   2. Get all businesses (GET /api/businesses)
+   Refactored with async/await.
    ─────────────────────────────── */
-router.get("/", async (_req, res) => {
+router.get("/", async (_req, res) => { // <-- Add async
   try {
-    const db = await getDb(); // ← await
-    const [rows] = await db.query("SELECT * FROM businesses");
+    const [rows] = await db.query("SELECT * FROM businesses"); // <-- Use await
     res.json(rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "DB error" });
+    console.error("DB error fetching all businesses:", err);
+    res.status(500).json({ error: "Failed to fetch businesses." });
   }
 });
 
 /* ───────────────────────────────
-   3. שליפת עסק יחיד  (GET /api/businesses/:id)
+   3. Get a single business by ID (GET /api/businesses/:id)
+   Refactored with async/await.
    ─────────────────────────────── */
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res) => { // <-- Add async
+  const sql = "SELECT * FROM businesses WHERE business_id = ?";
+  const params = [req.params.id];
+
   try {
-    const db = await getDb(); // ← await
-    const [rows] = await db.query(
-      "SELECT * FROM businesses WHERE business_id = ?",
-      [req.params.id]
-    );
-    if (!rows.length)
+    const [rows] = await db.query(sql, params); // <-- Use await
+    
+    // Check if a business was found
+    if (rows.length === 0) {
       return res.status(404).json({ message: "Business not found" });
-    res.json(rows[0]);
+    }
+    
+    res.json(rows[0]); // Send the first (and only) result
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "DB error" });
+    console.error(`DB error fetching business with id ${req.params.id}:`, err);
+    res.status(500).json({ error: "Failed to fetch business details." });
   }
 });
 
 /* ───────────────────────────────
-   4. עדכון עסק  (PUT /api/businesses/:id)
+   4. Update a business (PUT /api/businesses/:id)
+   Refactored with async/await.
    ─────────────────────────────── */
-router.put("/:id", async (req, res) => {
+router.put("/:id", async (req, res) => { // <-- Add async
   const {
-    name,
-    category,
-    description,
-    phone,
-    email,
-    address,
-    image_url = "",
-    opening_hours = "",
+    name, category, description, phone, email, address, image_url = "", opening_hours = "",
   } = req.body;
 
   const sql = `
-    UPDATE businesses
-       SET name          = ?,
-           category      = ?,
-           description   = ?,
-           phone         = ?,
-           email         = ?,
-           address       = ?,
-           image_url     = ?,
-           opening_hours = ?
-     WHERE business_id   = ?
+    UPDATE businesses SET name = ?, category = ?, description = ?, phone = ?, email = ?,
+    address = ?, image_url = ?, opening_hours = ?
+    WHERE business_id = ?
   `;
-  try {
-    const db = await getDb(); // ← await
-    const [result] = await db.query(sql, [
-      name,
-      category,
-      description,
-      phone,
-      email,
-      address,
-      image_url,
-      opening_hours,
-      req.params.id,
-    ]);
-    if (result.affectedRows === 0)
-      return res.status(404).json({ message: "Business not found" });
+  const params = [name, category, description, phone, email, address, image_url, opening_hours, req.params.id];
 
-    res.json({ message: "Business updated" });
+  try {
+    const [result] = await db.query(sql, params); // <-- Use await
+    
+    // Check if any row was actually updated
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Business not found" });
+    }
+    
+    res.json({ message: "Business updated successfully" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "DB error" });
+    console.error(`DB error updating business with id ${req.params.id}:`, err);
+    res.status(500).json({ error: "Failed to update business." });
   }
 });
 
-/* ─────────────────────────────── */
 module.exports = router;

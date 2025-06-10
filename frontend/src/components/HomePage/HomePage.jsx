@@ -1,201 +1,171 @@
 // src/components/HomePage/HomePage.jsx
+
+// --- Imports ---
 import React, { useState, useEffect, useCallback } from 'react';
 import BusinessCard from '../BusinessCard/BusinessCard.jsx';
 import styles from './HomePage.module.css';
-// It's good practice to have a dedicated config file or use environment variables for API endpoints
-const API_SEARCH_URL = import.meta.env.VITE_API_SEARCH_URL || 'http://localhost:3000/api/search';
+// --- ИЗМЕНЕНИЕ 1: Импортируем наш инстанс axios ---
+import axiosInstance from '../../api/axiosInstance.js'; // Adjust path if needed
 
-// A simple debounce utility function
-// This prevents the API from being called on every keystroke
+// Debounce utility function (остается без изменений)
 function debounce(func, delay) {
   let timeoutId;
   return function (...args) {
-    // If there's an existing timeout, clear it
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
-    // Set a new timeout to execute the function after the delay
     timeoutId = setTimeout(() => {
       func.apply(this, args);
     }, delay);
   };
 }
 
-function HomePage() {
-  // --- State Management ---
-  // Stores the list of businesses fetched from the API
+/**
+ * HomePage component to display and filter businesses.
+ */
+function HomePage({ user }) { // Assuming user is passed as a prop
+  // --- State Hooks (без изменений) ---
   const [businesses, setBusinesses] = useState([]);
-  // Tracks if data is currently being fetched
   const [isLoading, setIsLoading] = useState(true);
-  // Stores any error object or message if an API call fails
   const [error, setError] = useState(null);
-
-  // --- Filter States ---
-  // Holds the current value of the search input field
   const [searchTerm, setSearchTerm] = useState('');
-  // Holds the selected category for filtering (example)
   const [selectedCategory, setSelectedCategory] = useState('');
-  // Holds the current minimum rating filter (example)
-  const [minRating, setMinRating] = useState(0); // 0 means no rating filter
-
-  // --- Pagination States (Example - to be expanded) ---
+  const [minRating, setMinRating] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10); // Could be configurable
-  const [totalItems, setTotalItems] = useState(0); // To calculate total pages
+  const [itemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
 
-  // --- API Call Function ---
-  // useCallback is used to memoize the function, preventing unnecessary re-creations
-  // if its dependencies (API_SEARCH_URL, itemsPerPage) haven't changed.
-  // This is particularly useful if fetchBusinesses is passed down to child components.
-  const fetchBusinesses = useCallback(async (searchQuery = searchTerm, category = selectedCategory, rating = minRating, page = currentPage) => {
+  // --- API Call Function (РЕФАКТОРИНГ ЗДЕСЬ) ---
+  // useCallback memoizes the function to prevent re-creation on every render.
+  const fetchBusinesses = useCallback(async (page = 1, currentFilters) => {
     setIsLoading(true);
     setError(null);
 
-    const queryParams = new URLSearchParams({
-      limit: itemsPerPage.toString(),
-      offset: ((page - 1) * itemsPerPage).toString(),
-    });
+    // Construct the parameters object for axios
+    const params = {
+      limit: itemsPerPage,
+      offset: (page - 1) * itemsPerPage,
+      // Use values from the passed filters object or current state
+      searchTerm: currentFilters?.searchTerm ?? searchTerm,
+      category: currentFilters?.category ?? selectedCategory,
+      min_rating: currentFilters?.minRating ?? minRating,
+    };
 
-    if (searchQuery) queryParams.set('searchTerm', searchQuery);
-    if (category) queryParams.set('category', category);
-    if (rating > 0) queryParams.set('min_rating', rating.toString());
+    // Clean up params: remove any keys with empty or zero values (except for pagination)
+    if (!params.searchTerm) delete params.searchTerm;
+    if (!params.category) delete params.category;
+    if (!params.min_rating) delete params.min_rating;
 
     try {
-      const response = await fetch(`${API_SEARCH_URL}/businesses?${queryParams.toString()}`);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown server error" }));
-        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
-      }
-      const data = await response.json(); // data is now { results: [...], total: ... }
+      // --- ИЗМЕНЕНИЕ 2: Используем axios.get ---
+      // The endpoint is relative to our baseURL in axiosInstance.
+      // Axios handles query string creation from the 'params' object.
+      const response = await axiosInstance.get('/search/businesses', { params });
 
-      setBusinesses(data.results || []); // Use data.results
-      setTotalItems(data.total || 0);   // Use data.total
+      // Data is directly in response.data, which should be { results: [...], total: ... }
+      setBusinesses(response.data.results || []);
+      setTotalItems(response.data.total || 0);
 
     } catch (err) {
+      // --- ИЗМЕНЕНИЕ 3: Улучшенная обработка ошибок ---
       console.error("Failed to fetch businesses:", err);
-      setError(err.message);
+      let errorMessage = "Could not load businesses. Please try again.";
+      if (err.response && err.response.data && err.response.data.error) {
+        errorMessage = err.response.data.error;
+      }
+      setError(errorMessage);
       setBusinesses([]);
-      setTotalItems(0); // Reset total on error
+      setTotalItems(0);
     } finally {
       setIsLoading(false);
     }
-  }, [searchTerm, selectedCategory, minRating, currentPage, itemsPerPage]);
+  }, [itemsPerPage, searchTerm, selectedCategory, minRating]); // Dependencies for useCallback
 
   // --- Debounced Search ---
-  // We create a debounced version of fetchBusinesses specifically for the search input.
-  // This ensures that fetchBusinesses is not called on every keystroke, but only
-  // after the user has paused typing for 500ms.
-  // useCallback ensures the debounced function is not recreated on every render unless fetchBusinesses changes.
-  const debouncedFetchBusinesses = useCallback(debounce((currentSearchTerm) => {
-    // When debounced function fires, it uses the latest filter values from state
-    // but the triggering search term comes from its argument.
-    // Reset to page 1 when search term changes.
+  // The debounce logic itself doesn't change.
+  const debouncedFetch = useCallback(debounce((newSearchTerm) => {
+    // When the debounced function fires, we call fetchBusinesses
+    // with the new search term and reset to page 1.
     setCurrentPage(1);
-    fetchBusinesses(currentSearchTerm, selectedCategory, minRating, 1);
-  }, 500), [selectedCategory, minRating, fetchBusinesses]); // fetchBusinesses is a dep
+    fetchBusinesses(1, { searchTerm: newSearchTerm });
+  }, 500), [fetchBusinesses]); // It depends on the memoized fetchBusinesses function.
+
 
   // --- Effects ---
-  // useEffect to fetch businesses when the component mounts or when critical filter/pagination states change.
-  // The initial fetch is handled here. Subsequent fetches due to direct filter changes (not searchTerm)
-  // can also trigger this if those dependencies are included.
+  // This useEffect is now much simpler. It runs when filters (other than search) or page change.
   useEffect(() => {
-    // Don't run the initial fetch if searchTerm is being handled by debouncing
-    // (i.e., if searchTerm is not empty, it means the user is typing or has typed).
-    // The debounced function will handle the fetch.
-    // This initial fetch is for component mount or when filters like category/rating change directly.
-    // Or, if you want searchTerm to trigger an immediate fetch on mount if pre-filled, adjust logic.
-    fetchBusinesses(searchTerm, selectedCategory, minRating, currentPage);
-  }, [selectedCategory, minRating, currentPage, fetchBusinesses]); // `searchTerm` is intentionally omitted here to let debounce handle it. `fetchBusinesses` is stable due to useCallback.
+    // We call fetchBusinesses with the current page.
+    // The function will use the latest state values for filters due to its dependencies.
+    fetchBusinesses(currentPage);
+  }, [selectedCategory, minRating, currentPage, fetchBusinesses]);
+  // `searchTerm` is intentionally omitted, as it's handled by the debounced function.
 
 
   // --- Event Handlers ---
   const handleSearchInputChange = (event) => {
     const newSearchTerm = event.target.value;
-    setSearchTerm(newSearchTerm); // Update the state immediately for a responsive input field
-    debouncedFetchBusinesses(newSearchTerm); // Call the debounced fetch function
+    setSearchTerm(newSearchTerm);
+    debouncedFetch(newSearchTerm);
   };
 
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
-    setCurrentPage(1); // Reset to page 1 when category changes
-    // fetchBusinesses will be triggered by the useEffect due to selectedCategory change
+    setCurrentPage(1); // Reset to page 1
   };
 
   const handleRatingChange = (event) => {
     setMinRating(Number(event.target.value));
-    setCurrentPage(1); // Reset to page 1 when rating changes
-    // fetchBusinesses will be triggered by the useEffect due to minRating change
+    setCurrentPage(1); // Reset to page 1
   };
 
+  // This handler is now only for explicit form submission (e.g., pressing Enter)
+  // It cancels any pending debounced call and fetches immediately.
   const handleFormSubmit = (event) => {
-    event.preventDefault(); // Prevent default form submission which causes a page reload
-    // Clearing timeout for debouncedFetch is important if user submits form manually
-    // and there was a pending debounced call.
-    // (Although with current setup, debouncedFetchBusinesses fires with latest searchTerm anyway)
-    setCurrentPage(1);
-    fetchBusinesses(searchTerm, selectedCategory, minRating, 1); // Trigger an immediate search
+    event.preventDefault();
+    // Since debouncedFetch has its own internal timer, we can't easily cancel it from here.
+    // But we can just trigger an immediate fetch.
+    fetchBusinesses(1, { searchTerm });
   };
 
-  // Placeholder for pagination controls
+
+  // --- Render Functions (без изменений) ---
   const renderPagination = () => {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     if (totalPages <= 1) return null;
-
     return (
       <div className={styles.pagination}>
-        <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-          קודם {/* Previous */}
-        </button>
-        <span>עמוד {currentPage} מתוך {totalPages}</span> {/* Page X of Y */}
-        <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
-          הבא {/* Next */}
-        </button>
+        <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>קודם</button>
+        <span>עמוד {currentPage} מתוך {totalPages}</span>
+        <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>הבא</button>
       </div>
     );
   };
 
-  // --- Render Logic ---
+  // --- Main Render (без изменений в JSX) ---
   return (
     <div className={styles.homePageContainer}>
       <header className={styles.header}>
-        {/* Consistent title style from your designs */}
-        <h1 className={styles.pageTitle}>גלה עסקים</h1> {/* Discover Businesses */}
-
-        {/* Search and Filter Form */}
+        <h1 className={styles.pageTitle}>גלה עסקים</h1>
         <form onSubmit={handleFormSubmit} className={styles.filterForm}>
           <div className={styles.searchInputContainer}>
             <input
               type="text"
-              placeholder="חפש שם עסק, שירות..." // Search business name, service...
+              placeholder="חפש שם עסק, שירות..."
               value={searchTerm}
               onChange={handleSearchInputChange}
               className={styles.searchInput}
-              aria-label="Search businesses" // Accessibility: label for screen readers
+              aria-label="Search businesses"
             />
-            {/* Optionally, add a search icon button if the form submit button is elsewhere or less obvious */}
           </div>
-
           <div className={styles.filterControls}>
-            <select
-              value={selectedCategory}
-              onChange={handleCategoryChange}
-              className={styles.filterSelect}
-              aria-label="Select category"
-            >
-              <option value="">כל הקטגוריות</option> {/* All Categories */}
-              <option value="מספרה">מספרות</option> {/* Hair Salons */}
-              <option value="מסעדה">מסעדות</option> {/* Restaurants */}
-              <option value="סלון יופי">סלוני יופי</option> {/* Beauty Salons */}
-              {/* Add more categories as needed */}
+            <select value={selectedCategory} onChange={handleCategoryChange} className={styles.filterSelect} aria-label="Select category">
+              <option value="">כל הקטגוריות</option>
+              <option value="מספרה">מספרות</option>
+              <option value="מסעדה">מסעדות</option>
+              <option value="סלון יופי">סלוני יופי</option>
             </select>
-
-            <select
-              value={minRating}
-              onChange={handleRatingChange}
-              className={styles.filterSelect}
-              aria-label="Select minimum rating"
-            >
-              <option value="0">כל הדירוגים</option> {/* All Ratings */}
+            <select value={minRating} onChange={handleRatingChange} className={styles.filterSelect} aria-label="Select minimum rating">
+              <option value="0">כל הדירוגים</option>
               <option value="1">★☆☆☆☆+</option>
               <option value="2">★★☆☆☆+</option>
               <option value="3">★★★☆☆+</option>
@@ -203,29 +173,20 @@ function HomePage() {
               <option value="5">★★★★★</option>
             </select>
           </div>
-          {/* The form submission can be triggered by pressing Enter in the input field
-              or by a dedicated submit button if you add one.
-              <button type="submit" className={styles.searchButton}>חפש</button> */}
         </form>
       </header>
 
-      {/* Conditional Rendering for Loading, Error, and Content */}
-      {isLoading && <div className={styles.loadingIndicator}>טוען עסקים...</div>} {/* Loading businesses... */}
-
+      {isLoading && <div className={styles.loadingIndicator}>טוען עסקים...</div>}
       {!isLoading && error && (
         <div className={styles.errorMessage}>
-          <p>אופס! משהו השתבש:</p> {/* Oops! Something went wrong: */}
+          <p>אופס! משהו השתבש:</p>
           <p>{error}</p>
-          <button onClick={() => fetchBusinesses(searchTerm, selectedCategory, minRating, currentPage)} className={styles.retryButton}>
-            נסה שוב {/* Try Again */}
-          </button>
+          <button onClick={() => fetchBusinesses(currentPage)} className={styles.retryButton}>נסה שוב</button>
         </div>
       )}
-
       {!isLoading && !error && businesses.length === 0 && (
-        <p className={styles.noResultsMessage}>לא נמצאו עסקים התואמים את חיפושך.</p> // No businesses found matching your search.
+        <p className={styles.noResultsMessage}>לא נמצאו עסקים התואמים את חיפושך.</p>
       )}
-
       {!isLoading && !error && businesses.length > 0 && (
         <main className={styles.businessesGrid}>
           {businesses.map(business => (

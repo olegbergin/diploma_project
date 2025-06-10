@@ -1,114 +1,76 @@
-// routes/search.js
-
+// routes/search.js (new, simplified version)
 const express = require("express");
 const router = express.Router();
-const { getConnection } = require("../dbSingleton");
+const db = require("../dbSingleton").getPromise(); // Use our new method!
 
-// Define a GET route for '/businesses'
 router.get("/businesses", async (req, res) => {
+  // <-- Add async
   try {
-    console.log("GET /api/search/businesses - Received request.");
-    console.log("Query parameters:", req.query);
+    // --- Step 1: Build the WHERE clauses and parameters just ONCE ---
+    const whereClauses = [];
+    const params = [];
 
-    // Get database connection
-    const db = getConnection();
+    if (req.query.searchTerm) {
+      whereClauses.push(`(b.name LIKE ? OR b.description LIKE ?)`);
+      const searchTerm = `%${req.query.searchTerm.trim()}%`;
+      params.push(searchTerm, searchTerm);
+    }
+    if (req.query.category) {
+      whereClauses.push(`b.category = ?`);
+      params.push(req.query.category.trim());
+    }
 
-    // --- Start building the SQL query ---
-    // Base SQL query to select necessary fields and calculate average rating
-    let sql = `
+    // Combine clauses into a string, e.g., "WHERE (b.name LIKE ...) AND b.category = ?"
+    const whereSql =
+      whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+
+    // --- Step 2: Build the query for counting total items ---
+    let countSql = `SELECT COUNT(DISTINCT b.business_id) as total FROM businesses b ${whereSql}`;
+
+    // --- Step 3: Build the main query for getting the page results ---
+    let resultsSql = `
       SELECT 
-        b.business_id, 
-        b.name, 
-        b.category, 
-        b.description, 
-        b.location, 
-        b.photos, 
-        b.schedule,
+        b.business_id, b.name, b.category, b.description, b.location, b.photos,
         COALESCE(AVG(r.rating), 0) as average_rating, 
         COUNT(r.review_id) as review_count
       FROM businesses b
       LEFT JOIN reviews r ON b.business_id = r.business_id
+      ${whereSql}
+      GROUP BY b.business_id
     `;
 
-    // Array to hold parameters for the SQL query (to prevent SQL injection)
-    const queryParams = [];
-    // Array to hold WHERE clauses for filtering
-    const whereClauses = [];
+    const resultsParams = [...params]; // Copy params for the results query
 
-    // --- Handle Filters from req.query ---
-
-    // 1. Filter by searchTerm (search in business name or description)
-    if (req.query.searchTerm && req.query.searchTerm.trim() !== "") {
-      whereClauses.push(`(b.name LIKE ? OR b.description LIKE ?)`);
-      const searchTermParam = `%${req.query.searchTerm.trim()}%`;
-      queryParams.push(searchTermParam, searchTermParam);
-    }
-
-    // 2. Filter by category
-    if (req.query.category && req.query.category.trim() !== "") {
-      whereClauses.push(`b.category = ?`);
-      queryParams.push(req.query.category.trim());
-    }
-
-    // --- Append WHERE clauses to SQL query if any filters are applied ---
-    if (whereClauses.length > 0) {
-      sql += ` WHERE ${whereClauses.join(" AND ")}`;
-    }
-
-    // --- Group by business_id to make AVG() and COUNT() work correctly for each business ---
-    sql += ` GROUP BY b.business_id`;
-
-    // 3. Filter by minimum rating (applied after grouping using HAVING)
     if (req.query.min_rating && parseFloat(req.query.min_rating) > 0) {
-      sql += ` HAVING COALESCE(AVG(r.rating), 0) >= ?`;
-      queryParams.push(parseFloat(req.query.min_rating));
+      resultsSql += ` HAVING average_rating >= ?`; // Use the alias here
+      resultsParams.push(parseFloat(req.query.min_rating));
     }
 
-    // --- Add Ordering (Example: order by name, can be made configurable later) ---
-    sql += ` ORDER BY b.name ASC`;
+    resultsSql += ` ORDER BY b.name ASC`;
 
-    // --- Add Pagination (Limit and Offset) ---
     const limit = parseInt(req.query.limit) || 10;
     const offset = parseInt(req.query.offset) || 0;
+    resultsSql += ` LIMIT ? OFFSET ?`;
+    resultsParams.push(limit, offset);
 
-    sql += ` LIMIT ? OFFSET ?`;
-    queryParams.push(limit, offset);
+    // --- Step 4: Execute both queries at the same time ---
+    // Promise.all runs both queries in parallel, which is more efficient.
+    const [
+      [countResult], // The result from the first query (count)
+      [results], // The result from the second query (data)
+    ] = await Promise.all([
+      db.query(countSql, params),
+      db.query(resultsSql, resultsParams),
+    ]);
 
-    console.log("Executing SQL:", sql);
-    console.log("With parameters:", queryParams);
-
-    // Execute main query
-    const [results] = await db.query(sql, queryParams);
-
-    // Get total count for pagination
-    let countSql = `
-      SELECT COUNT(DISTINCT b.business_id) as total
-      FROM businesses b
-      LEFT JOIN reviews r ON b.business_id = r.business_id
-    `;
-
-    const countWhereClauses = [...whereClauses];
-    const countQueryParams = [...queryParams.slice(0, -2)]; // Remove limit and offset params
-
-    if (countWhereClauses.length > 0) {
-      countSql += ` WHERE ${countWhereClauses.join(" AND ")}`;
-    }
-
-    const [countResult] = await db.query(countSql, countQueryParams);
-    const total = countResult[0].total;
-
-    // Send response
+    // --- Step 5: Send the combined response ---
     res.json({
-      results,
-      total,
-      page: Math.floor(offset / limit) + 1,
-      totalPages: Math.ceil(total / limit),
+      results: results,
+      total: countResult[0].total,
     });
   } catch (err) {
-    console.error("Error executing search query:", err);
-    res
-      .status(500)
-      .json({ error: "Failed to fetch businesses. Please try again." });
+    console.error("Error in /search/businesses:", err);
+    res.status(500).json({ error: "Database query failed." });
   }
 });
 

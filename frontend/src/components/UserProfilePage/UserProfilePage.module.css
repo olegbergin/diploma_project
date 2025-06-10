@@ -1,0 +1,158 @@
+/* src/components/UserProfilePage/UserProfilePage.module.css */
+
+/* The main container for the page, providing padding and centering the card */
+.profilePage {
+  padding: 2rem 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  /* Align card to the top */
+}
+
+/* The main white card holding all the profile content */
+.profileCard {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 600px;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* --- Header Section (Avatar, Name, Email) --- */
+.profileHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 2rem;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  /* Makes it a circle */
+  background-color: #a6e3a1;
+  /* Your primary accent color */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.profileHeader h2 {
+  font-size: 1.8rem;
+  margin: 0;
+  color: #333;
+}
+
+.email {
+  font-size: 1rem;
+  color: #777;
+  margin-top: 0.25rem;
+}
+
+/* --- Details Form Section --- */
+.detailsForm h3,
+.actionsSection h3 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.fieldGroup {
+  margin-bottom: 1.5rem;
+}
+
+.fieldGroup label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+/* When in view mode, inputs are disabled. Let's make them look like plain text. */
+.detailsForm input:disabled {
+  background-color: transparent;
+  border-color: transparent;
+  padding-left: 0;
+  padding-right: 0;
+  color: #333;
+  /* Make text darker */
+  cursor: default;
+  box-shadow: none;
+}
+
+.editActions {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.saveCancelGroup {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* Specific style for the cancel button to give it a secondary look */
+.cancelButton {
+  background-color: #f0f0f0;
+  color: #555;
+  border: 1px solid #ccc;
+}
+
+.cancelButton:hover {
+  background-color: #e0e0e0;
+}
+
+/* --- Account Actions Section --- */
+.actionsSection {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.actionLink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.actionLink:hover {
+  background-color: #f7f7f7;
+  border-color: #ddd;
+}
+
+/* Make the Logout button stand out */
+.logoutButton {
+  width: 100%;
+  justify-content: center;
+  font-size: 1rem;
+  color: #d9363e;
+  /* Red for destructive action */
+  background-color: #fff;
+  border-color: #ffc2c3;
+}
+
+.logoutButton:hover {
+  background-color: #fff5f5;
+  color: #d9363e;
+  border-color: #d9363e;
+}
