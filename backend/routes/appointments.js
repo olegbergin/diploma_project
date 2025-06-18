@@ -43,13 +43,21 @@ router.post("/", async (req, res) => {
     date, // 'YYYY-MM-DD'
     time, // 'HH:MM'
     notes = "",
-    status, // אפשרי: נשלח מהקליינט
+    status,
   } = req.body;
 
   if (!business_id || !date || !time)
     return res
       .status(400)
       .json({ message: "business_id, date, time are required" });
+
+  // *** הגנה - לא ניתן לקבוע תור לעבר ***
+  const appointmentDateTime = new Date(`${date}T${time}:00`);
+  if (appointmentDateTime < new Date()) {
+    return res
+      .status(400)
+      .json({ message: "אי אפשר לקבוע תור לתאריך שכבר עבר" });
+  }
 
   const statusToSet = status || "pending";
   const datetime = `${date} ${time}`;
@@ -62,12 +70,10 @@ router.post("/", async (req, res) => {
        VALUES (?,?,?,?,?,?)`,
       [customer_id, business_id, service_id, datetime, statusToSet, notes]
     );
-    res
-      .status(201)
-      .json({
-        message: "Appointment request sent",
-        appointmentId: result.insertId,
-      });
+    res.status(201).json({
+      message: "Appointment request sent",
+      appointmentId: result.insertId,
+    });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "DB error" });
@@ -82,6 +88,11 @@ router.put("/:id", async (req, res) => {
     return res
       .status(400)
       .json({ message: "appointment_datetime and business_id are required" });
+
+  // הגנה: לא לעדכן תור לעבר
+  if (new Date(appointment_datetime) < new Date()) {
+    return res.status(400).json({ message: "אי אפשר לעדכן תור לעבר" });
+  }
 
   try {
     // בדיקה אם קיים תור באותו זמן לאותו עסק (למעט התור הנוכחי)
@@ -165,6 +176,27 @@ router.get("/user/:userId", async (req, res) => {
       params
     );
     res.json(rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "DB error" });
+  }
+});
+
+// עדכון סטטוס (approve/cancel וכו')
+router.put("/:id/status", async (req, res) => {
+  const { status } = req.body;
+  if (!status) {
+    return res.status(400).json({ message: "status is required" });
+  }
+  try {
+    const [result] = await db.query(
+      "UPDATE appointments SET status = ? WHERE appointment_id = ?",
+      [status, req.params.id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+    res.json({ message: "Appointment status updated" });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "DB error" });

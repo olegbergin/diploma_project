@@ -17,6 +17,9 @@ export default function Calendar({ appointments, onDaySelect }) {
   const firstGridDay = new Date(monthStart);
   firstGridDay.setDate(monthStart.getDate() - monthStart.getDay());
 
+  // נקודת זמן נוכחית בלי שניות
+  const todayIso = new Date().toISOString().slice(0, 10);
+
   const days = Array.from({ length: 42 }, (_, i) => {
     const d = new Date(firstGridDay);
     d.setDate(firstGridDay.getDate() + i);
@@ -36,7 +39,9 @@ export default function Calendar({ appointments, onDaySelect }) {
     setCurrent(d);
   };
 
-  const handleClick = (iso) => {
+  const handleClick = (iso, d) => {
+    // לא לאפשר לבחור תאריך מהעבר
+    if (iso < todayIso) return;
     const dayAppts = appointments.filter((a) => a.date === iso);
     if (onDaySelect) {
       onDaySelect(iso, dayAppts);
@@ -66,10 +71,11 @@ export default function Calendar({ appointments, onDaySelect }) {
         {days.map(({ d, iso, busy, inMonth }) => (
           <button
             key={iso}
-            onClick={() => handleClick(iso)}
+            onClick={() => handleClick(iso, d)}
             className={`${styles.day} ${busy ? styles.busy : ""} ${
               inMonth ? "" : styles.out
             }`}
+            disabled={iso < todayIso}
           >
             {d.getDate()}
           </button>

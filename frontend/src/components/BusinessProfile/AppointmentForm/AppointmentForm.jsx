@@ -15,6 +15,9 @@ export default function AppointmentForm({
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const now = new Date();
+  const isToday = date === now.toISOString().slice(0, 10);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -28,7 +31,14 @@ export default function AppointmentForm({
     const hour = h.toString().padStart(2, "0") + ":00";
     hours.push(hour);
   }
-  const freeHours = hours.filter((h) => !takenSlots.includes(h));
+  // שעות פנויות ועתידיות (אם היום - רק משעה נוכחית והלאה)
+  const freeHours = hours.filter((h) => {
+    if (isToday) {
+      const hourNum = Number(h.split(":")[0]);
+      return !takenSlots.includes(h) && hourNum >= now.getHours();
+    }
+    return !takenSlots.includes(h);
+  });
 
   return (
     <div className={styles.formBackdrop}>
