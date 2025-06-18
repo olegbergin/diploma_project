@@ -62,7 +62,12 @@ router.post("/", async (req, res) => {
        VALUES (?,?,?,?,?,?)`,
       [customer_id, business_id, service_id, datetime, statusToSet, notes]
     );
-    res.status(201).json({ message: "Appointment request sent", appointmentId: result.insertId });
+    res
+      .status(201)
+      .json({
+        message: "Appointment request sent",
+        appointmentId: result.insertId,
+      });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "DB error" });
@@ -122,6 +127,44 @@ router.post("/:id/cancel", async (req, res) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
     res.json({ message: "Appointment cancelled successfully" });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "DB error" });
+  }
+});
+
+/**
+ * מחזיר את כל התורים של משתמש מסוים (עבור לוח הפרופיל האישי)
+ */
+router.get("/user/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const { type } = req.query; // type יכול להיות: upcoming, past, canceled
+
+  let whereStatus = "";
+  let params = [userId];
+
+  if (type === "upcoming") {
+    whereStatus = "AND status = 'approved' AND appointment_datetime >= NOW()";
+  } else if (type === "past") {
+    whereStatus = "AND status = 'approved' AND appointment_datetime < NOW()";
+  } else if (type === "canceled") {
+    whereStatus = "AND status = 'cancelled'";
+  }
+
+  try {
+    const [rows] = await db.query(
+      `
+      SELECT a.*, b.name AS business_name, s.service_name
+      FROM appointments a
+      LEFT JOIN businesses b ON a.business_id = b.business_id
+      LEFT JOIN services s ON a.service_id = s.service_id
+      WHERE a.customer_id = ?
+      ${whereStatus}
+      ORDER BY a.appointment_datetime DESC
+      `,
+      params
+    );
+    res.json(rows);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "DB error" });

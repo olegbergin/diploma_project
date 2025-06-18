@@ -1,16 +1,20 @@
-// backend/routes/auth.js (new, simplified version)
+// backend/routes/auth.js
+// ------------------------------------------------------------
+// User Authentication Routes (Login & Register)
+// ------------------------------------------------------------
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-// Get the database promise interface from the singleton
-const db = require("../dbSingleton").getPromise(); // Use our new method!
+// קישור לממשק ההבטחות של בסיס הנתונים (Promise-based DB singleton)
+const db = require("../dbSingleton").getPromise();
 
 const JWT_SECRET = process.env.JWT_SECRET || "my_name_is_oleg";
 
-// --- User Registration (Refactored with async/await) ---
+// ============================================================
+// User Registration (רישום משתמש חדש)
+// ============================================================
 router.post("/register", async (req, res) => {
-  // <-- Add async
   const {
     first_name,
     last_name,
@@ -19,21 +23,25 @@ router.post("/register", async (req, res) => {
     password,
     role = "customer",
   } = req.body;
+
   if (!first_name || !last_name || !email || !password) {
-    return res.status(400).json({ error: "Missing required fields." });
+    return res.status(400).json({ error: "Missing required fields." }); // חסרים שדות חובה
   }
 
   try {
-    // 1. Hash the password
+    // 1. Hash the password (הצפנת סיסמה)
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 2. Insert the new user into the database
-    const sql = `INSERT INTO users (first_name, last_name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?, ?)`;
+    // 2. Insert new user to the database (הוספת משתמש חדש)
+    const sql = `
+      INSERT INTO users (first_name, last_name, email, phone, password_hash, role)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
     const params = [first_name, last_name, email, phone, hashedPassword, role];
 
-    const [result] = await db.query(sql, params); // <-- Use await
+    const [result] = await db.query(sql, params);
 
-    // 3. Send a success response
+    // 3. Return success (החזרת מזהה משתמש)
     res.status(201).json({
       message: "User registered successfully",
       userId: result.insertId,
@@ -41,41 +49,57 @@ router.post("/register", async (req, res) => {
   } catch (err) {
     console.error("Error during registration:", err);
     if (err.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({ error: "Email already exists." });
+      return res.status(409).json({ error: "Email already exists." }); // אימייל קיים כבר
     }
     res.status(500).json({ error: "Failed to register user." });
   }
 });
 
-// --- User Login (Refactored with async/await) ---
+// ============================================================
+// User Login (התחברות משתמש)
+// ============================================================
 router.post("/login", async (req, res) => {
-  // <-- Add async
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ error: "Email and password are required." });
+    return res.status(400).json({ error: "Email and password are required." }); // יש להזין אימייל וסיסמה
   }
 
   try {
-    // 1. Find the user by email
-    const sql = `SELECT user_id, first_name, last_name, email, password_hash, role FROM users WHERE email = ?`;
-    const [results] = await db.query(sql, [email]); // <-- Use await
+    // 1. Find the user by email (שליפת משתמש לפי אימייל)
+    const sql = `
+      SELECT user_id, first_name, last_name, email, password_hash, role
+      FROM users WHERE email = ?
+    `;
+    const [results] = await db.query(sql, [email]);
 
     if (results.length === 0) {
-      return res.status(401).json({ error: "Invalid credentials." });
+      return res.status(401).json({ error: "Invalid credentials." }); // אימייל לא קיים
     }
     const user = results[0];
 
-    // 2. Compare the provided password with the stored hash
-    const isMatch = await bcrypt.compare(password, user.password_hash); // <-- Use await
+    // 2. Compare password hash (בדיקת סיסמה)
+    const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials." });
+      return res.status(401).json({ error: "Invalid credentials." }); // סיסמה לא נכונה
     }
 
-    // 3. Create the JWT payload and token
+    // 3. If the user is business, fetch their business_id (אם המשתמש בעל עסק, נשלוף את מזהה העסק)
+    let businessId = null;
+    if (user.role === "business") {
+      const [businessRows] = await db.query(
+        "SELECT business_id FROM businesses WHERE owner_id = ? LIMIT 1",
+        [user.user_id]
+      );
+      if (businessRows.length) {
+        businessId = businessRows[0].business_id;
+      }
+    }
+
+    // 4. Create the JWT payload and token (יצירת טוקן התחברות)
     const payload = { userId: user.user_id, role: user.role };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
 
-    // 4. Send the successful response
+    // 5. Return user data with businessId if relevant (החזרת נתוני משתמש כולל מזהה עסק אם יש)
     res.json({
       message: "Login successful",
       token: token,
@@ -85,6 +109,7 @@ router.post("/login", async (req, res) => {
         last_name: user.last_name,
         email: user.email,
         role: user.role,
+        businessId: businessId, // מזהה עסק (רק לבעלים)
       },
     });
   } catch (err) {

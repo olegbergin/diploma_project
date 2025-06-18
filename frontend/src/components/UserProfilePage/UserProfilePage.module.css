@@ -1,158 +1,201 @@
-/* src/components/UserProfilePage/UserProfilePage.module.css */
-
-/* The main container for the page, providing padding and centering the card */
-.profilePage {
-  padding: 2rem 1rem;
+.dashboardContainer {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  /* Align card to the top */
+  min-height: 85vh;
+  background: #f3e6fa;
 }
 
-/* The main white card holding all the profile content */
-.profileCard {
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  width: 100%;
-  max-width: 600px;
-  padding: 2rem;
-  box-sizing: border-box;
-}
-
-/* --- Header Section (Avatar, Name, Email) --- */
-.profileHeader {
+.sidebar {
+  width: 240px;
+  background: #fff;
+  box-shadow: 1px 0 6px rgba(180,100,200,0.09);
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 2rem;
+  padding: 32px 16px 24px 16px;
+  border-radius: 18px 0 0 18px;
+  z-index: 100;
+}
+
+.profileBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 36px;
+  gap: 8px;
 }
 
 .avatar {
-  width: 100px;
-  height: 100px;
+  width: 86px;
+  height: 86px;
   border-radius: 50%;
-  /* Makes it a circle */
-  background-color: #a6e3a1;
-  /* Your primary accent color */
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.5rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
+  background: #c9b2f5;
+  object-fit: cover;
+  margin-bottom: 6px;
+  border: 3px solid #eee6f7;
+  box-shadow: 0 2px 8px #c9b2f522;
 }
 
-.profileHeader h2 {
-  font-size: 1.8rem;
-  margin: 0;
-  color: #333;
-}
-
-.email {
-  font-size: 1rem;
-  color: #777;
-  margin-top: 0.25rem;
-}
-
-/* --- Details Form Section --- */
-.detailsForm h3,
-.actionsSection h3 {
-  font-size: 1.2rem;
-  color: #333;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #eee;
-}
-
-.fieldGroup {
-  margin-bottom: 1.5rem;
-}
-
-.fieldGroup label {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #555;
-  margin-bottom: 0.5rem;
-}
-
-/* When in view mode, inputs are disabled. Let's make them look like plain text. */
-.detailsForm input:disabled {
-  background-color: transparent;
-  border-color: transparent;
-  padding-left: 0;
-  padding-right: 0;
-  color: #333;
-  /* Make text darker */
-  cursor: default;
-  box-shadow: none;
-}
-
-.editActions {
+.username {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #444;
   text-align: center;
-  margin-top: 1rem;
+  margin-bottom: 0;
+  margin-top: 0;
+  letter-spacing: 0.5px;
 }
 
-.saveCancelGroup {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-
-/* Specific style for the cancel button to give it a secondary look */
-.cancelButton {
-  background-color: #f0f0f0;
-  color: #555;
-  border: 1px solid #ccc;
-}
-
-.cancelButton:hover {
-  background-color: #e0e0e0;
-}
-
-/* --- Account Actions Section --- */
-.actionsSection {
-  margin-top: 2.5rem;
+.navButtons {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-}
-
-.actionLink {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  text-decoration: none;
-  color: #333;
-  font-weight: 500;
-  transition: background-color 0.2s, color 0.2s;
-}
-
-.actionLink:hover {
-  background-color: #f7f7f7;
-  border-color: #ddd;
-}
-
-/* Make the Logout button stand out */
-.logoutButton {
+  gap: 16px;
   width: 100%;
-  justify-content: center;
-  font-size: 1rem;
-  color: #d9363e;
-  /* Red for destructive action */
-  background-color: #fff;
-  border-color: #ffc2c3;
+  align-items: center;
 }
 
-.logoutButton:hover {
-  background-color: #fff5f5;
-  color: #d9363e;
-  border-color: #d9363e;
+.navButtons button {
+  width: 100%;
+  background: #f7eafd;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 0;
+  font-size: 1.08rem;
+  color: #673ab7;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
 }
+
+.navButtons button:hover,
+.navButtons button.active,
+.navButtons button:focus {
+  background: #c9b2f5;
+  color: #fff;
+}
+
+.active {
+  background: #8f6ad8 !important;
+  color: #fff !important;
+}
+
+.mainPanel {
+  flex: 1;
+  background: #fff;
+  margin: 32px 0 32px 32px;
+  padding: 36px;
+  border-radius: 20px;
+  box-shadow: 0 2px 14px #c9b2f527;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-x: auto;
+}
+
+/* Drawer for mobile */
+.moreBtn {
+  display: none;
+  position: fixed;
+  top: 22px;
+  right: 20px;
+  z-index: 1051;
+  font-size: 2.2rem;
+  background: #c9b2f5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  box-shadow: 0 2px 14px #c9b2f522;
+  cursor: pointer;
+}
+
+.drawerOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(70, 20, 80, 0.18);
+  z-index: 1050;
+}
+
+.mobileDrawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 78vw;
+  max-width: 325px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -3px 0 20px #a786e7a1;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 14px 0 14px;
+  animation: slideDrawer 0.25s;
+}
+@keyframes slideDrawer {
+  from { transform: translateX(105%); }
+  to   { transform: translateX(0); }
+}
+
+.logoutMobile {
+  background: #ffeaea;
+  color: #d9363e;
+  border: 1px solid #ffd6e2;
+  border-radius: 10px;
+  width: 90%;
+  padding: 10px 0;
+  font-weight: 600;
+  font-size: 1.04rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sidebar {
+    display: none;
+  }
+  .mainPanel {
+    margin: 22px 6px 20px 6px;
+    padding: 18px 5px 16px 5px;
+    border-radius: 18px;
+    min-height: 340px;
+  }
+  .moreBtn {
+    display: inline-block;
+  }
+}
+@media (min-width: 901px) {
+  .mobileDrawer,
+  .drawerOverlay,
+  .moreBtn {
+    display: none !important;
+  }
+}
+/* --- Mobile Drawer buttons style (overwrite default) --- */
+.mobileDrawer button {
+  width: 100%;
+  margin-bottom: 12px;
+  background: #f7eafd;
+  color: #673ab7;
+  font-size: 1.04rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 11px;
+  padding: 13px 0;
+  box-shadow: 0 1px 8px #c9b2f525;
+  transition: background 0.18s, color 0.18s;
+}
+
+.mobileDrawer button:last-child {
+  margin-bottom: 0;
+}
+
+/* מצב נבחר (active) */
+.mobileDrawer button.active,
+.mobileDrawer button:focus {
+  background: #c9b2f5;
+  color: #fff;
+  outline: none;
+}
+
