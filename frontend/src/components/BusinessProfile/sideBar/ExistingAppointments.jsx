@@ -27,7 +27,11 @@ export default function ExistingAppointments({
 
   const filtered = categorized
     .filter((a) => a.status === activeTab)
-    .filter((a) => a.notes?.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter(
+      (a) =>
+        a.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     .sort((a, b) => a.dateTime - b.dateTime);
 
   const formatForMySQL = (dateStr, timeStr) => {
@@ -39,18 +43,18 @@ export default function ExistingAppointments({
       alert("נא למלא תאריך ושעה");
       return;
     }
-
     const updated = {
       ...editing,
       appointment_datetime: formatForMySQL(newDate, newTime),
     };
-
     onUpdate?.(updated);
     setEditing(null);
   };
 
   return (
     <div className={styles.wrapper}>
+      <h2 className={styles.title}>ניהול תורים</h2>
+
       {/* טאבים */}
       <div className={styles.tabs}>
         <button
@@ -84,34 +88,42 @@ export default function ExistingAppointments({
 
       {/* רשימת תורים */}
       <ul className={styles.list}>
+        {filtered.length === 0 && (
+          <li className={styles.empty}>אין תורים להצגה</li>
+        )}
         {filtered.map((a) => (
-          <li key={a.appointment_id}>
+          <li key={a.appointment_id} className={styles.item}>
             <div>
-              <strong>{a.notes}</strong> <br />
+              <strong>{a.notes || "—"}</strong>
+              <br />
               {a.dateTime.toLocaleString()}
             </div>
             {activeTab === "upcoming" && (
-              <button
-                onClick={() => {
-                  setEditing(a);
-                  const iso = a.dateTime.toISOString();
-                  setNewDate(iso.slice(0, 10)); // YYYY-MM-DD
-                  setNewTime(iso.slice(11, 16)); // HH:MM
-                }}
-              >
-                ערוך
-              </button>
+              <div className={styles.actions}>
+                <button
+                  onClick={() => {
+                    setEditing(a);
+                    const iso = a.dateTime.toISOString();
+                    setNewDate(iso.slice(0, 10)); // YYYY-MM-DD
+                    setNewTime(iso.slice(11, 16)); // HH:MM
+                  }}
+                  className={styles.edit}
+                >
+                  ערוך
+                </button>
+                <button onClick={() => onCancel?.(a)} className={styles.cancel}>
+                  בטל תור
+                </button>
+              </div>
             )}
           </li>
         ))}
       </ul>
 
-      {/* פופ-אפ עריכה */}
+      {/* עריכת תור – חלק מהדף, לא מודאל */}
       {editing && (
-        <div className={styles.popup}>
+        <div className={styles.editRow}>
           <h3>עריכת תור</h3>
-          <p>{editing.notes}</p>
-
           <label>
             תאריך:
             <input
@@ -120,7 +132,6 @@ export default function ExistingAppointments({
               onChange={(e) => setNewDate(e.target.value)}
             />
           </label>
-
           <label>
             שעה:
             <input
@@ -129,11 +140,9 @@ export default function ExistingAppointments({
               onChange={(e) => setNewTime(e.target.value)}
             />
           </label>
-
-          <div className={styles.popupButtons}>
+          <div className={styles.editButtons}>
             <button onClick={handleSave}>שמור</button>
-            <button onClick={() => onCancel?.(editing)}>בטל תור</button>
-            <button onClick={() => setEditing(null)}>סגור</button>
+            <button onClick={() => setEditing(null)}>ביטול</button>
           </div>
         </div>
       )}

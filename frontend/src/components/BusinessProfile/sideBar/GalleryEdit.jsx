@@ -20,8 +20,8 @@ export default function GalleryEdit({ gallery = [], onSave }) {
   };
 
   return (
-    <div className={styles.container}>
-      <h2>עריכת גלריה</h2>
+    <section className={styles.container}>
+      <h2 className={styles.title}>עריכת גלריה</h2>
 
       <div className={styles.grid}>
         {images.map((src, i) => (
@@ -32,6 +32,13 @@ export default function GalleryEdit({ gallery = [], onSave }) {
             </button>
           </div>
         ))}
+        <div
+          className={styles.addBox}
+          onClick={() => fileInputRef.current.click()}
+        >
+          <span>+</span>
+          <span>הוסף תמונות</span>
+        </div>
       </div>
 
       <input
@@ -42,10 +49,9 @@ export default function GalleryEdit({ gallery = [], onSave }) {
         style={{ display: "none" }}
         onChange={handleAdd}
       />
-      <button onClick={() => fileInputRef.current.click()}>העלאת תמונות</button>
       <button onClick={handleSave} className={styles.saveBtn}>
-        שמור
+        שמור שינויים
       </button>
-    </div>
+    </section>
   );
 }

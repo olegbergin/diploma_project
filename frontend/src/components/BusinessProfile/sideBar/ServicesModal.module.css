@@ -1,181 +1,137 @@
-.modalBackdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: fadeIn 0.2s;
-}
+/* ServicesPanel.module.css */
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-.modal {
-  background: #fff;
+.wrapper {
+  background: linear-gradient(120deg, #f6f3fb 70%, #f0eafd 100%);
   border-radius: 18px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.13);
-  padding: 36px 28px;
-  min-width: 340px;
-  max-width: 98vw;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  animation: popUp 0.22s;
+  padding: 28px 18px 22px;
+  margin: 0 auto;
+  max-width: 540px;
+  box-shadow: 0 4px 18px 0 #b778e033, 0 1px 4px 0 #b778e014;
+  direction: rtl;
 }
 
-@keyframes popUp {
-  from { transform: scale(0.98) translateY(30px); opacity: 0.7; }
-  to   { transform: scale(1) translateY(0); opacity: 1; }
-}
-
-.modal h3 {
-  margin-top: 0;
-  margin-bottom: 22px;
-  font-size: 1.3em;
-  color: #1a3760;
-  letter-spacing: 0.5px;
+.heading {
+  color: #9b3adb;
   text-align: center;
+  font-size: 1.7em;
+  margin-bottom: 22px;
+  letter-spacing: 0.5px;
+  font-weight: 700;
 }
 
-.modal ul {
+.servicesList {
   list-style: none;
-  padding: 0;
   margin: 0 0 18px 0;
+  padding: 0;
 }
 
-.modal li {
+.serviceRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 14px;
+  margin-bottom: 13px;
   background: #f6f8fc;
   border-radius: 8px;
   padding: 6px 8px;
   transition: background 0.17s;
 }
 
-.modal li:focus-within {
-  background: #eaf2ff;
+.serviceRow:focus-within {
+  background: #efe5fc;
 }
 
-.modal input[type="text"] {
+.nameInput {
   flex: 2;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #c9e5ff;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1.2px solid #dcbdf5;
+  background: #faf3fe;
   font-size: 1em;
+  direction: rtl;
+  color: #5b2376;
 }
 
-.modal input[type="number"] {
-  width: 72px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #c9e5ff;
+.durationSelect {
+  width: 110px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  border: 1.2px solid #e6d6f7;
+  background: #fff9ff;
   font-size: 1em;
+  direction: rtl;
+  color: #7c37a7;
 }
 
-.modal .removeBtn {
-  background: none;
+.removeBtn {
+  background: transparent;
   border: none;
   color: #ff4160;
-  font-size: 1.2em;
+  font-size: 1.1em;
   cursor: pointer;
-  transition: color 0.2s;
-  margin-right: 5px;
+  padding: 2px 7px;
+  border-radius: 7px;
+  transition: background 0.12s;
 }
-.modal .removeBtn:hover {
-  color: #c3002f;
+.removeBtn:hover {
+  background: #fff3f7;
 }
 
 .addServiceRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-  margin-bottom: 18px;
+  gap: 13px;
+  margin: 20px 0 0 0;
 }
 
-.addServiceRow input[type="text"],
-.addServiceRow input[type="number"] {
-  background: #f7faff;
-}
-
-.addServiceRow button {
-  background: #0172af;
-  color: white;
+.addBtn {
+  background: linear-gradient(90deg, #bd68e5 70%, #ed4cf6 100%);
+  color: #fff;
   border: none;
-  border-radius: 7px;
-  padding: 7px 16px;
+  border-radius: 10px;
   font-size: 1em;
-  margin-right: 6px;
+  padding: 7px 24px;
   cursor: pointer;
-  transition: background 0.2s;
+  font-weight: 600;
+  transition: background 0.13s, transform 0.13s;
 }
-.addServiceRow button:hover {
-  background: #1a3760;
+.addBtn:hover {
+  background: linear-gradient(90deg, #da9ef3 80%, #f8c1fb 100%);
+  transform: scale(1.03);
 }
 
 .bottomBtns {
-  margin-top: 14px;
   display: flex;
-  justify-content: center;
-  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
 }
 
-.bottomBtns button {
-  background: #e6f2ff;
-  color: #1a3760;
+.saveBtn {
+  background: linear-gradient(90deg, #7506ad 80%, #a12fbc 100%);
+  color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 8px 20px;
+  border-radius: 10px;
   font-size: 1em;
+  padding: 10px 32px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background 0.18s;
+  font-weight: 700;
+  transition: background 0.13s, transform 0.13s;
 }
-.bottomBtns button:hover {
-  background: #0172af;
-  color: white;
+.saveBtn:hover {
+  background: linear-gradient(90deg, #ad67d2 80%, #d196e8 100%);
+  transform: scale(1.03);
 }
-.serviceRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  background: #f6f8fc;
-  border-radius: 8px;
-  padding: 6px 8px;
-}
-.nameInput {
-  flex: 2;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #c9e5ff;
-  font-size: 1em;
-  direction: rtl;
-}
-.durationSelect {
-  width: 110px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #c9e5ff;
-  font-size: 1em;
-  direction: rtl;
-}
-.addBtn {
-  background: #0172af;
-  color: white;
-  border: none;
-  border-radius: 7px;
-  padding: 7px 16px;
-  font-size: 1em;
-  cursor: pointer;
-  margin-left: 6px;
-}
-.addBtn:hover {
-  background: #1a3760;
+
+@media (max-width: 600px) {
+  .wrapper {
+    max-width: 98vw;
+    padding: 14px 2vw 18px;
+  }
+  .serviceRow,
+  .addServiceRow {
+    flex-direction: column;
+    gap: 9px;
+  }
+  .bottomBtns {
+    justify-content: center;
+  }
 }

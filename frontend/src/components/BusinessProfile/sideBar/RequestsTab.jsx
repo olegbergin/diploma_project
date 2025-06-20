@@ -8,6 +8,7 @@ export default function RequestsTab({ businessId, onAction }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
 
   const monthIso = new Date().toISOString().slice(0, 7);
 
@@ -16,7 +17,6 @@ export default function RequestsTab({ businessId, onAction }) {
       setLoading(false);
       return;
     }
-
     setLoading(true);
     setError(null);
 
@@ -28,88 +28,94 @@ export default function RequestsTab({ businessId, onAction }) {
 
     axiosInstance
       .get("/appointments", { params })
-      .then((response) => {
-        setRequests(response.data);
-      })
+      .then((response) => setRequests(response.data))
       .catch((err) => {
         console.error("Failed to fetch appointment requests:", err);
-        setError("Could not load requests. Please try again later.");
+        setError("לא ניתן לטעון בקשות חדשות");
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   }, [businessId, monthIso]);
 
-  // --- תיקן כאן את ה-URL ---
+  // שינוי סטטוס בקשה (אישור/דחייה)
   const handleAction = async (appointmentId, newStatus) => {
     try {
       await axiosInstance.put(`/appointments/${appointmentId}/status`, {
         status: newStatus,
       });
-
-      setRequests((prevRequests) =>
-        prevRequests.filter((req) => req.appointment_id !== appointmentId)
+      setRequests((prev) =>
+        prev.filter((req) => req.appointment_id !== appointmentId)
       );
-
-      if (onAction) {
-        onAction();
-      }
-    } catch (err) {
-      console.error(`Failed to ${newStatus} appointment:`, err);
-      alert(`שגיאה בעדכון הבקשה. נסה שוב.`);
+      if (onAction) onAction();
+    } catch (error) {
+      alert("שגיאה בעדכון הבקשה. נסו שוב.");
     }
   };
 
-  if (loading) {
-    return <div className={styles.loader}>טוען בקשות…</div>;
-  }
-
-  if (error) {
-    return <div className={styles.empty}>{error}</div>;
-  }
-
-  if (requests.length === 0) {
-    return <div className={styles.empty}>אין בקשות חדשות.</div>;
-  }
+  // חיפוש פשוט
+  const filteredRequests = requests.filter(
+    (req) =>
+      (req.notes || "").toLowerCase().includes(search.toLowerCase()) ||
+      (req.customer_id + "").includes(search) ||
+      (req.service_id + "").includes(search)
+  );
 
   return (
     <div className={styles.wrapper}>
-      <h3 className={styles.title}>בקשות תור חדשות</h3>
-      <ul className={styles.list}>
-        {requests.map((req) => (
-          <li key={req.appointment_id} className={styles.card}>
-            <div>
-              <span className={styles.date}>
-                {req.date} {req.time}
-              </span>
-              <span className={styles.label}>לקוח:</span>{" "}
-              <span>{req.customer_id}</span>
-              <span className={styles.label}>שירות:</span>{" "}
-              <span>{req.service_id}</span>
-              {req.notes && (
-                <>
-                  <span className={styles.label}>הערות:</span>{" "}
-                  <span>{req.notes}</span>
-                </>
-              )}
-            </div>
-            <div className={styles.actions}>
-              <button
-                className={styles.approve}
-                onClick={() => handleAction(req.appointment_id, "scheduled")}
-              >
-                אשר
-              </button>
-              <button
-                className={styles.decline}
-                onClick={() => handleAction(req.appointment_id, "declined")}
-              >
-                דחה
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <h2 className={styles.title}>בקשות תור חדשות</h2>
+      <input
+        className={styles.search}
+        placeholder="חיפוש לפי לקוח/הערה"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      {loading ? (
+        <div className={styles.loader}>טוען בקשות…</div>
+      ) : error ? (
+        <div className={styles.empty}>{error}</div>
+      ) : filteredRequests.length === 0 ? (
+        <div className={styles.empty}>אין בקשות חדשות.</div>
+      ) : (
+        <ul className={styles.list}>
+          {filteredRequests.map((req) => (
+            <li key={req.appointment_id} className={styles.item}>
+              <div>
+                <div className={styles.date}>
+                  {req.date} {req.time}
+                </div>
+                <div>
+                  <span className={styles.label}>לקוח:</span>{" "}
+                  <span>{req.customer_id}</span>
+                </div>
+                <div>
+                  <span className={styles.label}>שירות:</span>{" "}
+                  <span>{req.service_id}</span>
+                </div>
+                {req.notes && (
+                  <div>
+                    <span className={styles.label}>הערות:</span>{" "}
+                    <span>{req.notes}</span>
+                  </div>
+                )}
+              </div>
+              <div className={styles.actions}>
+                <button
+                  className={styles.approve}
+                  onClick={() => handleAction(req.appointment_id, "scheduled")}
+                >
+                  אשר
+                </button>
+                <button
+                  className={styles.decline}
+                  onClick={() => handleAction(req.appointment_id, "declined")}
+                >
+                  דחה
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

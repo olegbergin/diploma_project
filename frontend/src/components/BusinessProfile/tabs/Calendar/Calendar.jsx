@@ -1,7 +1,8 @@
 import { useState } from "react";
 import styles from "./Calendar.module.css";
 
-export default function Calendar({ appointments, onDaySelect }) {
+// נוספה ברירת מחדל ל־appointments
+export default function Calendar({ appointments = [], onDaySelect }) {
   const [current, setCurrent] = useState(() => {
     const d = new Date();
     d.setDate(1);
@@ -24,7 +25,7 @@ export default function Calendar({ appointments, onDaySelect }) {
     const d = new Date(firstGridDay);
     d.setDate(firstGridDay.getDate() + i);
     const iso = d.toISOString().slice(0, 10);
-    const busy = appointments.some((a) => a.date === iso);
+    const busy = appointments.some((a) => a.date === iso); // עכשיו בטוח!
     return { d, iso, busy, inMonth: d.getMonth() === current.getMonth() };
   });
 

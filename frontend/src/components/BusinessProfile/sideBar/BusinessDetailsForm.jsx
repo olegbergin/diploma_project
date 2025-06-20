@@ -1,21 +1,30 @@
 import { useState } from "react";
 import styles from "./‎BusinessDetailsForm.module.css";
 
-/**
- * מודאל לעריכת פרטי העסק
- * props:
- *  – initialData  (אובייקט העסק הנוכחי)
- *  – onSave(data) (נקרא בלחיצה על “שמור” עם הערכים המעודכנים)
- *  – onClose()    (סגירת המודאל ללא שמירה)
- */
-export default function BusinessDetailsForm({ initialData, onSave, onClose }) {
+const CATEGORY_OPTIONS = [
+  "מספרה",
+  "מניקור פדיקור",
+  "קוסמטיקה",
+  "קעקועים",
+  "עיסוי וטיפול",
+  "חיות מחמד",
+  "ספורט",
+  "בריאות",
+  "מסעדה",
+  "סלון יופי",
+  "אחר",
+];
+
+export default function BusinessDetailsForm({ initialData, onSave }) {
   const [form, setForm] = useState({
     name: initialData.name ?? "",
     category: initialData.category ?? "",
     description: initialData.description ?? "",
-    hours: initialData.hours ?? "",
+    schedule: initialData.schedule ?? "",
     address: initialData.address ?? "",
-    image: initialData.image_url ?? "",
+    phone: initialData.phone ?? "",
+    email: initialData.email ?? "",
+    image_url: initialData.image_url ?? "",
   });
 
   function handleChange(e) {
@@ -32,81 +41,114 @@ export default function BusinessDetailsForm({ initialData, onSave, onClose }) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => setForm((p) => ({ ...p, image: reader.result }));
+    reader.onloadend = () =>
+      setForm((p) => ({ ...p, image_url: reader.result }));
     reader.readAsDataURL(file);
   }
 
   return (
-    <div className={styles.backdrop} onClick={onClose}>
-      <form
-        className={styles.card}
-        onClick={(e) => e.stopPropagation()}
-        onSubmit={handleSubmit}
-      >
-        <h2>עריכת פרטי העסק</h2>
-
-        <label>
-          שם העסק
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label>
-          קטגוריה
-          <input
-            name="category"
-            value={form.category}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label>
-          תיאור
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            rows={3}
-          />
-        </label>
-
-        <label>
-          שעות פתיחה
-          <input
-            name="hours"
-            value={form.hours}
-            onChange={handleChange}
-            placeholder="א-ה 08:00-17:00"
-          />
-        </label>
-
-        <label>
-          כתובת
-          <input name="address" value={form.address} onChange={handleChange} />
-        </label>
-
-        <label>
-          תמונת פרופיל
-          <input type="file" accept="image/*" onChange={handleImage} />
-        </label>
-
-        {form.image && (
-          <img src={form.image} alt="preview" className={styles.preview} />
-        )}
-
-        <div className={styles.actions}>
-          <button type="submit" className={styles.save}>
-            שמור
-          </button>
-          <button type="button" className={styles.cancel} onClick={onClose}>
-            בטל
-          </button>
+    <form className={styles.formPage} onSubmit={handleSubmit}>
+      <h2 className={styles.formTitle}>עריכת פרטי העסק</h2>
+      <div className={styles.formColumns}>
+        {/* טור ימין */}
+        <div className={styles.formColumn}>
+          <label>
+            שם העסק
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              className={styles.input}
+            />
+          </label>
+          <label>
+            קטגוריה
+            <select
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              required
+              className={styles.select}
+            >
+              <option value="">בחר קטגוריה...</option>
+              {CATEGORY_OPTIONS.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            תיאור
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              rows={3}
+              className={styles.textarea}
+            />
+          </label>
+          <label>
+            שעות פתיחה
+            <input
+              name="schedule"
+              value={form.schedule}
+              onChange={handleChange}
+              placeholder="א-ה 08:00-17:00"
+              className={styles.input}
+            />
+          </label>
         </div>
-      </form>
-    </div>
+        {/* טור שמאל */}
+        <div className={styles.formColumn}>
+          <label>
+            טלפון עסקי
+            <input
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              type="tel"
+              className={styles.input}
+            />
+          </label>
+          <label>
+            מייל עסקי
+            <input
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              type="email"
+              className={styles.input}
+            />
+          </label>
+          <label>
+            כתובת
+            <input
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              className={styles.input}
+            />
+          </label>
+          <label>
+            תמונת פרופיל
+            <input type="file" accept="image/*" onChange={handleImage} />
+          </label>
+          {form.image_url && (
+            <img
+              src={form.image_url}
+              alt="preview"
+              className={styles.preview}
+            />
+          )}
+        </div>
+      </div>
+      <div className={styles.formActionsCenter}>
+        <button type="submit" className={styles.save}>
+          שמור
+        </button>
+      </div>
+    </form>
   );
 }

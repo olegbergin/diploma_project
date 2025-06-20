@@ -1,9 +1,98 @@
-.backdrop { position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; justify-content:center; align-items:center; z-index:1000; }
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(150, 96, 212, 0.13); /* רקע סגלגל חצי שקוף */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
 
-.card { background:#fff; width:460px; padding:24px 32px; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,.15); display:flex; flex-direction:column; gap:20px; direction:rtl; }
+.card {
+  background: linear-gradient(120deg, #f6f3fb 60%, #e9f4fd 100%);
+  width: 600px;
+  max-width: 96vw;
+  padding: 36px 36px 30px;
+  border-radius: 32px;
+  box-shadow:
+    0 8px 40px 0 rgba(110, 65, 160, 0.13),
+    0 2px 7px 0 rgba(90, 61, 146, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  direction: rtl;
+  border: 1.8px solid #dad0ef;
+  position: relative;
+  animation: fadeIn 0.18s;
+}
 
-.dot { display:block; margin-inline:auto; margin-top:2px; width:6px; height:6px; border-radius:50%; background:#0077cc; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(38px);}
+  to   { opacity: 1; transform: translateY(0);}
+}
 
-.list { text-align:right; }
+.card h2, .card h3 {
+  color: #8d28c6;
+  margin-bottom: 8px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
 
-.closeBtn { align-self:flex-end; background:#0077cc; color:#fff; border:none; padding:8px 18px; border-radius:6px; cursor:pointer }
+.dot {
+  display: block;
+  margin-inline: auto;
+  margin-top: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(120deg, #8d28c6 60%, #38b7ff 100%);
+}
+
+.list {
+  text-align: right;
+  background: #faf7fd;
+  border-radius: 13px;
+  box-shadow: 0 1px 6px #dfd2f944;
+  padding: 16px 16px 12px 8px;
+}
+
+.closeBtn {
+  align-self: flex-end;
+  background: linear-gradient(90deg, #b86ff4 70%, #8d28c6 100%);
+  color: #fff;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 1.05em;
+  font-weight: 600;
+  box-shadow: 0 1px 7px #af7ed13a;
+  margin-top: 18px;
+  transition: background 0.15s, transform 0.13s;
+}
+
+.closeBtn:hover, .closeBtn:focus {
+  background: linear-gradient(90deg, #c5b6f3 80%, #a178de 100%);
+  transform: scale(1.05);
+}
+
+/* Responsive for mobile */
+@media (max-width: 700px) {
+  .card {
+    width: 99vw;
+    min-width: unset;
+    padding: 14px 2vw 16px;
+    border-radius: 14px;
+    gap: 12px;
+  }
+  .list {
+    padding: 10px 4px 8px 3px;
+    border-radius: 9px;
+  }
+  .closeBtn {
+    padding: 14px 0;
+    width: 100%;
+    border-radius: 11px;
+  }
+}

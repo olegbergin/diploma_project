@@ -1,353 +1,273 @@
-/* פריסת עמוד מלא */
 .pageLayout {
   display: flex;
   flex-direction: row-reverse;
   min-height: 85vh;
-  background: #f3e6fa;
+  background: #f4eafd;
+  direction: rtl;
 }
 
 /* -------- Sidebar -------- */
 .sidebar {
-  width: 240px;
+  width: 210px;
   background: #fff;
-  box-shadow: 1px 0 6px rgba(180,100,200,0.09);
+  box-shadow: 2px 0 13px #d8c6f766;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px 16px 24px 16px;
-  border-radius: 18px 0 0 18px;
+  padding: 28px 12px 24px 12px;
+  border-radius: 16px 0 0 16px;
   z-index: 100;
-}
-
-.profileImage {
-  width: 86px;
-  height: 86px;
-  border-radius: 50%;
-  background: #c9b2f5;
-  object-fit: cover;
-  margin-bottom: 6px;
-  border: 3px solid #eee6f7;
-  box-shadow: 0 2px 8px #c9b2f522;
-}
-
-.sidebarName {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #444;
-  text-align: center;
-  margin-bottom: 0;
-  margin-top: 0;
-  letter-spacing: 0.5px;
-}
-
-.navButtons, /* להוסיף אם יש לך wrapper לכפתורים */
-.sidebarButtons {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-  align-items: center;
+  min-width: 145px;
+  gap: 0.6rem;
 }
 
 .sidebarButton {
   width: 100%;
   background: #f7eafd;
   border: none;
-  border-radius: 10px;
-  padding: 13px 0;
-  font-size: 1.08rem;
-  color: #673ab7;
+  border-radius: 9px;
+  padding: 12px 0;
+  font-size: 1.03rem;
+  color: #7038b7;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.18s, color 0.18s;
+  margin-bottom: 7px;
+  transition: background 0.18s, color 0.15s, box-shadow 0.16s;
+  box-shadow: 0 1px 3px #d8c6f721;
 }
 
 .sidebarButton:hover,
 .sidebarButton.active,
 .sidebarButton:focus {
-  background: #c9b2f5;
+  background: #d8c6f7;
   color: #fff;
 }
 
-.activeTab, .active {
-  background: #8f6ad8 !important;
-  color: #fff !important;
-}
-
-.badge {
-  background: #e05252;
-  color: #fff;
-  border-radius: 50%;
-  min-width: 22px;
-  height: 22px;
-  font-size: 13.5px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  left: 12px;
-  top: 8px;
-  padding: 0 7px;
-  font-weight: 700;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.10);
-  border: 2px solid #fff;
-  transition: background 0.15s, transform 0.12s;
-}
-
-/* -------- תוכן מרכזי -------- */
+/* -------- Profile Main Content -------- */
 .profileContent {
   flex: 1;
   background: #fff;
-  margin: 32px 0 32px 32px;
-  padding: 36px;
-  border-radius: 20px;
-  box-shadow: 0 2px 14px #c9b2f527;
+  margin: 30px 0 30px 30px;
+  padding: 34px;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px #c9b2f527;
   min-height: 480px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center; 
   justify-content: flex-start;
   overflow-x: auto;
 }
 
-.title {
-  font-size: 2.1rem;
-  margin: 0 0 12px;
-  text-align: center;
-  font-weight: 700;
-  color: #222;
-  letter-spacing: 1.2px;
-}
-.category {
-  color: #5c87a3;
-  margin-bottom: 10px;
-  text-align: center;
-  font-weight: 500;
-  letter-spacing: 1px;
-}
-.description {
-  margin: 21px 0;
-  font-size: 17px;
-  line-height: 1.7;
-  text-align: center;
-  color: #333;
-}
-
-.tabBar {
-  display: flex;
-  direction: rtl;
-  gap: 12px;
-  margin: 34px 0 21px;
-  border-bottom: 2px solid #e2e6eb;
-}
-.tabBar button {
-  background: none;
-  border: none;
-  padding: 10px 19px 8px 19px;
-  font-size: 17px;
-  cursor: pointer;
-  border-bottom: 3px solid transparent;
-  color: #5e6d7a;
-  transition: background 0.11s, border-bottom 0.16s;
-  border-radius: 8px 8px 0 0;
-  font-weight: 500;
-}
-.tabBar button:hover {
-  background: #eaf3fa;
-}
-.activeTab {
-  border-bottom: 3px solid #673ab7;
-  font-weight: bold;
-  color: #673ab7;
-  background: #f4faff;
-}
-
-/* אזורים ותוכן */
-.section {
-  margin-top: 30px;
-  background: #fff;
-  border-radius: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  padding: 24px 22px;
-}
-.section h2 {
-  font-size: 20px;
-  border-bottom: 2px solid #c9b2f5;
-  padding-bottom: 5px;
-  margin-bottom: 10px;
-}
-.contactInfo p {
-  margin: 6px 0;
-}
-
-/* גלריות */
-.gallery {
-  display: flex;
-  gap: 13px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.gallery img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  border: 2px solid #f1f1f1;
-  transition: box-shadow 0.13s;
-}
-.gallery img:hover {
-  box-shadow: 0 6px 18px rgba(103, 58, 183, 0.13);
-}
-
-.loading {
-  text-align: center;
-  font-size: 18px;
-  color: #666;
-  margin-top: 80px;
-}
-
-/* ---- מודאל (פופ־אפ) ---- */
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.23);
+/* --- כרטיס עסקי ראשי עם תמונה --- */
+.businessHeader {
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 999;
+  gap: 36px;
+  margin-bottom: 28px;
+  background: #f7f1fd;
+  border-radius: 17px;
+  box-shadow: 0 2px 15px #e4d1fa63;
+  padding: 22px 27px;
 }
-.modalContent {
-  background: #fff;
-  border-radius: 19px;
-  padding: 36px 34px 32px 34px;
-  box-shadow: 0 8px 38px rgba(0,0,0,0.16);
-  position: relative;
-  min-width: 370px;
-  max-width: 98vw;
-  max-height: 85vh;
-  overflow-y: auto;
-  direction: rtl;
-  transition: box-shadow 0.12s;
-  border: 1.5px solid #e3e7ee;
-}
-.closeModal {
-  position: absolute;
-  top: 12px;
-  left: 16px;
-  border: none;
-  background: transparent;
-  font-size: 30px;
-  color: #444;
-  cursor: pointer;
-  font-weight: bold;
-  transition: color 0.12s;
-}
-.closeModal:hover { color: #e05252; }
 
-/* --- רספונסיביות למובייל --- */
+.businessProfileImg {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #e5daf8;
+  box-shadow: 0 1px 7px #b599e36b;
+  background: #f4eafd;
+}
+
+.businessInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.businessName {
+  font-size: 2.08rem;
+  font-weight: bold;
+  color: #7038b7;
+  margin-bottom: 2px;
+  letter-spacing: 1.2px;
+}
+
+.businessCategory {
+  color: #715abb;
+  font-size: 1.13rem;
+  margin-bottom: 2px;
+}
+
+.businessDesc {
+  color: #5e548e;
+  font-size: 1.04rem;
+  margin: 5px 0 7px;
+}
+
+.businessContact {
+  font-size: 1.03rem;
+  color: #656c7d;
+  margin-bottom: 4px;
+}
+
+.businessHours {
+  font-size: 1rem;
+  color: #693db7;
+  font-weight: 500;
+  margin-top: 3px;
+}
+
+/* ---- Tabs Bar ---- */
+.tabBar, .tabs {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 24px 0;
+  border-bottom: 2.5px solid #e8e2fa;
+  gap: 0;
+}
+
+.tabButton, .tabBar button {
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 1.16rem;
+  color: #7a63b1;
+  font-weight: 500;
+  padding: 13px 35px 12px 35px;
+  border-radius: 17px 17px 0 0;
+  margin: 0 3px;
+  cursor: pointer;
+  border-bottom: 3.5px solid transparent;
+  transition: background 0.18s, border-bottom 0.18s, color 0.14s;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.tabButton:hover, .tabBar button:hover {
+  background: #f3f0fa;
+  color: #7038b7;
+}
+
+.tabButton.activeTab, .tabBar .activeTab {
+  background: #ede2fa;
+  color: #7038b7;
+  border-bottom: 3.5px solid #a47cf2;
+  font-weight: 700;
+  box-shadow: 0 -1px 6px #a47cf220;
+}
+
+.tabContent {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+/* --- גלריה --- */
+.gallery {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.gallery img {
+  width: 105px;
+  height: 105px;
+  object-fit: cover;
+  border-radius: 11px;
+  box-shadow: 0 2px 8px rgba(111, 50, 183, 0.09);
+  border: 2px solid #f1f1f1;
+  transition: box-shadow 0.13s, border 0.16s;
+  background: #faf5ff;
+}
+.gallery img:hover {
+  box-shadow: 0 7px 22px #7d47c621;
+  border: 2.2px solid #c6a4f8;
+}
+
+/* --- Loader --- */
+.loading {
+  text-align: center;
+  font-size: 19px;
+  color: #7d69a1;
+  margin-top: 75px;
+}
+
+/* --- Side panel overlay (for forms/modal) --- */
+.sidebarPanel {
+  position: fixed;
+  inset: 0;
+  background: rgba(70, 33, 90, 0.08);
+  z-index: 3000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+.sidebarPanel > * {
+  background: #fff;
+  box-shadow: -3px 0 19px #c9b2f527;
+  padding: 36px 22px;
+  border-radius: 0 18px 18px 0;
+  min-width: 360px;
+  max-width: 100vw;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+/* --- Responsive --- */
 @media (max-width: 900px) {
   .sidebar {
     display: none;
   }
   .profileContent {
-    margin: 22px 6px 20px 6px;
-    padding: 18px 5px 16px 5px;
-    border-radius: 18px;
-    min-height: 340px;
+    margin: 13px 2px 13px 2px;
+    padding: 9px 2px 11px 2px;
+    border-radius: 12px;
   }
-  .moreBtn {
-    display: inline-block;
-  }
-}
-
-@media (min-width: 901px) {
-  .mobileDrawer,
-  .drawerOverlay,
-  .moreBtn {
-    display: none !important;
-  }
-}
-
-@media (max-width: 700px) {
-  .pageLayout {
-    flex-direction: column-reverse;
-    min-height: 100vh;
-  }
-  .sidebar {
-    flex-direction: row;
-    width: 100vw;
-    min-width: unset;
-    max-width: 100vw;
-    border-left: none;
-    border-top: 1px solid #ddd;
-    box-shadow: 0 -1px 8px rgba(0,0,0,0.06);
-    border-radius: 0 0 20px 20px;
-    padding: 12px 4px;
-    justify-content: center;
+  .businessHeader {
+    flex-direction: column;
     align-items: flex-start;
-    gap: 7px;
-    overflow-x: auto;
+    padding: 13px 7px;
+    gap: 18px;
+    margin-bottom: 17px;
   }
-  .sidebar img,
-  .sidebar .profileImage {
-    display: none;
-  }
-  .sidebarName {
-    display: none;
-  }
-  .sidebarButton {
-    min-width: 110px;
-    padding: 10px 4px;
-    font-size: 15px;
-    border-radius: 8px;
-    margin: 0 5px 0 0;
-    margin-bottom: 0;
-  }
-  .badge {
-    left: 3px;
-    top: 0;
-    font-size: 11px;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 4px;
-  }
-  .profileContent {
-    padding: 14vw 2vw 7vw 2vw;
-    min-height: unset;
-    border-radius: 0;
-  }
-  .title { font-size: 23px; }
-  .category, .description { font-size: 14px; }
-  .section {
-    padding: 15px 6px;
-    margin-top: 16px;
-    border-radius: 10px;
-  }
-  .section h2 { font-size: 17px; }
-  .tabBar {
-    gap: 4px;
-    margin: 14px 0 13px;
-  }
-  .tabBar button {
-    font-size: 14px;
-    padding: 6px 8px;
-    border-radius: 6px 6px 0 0;
+  .tabBar, .tabs {
+    margin-bottom: 14px;
   }
   .gallery img {
-    width: 67px;
-    height: 67px;
+    width: 68px;
+    height: 68px;
     border-radius: 7px;
   }
-  .modalContent {
-    min-width: 94vw;
-    max-width: 99vw;
-    padding: 18px 5vw 16px 5vw;
-    border-radius: 13px;
+  .tabButton, .tabBar button {
+    font-size: 14px;
+    padding: 8px 8px;
+    border-radius: 8px 8px 0 0;
   }
-  .closeModal {
-    top: 7px;
-    left: 10px;
-    font-size: 23px;
+}
+
+@media (max-width: 570px) {
+  .profileContent {
+    padding: 3px 1vw 6vw 1vw;
   }
+  .businessHeader {
+    padding: 5px 2px;
+    gap: 10px;
+  }
+  .tabContent {
+    padding: 0 2vw;
+  }
+}
+
+/* ---- טקסט קטן/הערות ---- */
+.smallNote {
+  color: #9776c4;
+  font-size: 0.98em;
+  margin-top: 7px;
+  text-align: center;
 }

@@ -1,87 +1,133 @@
 .formBackdrop {
   position: fixed;
-  top: 0; right: 0; left: 0; bottom: 0;
-  background: rgba(0,0,0,0.3);
+  inset: 0;
+  background: rgba(0,0,0,0.25);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  transition: background 0.2s;
 }
+
 .form {
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  padding: 32px 24px;
-  min-width: 300px;
-  max-width: 90vw;
+  border-radius: 2rem; /* יותר עגול */
+  box-shadow: 0 6px 32px 0 rgba(1, 114, 175, 0.10), 0 2px 8px 0 rgba(0,0,0,0.07);
+  padding: 36px 32px;
+  min-width: 320px;
+  max-width: 92vw;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   direction: rtl;
   text-align: right;
+  font-family: inherit;
+  transition: box-shadow 0.18s;
 }
+
 .formTitle {
   text-align: center;
-  font-size: 1.3em;
+  font-size: 1.4em;
+  font-weight: 600;
+  color: #0172af;
   margin-bottom: 10px;
+  letter-spacing: 0.01em;
 }
+
 .form label {
   display: flex;
   flex-direction: column;
-  font-size: 1rem;
-  margin-bottom: 8px;
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #222b;
   text-align: right;
+  gap: 3px;
 }
-.input, .select {
+
+.input,
+.select {
   margin-top: 4px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1.5px solid #c2d5e8;
   font-size: 1rem;
-  direction: rtl;
-  text-align: right;
+  font-family: inherit;
+  background: #f8fafc;
+  transition: border 0.15s, box-shadow 0.15s;
+  outline: none;
+  color: #222;
+  box-shadow: none;
 }
+.input:focus,
+.select:focus {
+  border-color: #0172af;
+  box-shadow: 0 0 0 2px #e3f2fd;
+  background: #fff;
+}
+
 .buttonRow {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 18px;
+  margin-top: 18px;
 }
+
 .saveBtn {
-  background: #0172af;
+  background: linear-gradient(93deg, #0172af 85%, #32c8fa 100%);
   color: white;
   border: none;
-  border-radius: 10px;
-  padding: 8px 24px;
+  border-radius: 16px;
+  padding: 12px 34px;
   font-size: 1em;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 2px 12px rgba(1,114,175,0.09);
+  transition: background 0.15s, transform 0.13s;
 }
+.saveBtn:hover,
+.saveBtn:focus {
+  background: linear-gradient(90deg, #0191d1 80%, #50e5ff 100%);
+  transform: translateY(-2px) scale(1.04);
+}
+
 .cancelBtn {
-  background: #ddd;
-  color: #222;
+  background: #f0f3fa;
+  color: #0172af;
   border: none;
-  border-radius: 10px;
-  padding: 8px 24px;
+  border-radius: 16px;
+  padding: 12px 34px;
   font-size: 1em;
+  font-weight: 500;
   cursor: pointer;
+  transition: background 0.15s, color 0.13s, transform 0.11s;
+}
+.cancelBtn:hover,
+.cancelBtn:focus {
+  background: #dae3f3;
+  color: #0e2c4e;
+  transform: scale(1.04);
 }
 
 /* Mobile adaptation */
 @media (max-width: 600px) {
   .form {
     min-width: unset;
-    width: 94vw;
-    padding: 16px 6vw;
+    width: 97vw;
+    padding: 18px 4vw;
+    border-radius: 1rem;
+    gap: 14px;
   }
   .formTitle {
-    font-size: 1.1em;
+    font-size: 1.13em;
   }
   .buttonRow {
     flex-direction: column;
-    gap: 8px;
+    gap: 9px;
   }
   .saveBtn, .cancelBtn {
     width: 100%;
-    padding: 12px 0;
+    padding: 14px 0;
+    border-radius: 15px;
   }
 }

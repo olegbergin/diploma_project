@@ -1,0 +1,28 @@
+/* src/components/BusinessProfile/tabs/galleryView.module.css */
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 18px;
+  padding: 28px 10px;
+  margin-top: 20px;
+}
+.imageBox {
+  background: #fff;
+  border-radius: 13px;
+  box-shadow: 0 2px 10px #bba9d633;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.image {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 13px;
+}
+.empty {
+  color: #888;
+  text-align: center;
+  margin: 40px 0;
+}
