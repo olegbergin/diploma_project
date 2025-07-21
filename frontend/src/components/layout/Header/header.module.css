@@ -42,17 +42,38 @@
   text-transform: uppercase;
 }
 
-/* Style for the home icon in the middle */
+/* Style for the navigation links container in the middle */
+.navLinks {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+/* Style for the home icon */
 .homeLink {
   color: #333;
   font-size: 28px;
   /* Make the icon larger */
   display: flex;
   align-items: center;
+  text-decoration: none;
 }
 
 .homeLink:hover {
   color: #000;
+}
+
+/* Style for the search icon */
+.searchLink {
+  color: #333;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.searchLink:hover {
+  color: #a6e3a1;
 }
 
 /* Style for the logout button on the right */

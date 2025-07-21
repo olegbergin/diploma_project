@@ -4,10 +4,11 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Header from "./components/layout/Header/Header";
 import Footer from "./components/layout/Footer/Footer";
-import Login from "./components/Login/Login";
-import SignUp from "./components/SignUp/SignUp";
+import AuthPage from "./components/AuthPage/AuthPage";
+import HomePage from "./components/HomePage/HomePage";
 import BusinessProfile from "./components/BusinessProfile/BusinessProfile";
 import UserProfilePage from "./components/UserProfilePage/UserProfilePage";
+import SearchPage from "./components/SearchPage/SearchPage";
 import "./App.css";
 
 function App() {
@@ -44,7 +45,7 @@ function App() {
   const handleLoginSuccess = (userData) => {
     setCurrentUser(userData);
     localStorage.setItem("userInfo", JSON.stringify(userData));
-    navigate(getHomePath(userData));
+    navigate("/home"); // Navigate to home page after login
   };
 
   const handleLogout = () => {
@@ -61,19 +62,35 @@ function App() {
       <Header user={currentUser} onLogout={handleLogout} />
       <div className="content">
         <Routes>
-          {/* Login */}
+          {/* Auth (Login/Signup) */}
           <Route
             path="/login"
-            element={<Login onLoginSuccess={handleLoginSuccess} />}
+            element={<AuthPage onLoginSuccess={handleLoginSuccess} />}
           />
-          {/* Signup */}
-          <Route path="/signup" element={<SignUp />} />
+          {/* Redirect signup to login (now handled by AuthPage) */}
+          <Route path="/signup" element={<Navigate replace to="/login" />} />
+          {/* Search page - accessible to all users */}
+          <Route
+            path="/search"
+            element={<SearchPage user={currentUser} />}
+          />
           {/* Redirect home */}
           <Route
             path="/"
             element={
               currentUser ? (
-                <Navigate replace to={getHomePath(currentUser)} />
+                <Navigate replace to="/home" />
+              ) : (
+                <Navigate replace to="/login" />
+              )
+            }
+          />
+          {/* Home page - accessible to all logged in users */}
+          <Route
+            path="/home/*"
+            element={
+              currentUser ? (
+                <HomePage user={currentUser} />
               ) : (
                 <Navigate replace to="/login" />
               )

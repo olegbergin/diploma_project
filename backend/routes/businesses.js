@@ -35,6 +35,21 @@ router.post("/", async (req, res) => { // <-- Add async
    2. Get all businesses (GET /api/businesses)
    Refactored with async/await.
    ─────────────────────────────── */
+/* ───────────────────────────────
+   Get unique categories (GET /api/businesses/categories)
+   Must come before /:id route to avoid conflicts
+   ─────────────────────────────── */
+router.get("/categories", async (_req, res) => {
+  try {
+    const [rows] = await db.query("SELECT DISTINCT category FROM businesses WHERE category IS NOT NULL AND category != '' ORDER BY category");
+    const categories = rows.map(row => row.category);
+    res.json(categories);
+  } catch (err) {
+    console.error("DB error fetching categories:", err);
+    res.status(500).json({ error: "Failed to fetch categories." });
+  }
+});
+
 router.get("/", async (_req, res) => { // <-- Add async
   try {
     const [rows] = await db.query("SELECT * FROM businesses"); // <-- Use await
@@ -50,18 +65,27 @@ router.get("/", async (_req, res) => { // <-- Add async
    Refactored with async/await.
    ─────────────────────────────── */
 router.get("/:id", async (req, res) => { // <-- Add async
-  const sql = "SELECT * FROM businesses WHERE business_id = ?";
+  const businessSql = "SELECT * FROM businesses WHERE business_id = ?";
+  const servicesSql = "SELECT * FROM services WHERE business_id = ?";
   const params = [req.params.id];
 
   try {
-    const [rows] = await db.query(sql, params); // <-- Use await
+    // Get business info
+    const [businessRows] = await db.query(businessSql, params);
     
     // Check if a business was found
-    if (rows.length === 0) {
+    if (businessRows.length === 0) {
       return res.status(404).json({ message: "Business not found" });
     }
     
-    res.json(rows[0]); // Send the first (and only) result
+    // Get services for this business
+    const [servicesRows] = await db.query(servicesSql, params);
+    
+    // Combine business info with services
+    const business = businessRows[0];
+    business.services = servicesRows;
+    
+    res.json(business); // Send the business with services
   } catch (err) {
     console.error(`DB error fetching business with id ${req.params.id}:`, err);
     res.status(500).json({ error: "Failed to fetch business details." });
@@ -96,6 +120,35 @@ router.put("/:id", async (req, res) => { // <-- Add async
   } catch (err) {
     console.error(`DB error updating business with id ${req.params.id}:`, err);
     res.status(500).json({ error: "Failed to update business." });
+  }
+});
+
+/* ───────────────────────────────
+   5. Get services for a specific business (GET /api/businesses/:id/services)
+   Returns array of services for the business
+   ─────────────────────────────── */
+router.get("/:id/services", async (req, res) => {
+  try {
+    // First check if business exists
+    const [businessRows] = await db.query(
+      "SELECT business_id FROM businesses WHERE business_id = ?",
+      [req.params.id]
+    );
+
+    if (businessRows.length === 0) {
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    // Fetch services with correct column mapping
+    const [services] = await db.query(
+      "SELECT service_id, name, description, price, duration_minutes as duration FROM services WHERE business_id = ? ORDER BY name ASC",
+      [req.params.id]
+    );
+
+    res.json(services);
+  } catch (err) {
+    console.error(`DB error fetching services for business ${req.params.id}:`, err);
+    res.status(500).json({ error: "Failed to fetch services." });
   }
 });
 

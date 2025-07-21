@@ -4,7 +4,7 @@ import axios from "axios";
 // Get the base URL from environment variables, with a fallback for development.
 // Vite uses 'import.meta.env.VITE_...' to access environment variables.
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3030/api";
 
 // Create a new instance of axios with a custom configuration
 const axiosInstance = axios.create({

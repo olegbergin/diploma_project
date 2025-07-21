@@ -57,7 +57,7 @@ export default function AppointmentForm({
               <option value="">בחר שירות</option>
               {services.map((srv, idx) => (
                 <option key={idx} value={srv.name}>
-                  {srv.name} {srv.duration ? `(${srv.duration} דקות)` : ""}
+                  {srv.name} {srv.duration_minutes ? `(${srv.duration_minutes} דקות)` : ""} - ₪{srv.price}
                 </option>
               ))}
             </select>

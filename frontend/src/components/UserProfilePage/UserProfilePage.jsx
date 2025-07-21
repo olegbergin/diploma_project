@@ -72,7 +72,7 @@ export default function UserProfilePage({ user, setUser, onLogout }) {
             className={styles.avatar}
           />
           <div className={styles.username}>
-            {user.firstName} {user.lastName}
+            {user.first_name || user.firstName} {user.last_name || user.lastName}
           </div>
         </div>
         <nav className={styles.navButtons}>{navMenu}</nav>

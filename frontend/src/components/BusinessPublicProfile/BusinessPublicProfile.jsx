@@ -10,7 +10,7 @@ export default function BusinessPublicProfile() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [innerTab, setInnerTab] = useState("calendar");
+  const [innerTab, setInnerTab] = useState("services");
   const [booking, setBooking] = useState(null);
 
   const { id: businessId } = useParams();
@@ -61,6 +61,12 @@ export default function BusinessPublicProfile() {
 
         <div className={styles.tabBar}>
           <button
+            className={innerTab === "services" ? styles.activeTab : ""}
+            onClick={() => setInnerTab("services")}
+          >
+            שירותים
+          </button>
+          <button
             className={innerTab === "calendar" ? styles.activeTab : ""}
             onClick={() => setInnerTab("calendar")}
           >
@@ -79,6 +85,32 @@ export default function BusinessPublicProfile() {
             גלריה
           </button>
         </div>
+
+        {innerTab === "services" && (
+          <section className={styles.section}>
+            <h2>שירותים זמינים</h2>
+            {business.services && business.services.length > 0 ? (
+              <div className={styles.servicesGrid}>
+                {business.services.map((service) => (
+                  <div key={service.service_id} className={styles.serviceCard}>
+                    <h3 className={styles.serviceName}>{service.name}</h3>
+                    <p className={styles.servicePrice}>₪{service.price}</p>
+                    <p className={styles.serviceDuration}>
+                      {service.duration_minutes} דקות
+                    </p>
+                    {service.description && (
+                      <p className={styles.serviceDescription}>
+                        {service.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>אין שירותים זמינים כרגע.</p>
+            )}
+          </section>
+        )}
 
         {innerTab === "calendar" && (
           <section className={styles.section}>

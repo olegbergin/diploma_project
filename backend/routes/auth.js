@@ -28,6 +28,12 @@ router.post("/register", async (req, res) => {
     return res.status(400).json({ error: "Missing required fields." }); // חסרים שדות חובה
   }
 
+  // Password validation (3-8 characters, alphanumeric with at least one letter and one number)
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{3,8}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({ error: "Password must be 3-8 characters long and contain at least one letter and one number." });
+  }
+
   try {
     // 1. Hash the password (הצפנת סיסמה)
     const hashedPassword = await bcrypt.hash(password, 10);

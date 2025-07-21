@@ -1,6 +1,8 @@
-// src/components/HomePage/BusinessCard.jsx
-import React from "react";
+// src/components/BusinessCard/BusinessCard.jsx
+import React, { useState, memo, useCallback } from "react";
 import { Link } from "react-router-dom";
+import axiosInstance from "../../api/axiosInstance";
+import BusinessModal from "../BusinessModal/BusinessModal";
 import styles from "./BusinessCard.module.css";
 
 const DEFAULT_PLACEHOLDER_IMAGE = "/images/placeholder_buisness.png"; // Adjust path as necessary
@@ -49,18 +51,35 @@ const renderStars = (rating, maxStars = 5) => {
 };
 
 /**
- * BusinessCard component displays a summary of a business.
+ * BusinessCard component displays a summary of a business with editing capabilities.
  */
-function BusinessCard({ business }) {
+const BusinessCard = memo(function BusinessCard({ 
+  business, 
+  onUpdate, 
+  onDelete, 
+  userRole 
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    name: business.name || "",
+    category: business.category || "",
+    description: business.description || "",
+    location: business.location || "",
+    phone: business.phone || "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
   const {
     business_id,
     name = "שם עסק לא ידוע",
     category = "",
     location = "",
+    description = "",
+    phone = "",
     photos,
     average_rating,
     review_count,
-    // description = ""
   } = business;
 
   let imageUrl = DEFAULT_PLACEHOLDER_IMAGE;
@@ -75,7 +94,7 @@ function BusinessCard({ business }) {
       ) {
         imageUrl = parsedPhotos[0];
       }
-    } catch (e) {
+    } catch {
       // imageUrl remains DEFAULT_PLACEHOLDER_IMAGE
     }
   }
@@ -87,53 +106,220 @@ function BusinessCard({ business }) {
     }
   };
 
-  // ---- הנתיב המתוקן כאן ----
-  return (
-    <Link
-      to={`/home/business/${business_id}`}
-      className={styles.cardLink}
-      aria-label={`View details for ${name}`}
-    >
-      <article className={styles.card}>
-        <div className={styles.imageContainer}>
-          <img
-            src={imageUrl}
-            alt={`תמונה של ${name}`}
-            className={styles.image}
-            onError={handleImageError}
-            loading="lazy"
-          />
+  const handleEditChange = useCallback((event) => {
+    const { name, value } = event.target;
+    setEditData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }, []);
+
+  const handleUpdate = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setIsLoading(true);
+      try {
+        const response = await axiosInstance.put(
+          `/businesses/${business_id}`,
+          editData
+        );
+        if (onUpdate) onUpdate(response.data);
+        setIsEditing(false);
+      } catch {
+        alert("נכשל בעדכון העסק");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [business_id, editData, onUpdate]
+  );
+
+  const handleDelete = useCallback(async () => {
+    if (window.confirm("האם אתה בטוח שברצונך למחוק עסק זה?")) {
+      setIsLoading(true);
+      try {
+        await axiosInstance.delete(`/businesses/${business_id}`);
+        if (onDelete) onDelete(business_id);
+      } catch {
+        alert("נכשל במחיקת העסק");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [business_id, onDelete]);
+
+  const handleImageClick = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setShowModal(true);
+    },
+    []
+  );
+
+  const canModify = userRole === 'business_owner' || userRole === 'admin';
+  const showButtons = canModify;
+
+  if (isEditing && canModify) {
+    return (
+      <>
+        <div className={styles.businessCard}>
+          <form onSubmit={handleUpdate} className={styles.editForm}>
+            <input
+              type="text"
+              name="name"
+              value={editData.name}
+              onChange={handleEditChange}
+              placeholder="שם העסק"
+              className={styles.editInput}
+              required
+            />
+            <input
+              type="text"
+              name="category"
+              value={editData.category}
+              onChange={handleEditChange}
+              placeholder="קטגוריה"
+              className={styles.editInput}
+              required
+            />
+            <textarea
+              name="description"
+              value={editData.description}
+              onChange={handleEditChange}
+              placeholder="תיאור"
+              className={styles.editTextarea}
+              rows="3"
+            />
+            <input
+              type="text"
+              name="location"
+              value={editData.location}
+              onChange={handleEditChange}
+              placeholder="מיקום"
+              className={styles.editInput}
+            />
+            <input
+              type="tel"
+              name="phone"
+              value={editData.phone}
+              onChange={handleEditChange}
+              placeholder="טלפון"
+              className={styles.editInput}
+            />
+            <div className={styles.editActions}>
+              <button
+                type="submit"
+                className={styles.saveButton}
+                disabled={isLoading}
+              >
+                {isLoading ? "💾 שומר..." : "💾 שמור"}
+              </button>
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={() => setIsEditing(false)}
+                disabled={isLoading}
+              >
+                ❌ ביטול
+              </button>
+            </div>
+          </form>
         </div>
-        <div className={styles.content}>
-          <h3 className={styles.name}>{name}</h3>
-          {category && <p className={styles.category}>{category}</p>}
-          {location && <p className={styles.location}>{location}</p>}
-          {typeof average_rating === "number" && (
-            <div
-              className={styles.ratingContainer}
-              aria-label={`Rating: ${average_rating.toFixed(1)} out of 5 stars`}
-            >
-              <span className={styles.ratingValue} aria-hidden="true">
-                {average_rating.toFixed(1)}
-              </span>
-              <span className={styles.stars} aria-hidden="true">
-                {renderStars(average_rating)}
-              </span>
-              {typeof review_count === "number" && review_count > 0 && (
-                <span
-                  className={styles.reviewCount}
-                  aria-label={`${review_count} reviews`}
-                >
-                  ({review_count})
+        <BusinessModal
+          business={business}
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Link
+        to={`/home/business/${business_id}`}
+        className={styles.cardLink}
+        aria-label={`View details for ${name}`}
+      >
+        <article className={styles.card}>
+          <div className={styles.imageContainer} onClick={handleImageClick}>
+            <img
+              src={imageUrl}
+              alt={`תמונה של ${name}`}
+              className={styles.image}
+              onError={handleImageError}
+              loading="lazy"
+            />
+          </div>
+          <div className={styles.content}>
+            <h3 className={styles.name} onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowModal(true);
+            }}>{name}</h3>
+            {category && <p className={styles.category}>{category}</p>}
+            {description && <p className={styles.description}>{description}</p>}
+            {location && <p className={styles.location}>📍 {location}</p>}
+            {phone && <p className={styles.phone}>📞 {phone}</p>}
+            {typeof average_rating === "number" && (
+              <div
+                className={styles.ratingContainer}
+                aria-label={`Rating: ${average_rating.toFixed(1)} out of 5 stars`}
+              >
+                <span className={styles.ratingValue} aria-hidden="true">
+                  ⭐ {average_rating.toFixed(1)}
                 </span>
-              )}
+                <span className={styles.stars} aria-hidden="true">
+                  {renderStars(average_rating)}
+                </span>
+                {typeof review_count === "number" && review_count > 0 && (
+                  <span
+                    className={styles.reviewCount}
+                    aria-label={`${review_count} reviews`}
+                  >
+                    ({review_count})
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {showButtons && (
+            <div className={styles.actions}>
+              <button
+                className={styles.editButton}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsEditing(true);
+                }}
+                disabled={isLoading}
+              >
+                ✏️ ערוך
+              </button>
+              <button
+                className={styles.deleteButton}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDelete();
+                }}
+                disabled={isLoading}
+              >
+                {isLoading ? "🗑️ מוחק..." : "🗑️ מחק"}
+              </button>
             </div>
           )}
-          {/* אפשר להחזיר פה תיאור אם תרצי */}
-        </div>
-      </article>
-    </Link>
+        </article>
+      </Link>
+      <BusinessModal
+        business={business}
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+      />
+    </>
   );
-}
+});
 
 export default BusinessCard;
