@@ -1,45 +1,50 @@
 /* src/components/Forms/Form.module.css */
-/* This file contains common styles for form containers, inputs, buttons, and links. */
+/* Modern form styles with purple theme */
 
 /* --- Main Form Container --- */
-/* Used for both Login and SignUp forms */
 .formContainer {
   display: flex;
   flex-direction: column;
-  padding: 2rem 2.5rem;
-  /* Padding inside the form */
-  background-color: white;
-  border-radius: 16px;
-  /* Rounded corners */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  /* Soft shadow for depth */
-  max-width: 420px;
-  /* Default max width, good for login form */
-  margin: 1rem auto;
-  /* Center the form horizontally with some vertical margin */
+  padding: 2.5rem;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f4ff 100%);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--shadow-heavy);
+  border: 1px solid rgba(201, 178, 245, 0.2);
+  max-width: 450px;
+  margin: 2rem auto;
   width: 90%;
-  /* Responsive width for mobile */
   box-sizing: border-box;
-  /* Ensures padding doesn't add to the width */
+  position: relative;
+  overflow: hidden;
+}
+
+.formContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--light-purple), var(--primary-purple));
 }
 
 /* --- Typography --- */
 .title {
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 0.75rem;
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 600;
   /* Semi-bold */
   text-align: center;
 }
 
 .subtitle {
-  color: #555;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
   text-align: center;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  /* Improves readability */
+  font-size: 1.05rem;
+  line-height: 1.6;
+  opacity: 0.9;
 }
 
 /* --- Feedback Messages --- */
@@ -55,17 +60,17 @@
 }
 
 .errorMessage {
-  color: #D8000C;
-  /* Strong red for error text */
-  background-color: #FFD2D2;
-  /* Light red background */
+  color: #d32f2f;
+  background: linear-gradient(145deg, #ffebee, #ffcdd2);
+  border: 1px solid #ef9a9a;
+  border-radius: var(--border-radius);
 }
 
 .successMessage {
-  color: #4F8A10;
-  /* Green for success text */
-  background-color: #DFF2BF;
-  /* Light green background */
+  color: #388e3c;
+  background: linear-gradient(145deg, #e8f5e8, #c8e6c9);
+  border: 1px solid #81c784;
+  border-radius: var(--border-radius);
 }
 
 
@@ -126,26 +131,27 @@
 /* Main Submit Button (e.g., "Login", "Sign Up") */
 .submitButton {
   width: 100%;
-  padding: 0.9rem 1.5rem;
+  padding: 1rem 1.5rem;
   margin-top: 1.5rem;
-  /* Increased space above the main button */
-  background-color: #a6e3a1;
-  /* Primary accent green */
-  color: #3a6b35;
-  /* Darker green for text contrast */
+  background: linear-gradient(135deg, var(--light-purple), var(--primary-purple));
+  color: #ffffff;
   border: none;
-  border-radius: 30px;
-  /* Pill-like shape */
+  border-radius: 50px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   text-align: center;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: var(--transition);
+  box-shadow: var(--shadow-medium);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
 .submitButton:hover {
-  background-color: #93cc94;
-  /* Slightly darker on hover */
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-heavy);
+  background: linear-gradient(135deg, var(--primary-purple), #9c27b0);
 }
 
 .submitButton:active {
@@ -175,34 +181,39 @@
 
 /* Style for each individual quick fill button */
 .quickLoginButton {
-  background-color: #f0f0f0;
-  color: #555;
-  border: 1px solid #dcdcdc;
-  padding: 0.4rem 0.8rem;
+  background: linear-gradient(145deg, rgba(201, 178, 245, 0.1), rgba(201, 178, 245, 0.2));
+  color: var(--primary-purple);
+  border: 1px solid rgba(201, 178, 245, 0.3);
+  padding: 0.5rem 1rem;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: var(--transition);
 }
 
 .quickLoginButton:hover {
-  background-color: #e0e0e0;
-  color: #333;
+  background: linear-gradient(145deg, var(--light-purple), rgba(201, 178, 245, 0.4));
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(201, 178, 245, 0.3);
 }
 
 /* --- Helper Link --- */
 /* Link to switch between Login and SignUp pages */
 .switchLink {
   margin-top: 1.5rem;
-  color: #007bff;
-  /* Standard link blue */
+  color: var(--primary-purple);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   text-align: center;
   width: 100%;
+  font-weight: 500;
+  transition: var(--transition);
 }
 
 .switchLink:hover {
+  color: #9c27b0;
   text-decoration: underline;
+  text-decoration-color: var(--light-purple);
 }

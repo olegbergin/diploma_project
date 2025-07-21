@@ -81,7 +81,7 @@
 .mainPanel {
   flex: 1;
   background: #fff;
-  margin: 32px 0 32px 32px;
+  margin: 32px;
   padding: 36px;
   border-radius: 20px;
   box-shadow: 0 2px 14px #c9b2f527;
@@ -91,6 +91,7 @@
   align-items: center;
   justify-content: flex-start;
   overflow-x: auto;
+  width: calc(100% - 64px);
 }
 
 /* Drawer for mobile */

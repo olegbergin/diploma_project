@@ -21,7 +21,7 @@ function HomePage({ user }) {
       <div className={styles.actionButtons}>
         <button 
           className={styles.actionButton}
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/profile/personal')}
         >
           👤 פרופיל אישי
         </button>

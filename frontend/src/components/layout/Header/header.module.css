@@ -2,17 +2,19 @@
 
 .header {
   width: 100%;
-  background: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(201, 178, 245, 0.2);
   display: flex;
   justify-content: space-around;
-  /* This pushes items to the left, center, and right */
   align-items: center;
-  padding: 8px 16px;
-  /* A little less padding for a sleeker look */
+  padding: 12px 20px;
   box-sizing: border-box;
-  height: 60px;
-  /* Give the header a fixed height */
+  height: 70px;
+  box-shadow: var(--shadow-light);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 /* Style for the round profile link on the left */
@@ -20,22 +22,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  /* This makes it a circle */
-  background-color: #d1c4e9;
-  /* A light purple, matching your theme */
+  background: linear-gradient(135deg, var(--light-purple), var(--primary-purple));
   color: #ffffff;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 16px;
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: var(--transition);
+  box-shadow: var(--shadow-light);
+  border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
 .profileLink:hover {
-  background-color: #b39ddb;
-  /* A slightly darker purple on hover */
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+  background: linear-gradient(135deg, var(--primary-purple), #9c27b0);
 }
 
 .profileInitials {
@@ -45,52 +48,63 @@
 /* Style for the navigation links container in the middle */
 .navLinks {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
   align-items: center;
 }
 
 /* Style for the home icon */
 .homeLink {
-  color: #333;
+  color: var(--text-primary);
   font-size: 28px;
-  /* Make the icon larger */
   display: flex;
   align-items: center;
   text-decoration: none;
+  padding: 8px;
+  border-radius: 12px;
+  transition: var(--transition);
 }
 
 .homeLink:hover {
-  color: #000;
+  color: var(--primary-purple);
+  background: rgba(201, 178, 245, 0.1);
+  transform: translateY(-1px);
 }
 
 /* Style for the search icon */
 .searchLink {
-  color: #333;
+  color: var(--text-primary);
   font-size: 26px;
   display: flex;
   align-items: center;
   text-decoration: none;
+  padding: 8px;
+  border-radius: 12px;
+  transition: var(--transition);
 }
 
 .searchLink:hover {
-  color: #a6e3a1;
+  color: var(--primary-purple);
+  background: rgba(201, 178, 245, 0.1);
+  transform: translateY(-1px);
 }
 
 /* Style for the logout button on the right */
 .logoutButton {
-  background: none;
-  border: none;
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid rgba(244, 67, 54, 0.2);
+  border-radius: 12px;
   cursor: pointer;
-  padding: 0;
-  color: #c62828;
-  /* A shade of red for logout */
-  font-size: 26px;
-  /* Make the icon a bit smaller than home */
+  padding: 10px 12px;
+  color: #e53935;
+  font-size: 22px;
   display: flex;
   align-items: center;
+  transition: var(--transition);
 }
 
 .logoutButton:hover {
-  color: #b71c1c;
-  /* Darker red on hover */
+  color: #c62828;
+  background: rgba(244, 67, 54, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.2);
 }
