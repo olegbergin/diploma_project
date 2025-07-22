@@ -8,92 +8,164 @@ import ExistingAppointments from "./sideBar/ExistingAppointments";
 import RequestsTab from "./sideBar/RequestsTab";
 import Calendar from "./tabs/Calendar/Calendar";
 import GalleryView from "./tabs/GalleryView/GalleryView";
-// import ReviewsTab from "./tabs/ReviewsTab"; // להוסיף בעתיד
+// TODO: Add ReviewsTab component for future implementation
 
+/**
+ * Business Profile Component - Main dashboard for business owners
+ * Provides interface for managing business details, services, appointments, and gallery
+ * 
+ * @component
+ * @returns {JSX.Element} Business profile management interface
+ */
 export default function BusinessProfile() {
+  // Business data state
   const [business, setBusiness] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [gallery, setGallery] = useState([]);
-  const [adminPanel, setAdminPanel] = useState(null); // panels: profile, services, galleryEdit, appointments, requests
-  const [activeTab, setActiveTab] = useState("calendar"); // calendar | gallery | reviews
+  
+  // UI state management
+  const [adminPanel, setAdminPanel] = useState(null); // Current admin panel: profile, services, galleryEdit, appointments, requests
+  const [activeTab, setActiveTab] = useState("calendar"); // Active public tab: calendar, gallery, reviews
+  
+  // Router hooks
   const { id: businessId } = useParams();
   const navigate = useNavigate();
 
-  // Load business data
+  /**
+   * Load business data from API
+   * TODO: Replace mock data with actual API call
+   */
   useEffect(() => {
-    // כאן לשלוף API
-    setTimeout(() => {
-      setBusiness({
-        business_id: businessId,
-        name: "מאפיית איילה",
-        category: "מאפיה",
-        description: "המאפיה של איילה - חלה לשבת!",
-        phone: "054-1112223",
-        address: "הנרייטה סולד 7, חיפה",
-        email: "ayala.bakery@gmail.com",
-        image_url: "",
-        hours: "א-ה 07:00-20:00, ו׳ 07:00-13:30",
-      });
-      setAppointments([]);
-      setGallery([]);
-    }, 200);
+    const loadBusinessData = async () => {
+      try {
+        // TODO: Implement actual API call
+        // const response = await fetch(`/api/businesses/${businessId}`);
+        // const businessData = await response.json();
+        
+        // Mock data for development - remove when API is ready
+        setTimeout(() => {
+          setBusiness({
+            business_id: businessId,
+            name: "מאפיית איילה",
+            category: "מאפיה",
+            description: "המאפיה של איילה - חלה לשבת!",
+            phone: "054-1112223",
+            address: "הנרייטה סולד 7, חיפה",
+            email: "ayala.bakery@gmail.com",
+            image_url: "",
+            hours: "א-ה 07:00-20:00, ו׳ 07:00-13:30",
+          });
+          setAppointments([]);
+          setGallery([]);
+        }, 200);
+      } catch (error) {
+        console.error('Failed to load business data:', error);
+        // TODO: Add error handling UI
+      }
+    };
+    
+    if (businessId) {
+      loadBusinessData();
+    }
   }, [businessId]);
 
-  // --- CLIENT TABS BELOW PROFILE ---
-  function renderPublicTab() {
+  /**
+   * Renders the active public tab content
+   * @returns {JSX.Element|null} Tab content component
+   */
+  const renderPublicTab = () => {
     switch (activeTab) {
       case "calendar":
         return <Calendar appointments={appointments} />;
       case "gallery":
         return <GalleryView gallery={gallery} />;
       case "reviews":
-        return <div style={{ color: "#999" }}>ביקורות כאן (בעתיד)</div>;
+        return (
+          <div className={styles.placeholderContent}>
+            ביקורות כאן (בעתיד)
+          </div>
+        );
       default:
         return null;
     }
-  }
+  };
 
-  // --- ADMIN PANELS ---
-  function renderAdminPanel() {
+  /**
+   * Renders the active admin panel content
+   * @returns {JSX.Element|null} Admin panel component
+   */
+  const renderAdminPanel = () => {
+    const handleClosePanel = () => setAdminPanel(null);
+    
+    const handleBusinessUpdate = (updatedData) => {
+      setBusiness((prev) => ({ ...prev, ...updatedData }));
+    };
+    
+    const handleServicesUpdate = (servicesList) => {
+      setBusiness((prev) => ({ ...prev, services: servicesList }));
+    };
+    
+    const handleGalleryUpdate = (images) => {
+      setGallery(images);
+    };
+    
+    // TODO: Implement proper appointment and request handlers
+    const handleAppointmentUpdate = () => {
+      console.log('Appointment update - to be implemented');
+    };
+    
+    const handleAppointmentCancel = () => {
+      console.log('Appointment cancel - to be implemented');
+    };
+    
+    const handleRequestAction = () => {
+      console.log('Request action - to be implemented');
+    };
+    
     switch (adminPanel) {
       case "profile":
         return (
           <BusinessDetailsForm
             initialData={business}
-            onSave={(updated) =>
-              setBusiness((prev) => ({ ...prev, ...updated }))
-            }
-            onClose={() => setAdminPanel(null)}
+            onSave={handleBusinessUpdate}
+            onClose={handleClosePanel}
           />
         );
       case "services":
         return (
           <ServicesModal
             services={business?.services || []}
-            onSave={(list) =>
-              setBusiness((prev) => ({ ...prev, services: list }))
-            }
-            onClose={() => setAdminPanel(null)}
+            onSave={handleServicesUpdate}
+            onClose={handleClosePanel}
           />
         );
       case "galleryEdit":
         return (
-          <GalleryEdit gallery={gallery} onSave={(imgs) => setGallery(imgs)} />
+          <GalleryEdit 
+            gallery={gallery} 
+            onSave={handleGalleryUpdate}
+            onClose={handleClosePanel}
+          />
         );
       case "appointments":
         return (
           <ExistingAppointments
             appointments={appointments}
-            onUpdate={() => {}} // implement if needed
-            onCancel={() => {}}
+            onUpdate={handleAppointmentUpdate}
+            onCancel={handleAppointmentCancel}
           />
         );
       case "requests":
-        return <RequestsTab businessId={businessId} onAction={() => {}} />;
+        return (
+          <RequestsTab 
+            businessId={businessId} 
+            onAction={handleRequestAction}
+          />
+        );
       default:
         return null;
     }
-  }
+  };
 
   if (!business) return <div className={styles.loading}>טוען נתוני עסק...</div>;
 
@@ -141,8 +213,7 @@ export default function BusinessProfile() {
           בקשות חדשות
         </button>
         <button
-          className={styles.sidebarButton}
-          style={{ background: "#fff1f1", color: "#be2a1d", marginTop: "auto" }}
+          className={`${styles.sidebarButton} ${styles.logoutButton}`}
           onClick={() => navigate("/login")}
         >
           יציאה מהמערכת

@@ -1,4 +1,14 @@
-// src/components/UserProfilePage/UserProfilePage.jsx
+/**
+ * User Profile Page Component
+ * Provides routing for user dashboard panels including personal info, appointments, and favorites
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {Object} props.user - Current user object
+ * @param {Function} props.setUser - Function to update user state
+ * @param {Function} props.onLogout - Logout handler function
+ * @returns {JSX.Element} User profile page with nested routing
+ */
 
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -9,19 +19,18 @@ import FavoritesPanel from "./UserDashboard/FavoritesPanel";
 import PersonalInfoPanel from "./UserDashboard/PersonalInfoPanel";
 
 export default function UserProfilePage({ user, setUser, onLogout }) {
-
   return (
     <div className={styles.dashboardContainer}>
-      {/* Sidebar components moved to UserProfileSidebar.jsx backup component */}
-      
-      {/* Main Content - Full width without sidebar */}
+      {/* Main Content - Full width layout */}
       <main className={styles.mainPanel}>
         <Routes>
-          {/* Redirect /profile to /profile/personal (direct to personal info) */}
+          {/* Default redirect to personal info */}
           <Route path="/" element={<Navigate to="personal" replace />} />
+          
           {/* HomePage with nested business profile routing */}
           <Route path="home/*" element={<HomePage user={user} />} />
-          {/* Panels */}
+          
+          {/* User dashboard panels */}
           <Route
             path="appointments"
             element={<AppointmentsPanel user={user} />}

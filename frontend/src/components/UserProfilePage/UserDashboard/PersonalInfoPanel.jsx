@@ -1,4 +1,13 @@
-// src/components/UserProfilePage/UserDashboard/PersonalInfoPanel.jsx
+/**
+ * Personal Information Panel Component
+ * Allows users to edit their personal profile information including name, phone, avatar, and password
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {Object} props.user - Current user object with profile data
+ * @param {Function} props.setUser - Function to update user state
+ * @returns {JSX.Element} Personal info editing form
+ */
 
 import React, { useState, useRef } from "react";
 import axiosInstance from "../../../api/axiosInstance";
@@ -18,31 +27,46 @@ export default function PersonalInfoPanel({ user, setUser }) {
   const [avatarFile, setAvatarFile] = useState(null);
   const fileInputRef = useRef();
 
+  // Password change state
   const [pw, setPw] = useState({ current: "", newPw: "", confirm: "" });
   const [pwMsg, setPwMsg] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
 
+  /**
+   * Handles form input changes for profile fields
+   * @param {Event} e - Input change event
+   */
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  /**
+   * Handles avatar file selection and preview generation
+   * @param {Event} e - File input change event
+   */
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
     setAvatarFile(file);
+    
+    // Generate preview
     const reader = new FileReader();
     reader.onload = (ev) => setAvatarPreview(ev.target.result);
     reader.readAsDataURL(file);
   };
 
-  // אחרי שמירה – שלוף משתמש מעודכן
+  /**
+   * Fetches updated user data from server and updates local state
+   * Called after successful profile updates
+   */
   const updateUserFromServer = async () => {
     try {
       const { data } = await axiosInstance.get(`/users/${user.user_id}`);
       setUser(data);
       localStorage.setItem("userInfo", JSON.stringify(data));
     } catch (err) {
-      // הודעת שגיאה אם צריך
+      console.error("Failed to refresh user data:", err);
     }
   };
 

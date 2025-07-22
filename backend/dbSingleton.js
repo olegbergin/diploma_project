@@ -1,56 +1,110 @@
-// dbSingleton.js
+/**
+ * Database Singleton Module
+ * Provides a single MySQL connection with automatic reconnection handling
+ * 
+ * @module dbSingleton
+ */
+
 const mysql = require("mysql2");
 
-let connection; // Variable for storing the single connection
+/**
+ * Global connection instance
+ * @type {mysql.Connection|null}
+ */
+let connection = null;
 
-// Function to handle creating/recreating the connection
+/**
+ * Database configuration object
+ * @type {Object}
+ */
+const dbConfig = {
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root", 
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "project_db",
+  charset: "utf8mb4",
+};
+
+/**
+ * Handles database connection creation and reconnection
+ * Implements automatic retry logic for failed connections
+ */
 function handleConnect() {
-  // Create a connection only if one doesn't exist
-  connection = mysql.createConnection({
-    host: process.env.DB_HOST || "localhost",
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME || "project_db",
-    charset: "utf8mb4",
-  });
+  console.log("Attempting to connect to MySQL database...");
+  
+  // Create new connection instance
+  connection = mysql.createConnection(dbConfig);
 
-  // Connect to the database
+  // Attempt initial connection
   connection.connect((err) => {
     if (err) {
-      console.error("Error connecting to database:", err);
-      // In case of a connection error, try to reconnect after 2 seconds
+      console.error("Failed to connect to database:", err.message);
+      console.log("Retrying connection in 2 seconds...");
+      
+      // Retry connection after 2 seconds
       setTimeout(handleConnect, 2000);
       return;
     }
-    console.log("Successfully connected to MySQL!");
+    
+    console.log(`Successfully connected to MySQL database (ID: ${connection.threadId})`);
   });
 
-  // Handle connection errors after the initial connection
+  // Handle connection errors after successful connection
   connection.on("error", (err) => {
-    console.error("Database connection error:", err);
-    // If the connection is lost, try to reconnect
-    if (err.code === "PROTOCOL_CONNECTION_LOST") {
-      console.log("Reconnecting to the database...");
+    console.error("Database connection error:", err.message);
+    
+    // Handle connection loss
+    if (err.code === "PROTOCOL_CONNECTION_LOST" || err.code === "ECONNRESET") {
+      console.log("Database connection lost. Attempting to reconnect...");
       handleConnect();
     } else {
+      console.error("Fatal database error:", err);
       throw err;
     }
   });
 }
 
-// Initial call to connect
+// Initialize database connection on module load
 handleConnect();
 
-// The singleton object that we export
+/**
+ * Database Singleton Object
+ * Provides access to the MySQL connection instance
+ * 
+ * @namespace dbSingleton
+ */
 const dbSingleton = {
+  /**
+   * Returns the current database connection
+   * @returns {mysql.Connection|null} The active MySQL connection
+   */
   getConnection: () => {
-    // This function will simply return the existing connection object
+    if (!connection) {
+      console.warn("Database connection not available");
+    }
     return connection;
   },
-  // This gives us a "promisified" version of the connection, perfect for async/await
+
+  /**
+   * Returns a promisified version of the connection for async/await usage
+   * @returns {mysql.Connection.promise|null} Promisified MySQL connection
+   */
   getPromise: () => {
+    if (!connection) {
+      console.warn("Database connection not available for promise operations");
+      return null;
+    }
     return connection.promise();
   },
+
+  /**
+   * Checks if the database connection is active
+   * @returns {boolean} True if connection exists and is authenticated
+   */
+  isConnected: () => {
+    return connection && 
+           (connection.state === "authenticated" || connection.state === "connected");
+  }
 };
 
 module.exports = dbSingleton;

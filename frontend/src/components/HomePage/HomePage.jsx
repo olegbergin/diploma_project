@@ -1,4 +1,12 @@
-// src/components/HomePage/HomePage.jsx
+/**
+ * Home Page Component
+ * Main landing page with user welcome section and business profile routing
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {Object} props.user - Current logged-in user object
+ * @returns {JSX.Element} Home page with welcome content and nested routing
+ */
 
 import React from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";

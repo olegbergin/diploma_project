@@ -43,6 +43,26 @@
   color: #fff;
 }
 
+/* Logout button specific styles */
+.logoutButton {
+  background: #fff1f1 !important;
+  color: #be2a1d !important;
+  margin-top: auto;
+}
+
+.logoutButton:hover {
+  background: #ffe8e8 !important;
+  color: #a01e12 !important;
+}
+
+/* Placeholder content for future features */
+.placeholderContent {
+  color: #999;
+  text-align: center;
+  padding: 2rem;
+  font-style: italic;
+}
+
 /* -------- Profile Main Content -------- */
 .profileContent {
   flex: 1;

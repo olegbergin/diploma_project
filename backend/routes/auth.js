@@ -1,14 +1,20 @@
-// backend/routes/auth.js
-// ------------------------------------------------------------
-// User Authentication Routes (Login & Register)
-// ------------------------------------------------------------
+/**
+ * Authentication Routes Module
+ * Handles user registration and login with JWT token generation
+ * 
+ * @module routes/auth
+ */
+
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-// קישור לממשק ההבטחות של בסיס הנתונים (Promise-based DB singleton)
 const db = require("../dbSingleton").getPromise();
 
+/**
+ * JWT Secret key for token signing
+ * @type {string}
+ */
 const JWT_SECRET = process.env.JWT_SECRET || "my_name_is_oleg";
 
 // ============================================================

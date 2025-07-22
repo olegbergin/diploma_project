@@ -1,4 +1,10 @@
-// src/App.jsx
+/**
+ * Main Application Component
+ * Handles authentication, routing, and global state management
+ * 
+ * @component
+ * @returns {JSX.Element} Main application with routing and layout
+ */
 
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
@@ -12,11 +18,16 @@ import SearchPage from "./components/SearchPage/SearchPage";
 import "./App.css";
 
 function App() {
+  // Authentication state
   const [currentUser, setCurrentUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
-  // Decide home path based on user role
+  /**
+   * Determines the appropriate home path based on user role
+   * @param {Object|null} user - User object with role information
+   * @returns {string} Path to redirect user to based on their role
+   */
   const getHomePath = (user) => {
     if (!user) return "/login";
     switch (user.role) {
@@ -29,25 +40,35 @@ function App() {
     }
   };
 
+  /**
+   * Initialize authentication state from localStorage on app startup
+   */
   useEffect(() => {
     const storedUserInfo = localStorage.getItem("userInfo");
     if (storedUserInfo) {
       try {
         setCurrentUser(JSON.parse(storedUserInfo));
       } catch (error) {
-        console.error("Failed to parse user info", error);
+        console.error("Failed to parse user info from localStorage:", error);
         localStorage.clear();
       }
     }
     setAuthChecked(true);
   }, []);
 
+  /**
+   * Handles successful user login
+   * @param {Object} userData - User data returned from authentication
+   */
   const handleLoginSuccess = (userData) => {
     setCurrentUser(userData);
     localStorage.setItem("userInfo", JSON.stringify(userData));
     navigate("/home"); // Navigate to home page after login
   };
 
+  /**
+   * Handles user logout by clearing state and localStorage
+   */
   const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem("authToken");
