@@ -15,6 +15,8 @@ import HomePage from "./components/HomePage/HomePage";
 import BusinessProfile from "./components/BusinessProfile/BusinessProfile";
 import UserProfilePage from "./components/UserProfilePage/UserProfilePage";
 import SearchPage from "./components/SearchPage/SearchPage";
+import BookingPage from "./components/BookingPage/BookingPage";
+import AdminPanel from "./components/AdminPanel/AdminPanel";
 import "./App.css";
 
 function App() {
@@ -35,6 +37,8 @@ function App() {
         return `/business/${user.businessId || user.id}`;
       case "customer":
         return "/profile";
+      case "admin":
+        return "/admin";
       default:
         return "/login";
     }
@@ -90,6 +94,17 @@ function App() {
           />
           {/* Redirect signup to login (now handled by AuthPage) */}
           <Route path="/signup" element={<Navigate replace to="/login" />} />
+          {/* Booking page - accessible to logged in users */}
+          <Route
+            path="/booking/:businessId/:serviceId"
+            element={
+              currentUser ? (
+                <BookingPage />
+              ) : (
+                <Navigate replace to="/login" />
+              )
+            }
+          />
           {/* Search page - accessible to all users */}
           <Route
             path="/search"
@@ -138,6 +153,17 @@ function App() {
             element={
               currentUser && currentUser.role === "business" ? (
                 <BusinessProfile user={currentUser} />
+              ) : (
+                <Navigate replace to="/login" />
+              )
+            }
+          />
+          {/* Admin panel (for administrators) */}
+          <Route
+            path="/admin/*"
+            element={
+              currentUser && currentUser.role === "admin" ? (
+                <AdminPanel user={currentUser} />
               ) : (
                 <Navigate replace to="/login" />
               )

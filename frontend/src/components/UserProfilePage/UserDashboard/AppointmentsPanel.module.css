@@ -40,56 +40,15 @@
   width: 100%;
   margin: 0;
   padding: 0;
-  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-}
-
-.appointmentItem {
-  background: #fff;
-  border-radius: 13px;
-  box-shadow: 0 2px 10px #b493db19;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 1rem;
-  gap: 12px;
-}
-
-.appointmentDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.cancelBtn {
-  background: #fff0f5;
-  color: #d9363e;
-  border: 1.5px solid #f3b1c7;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.97rem;
-  padding: 5px 16px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.cancelBtn:hover {
-  background: #ffe2ed;
+  gap: 16px;
 }
 
 @media (max-width: 600px) {
   .panelContainer {
     padding: 7vw 3vw 10vw 3vw;
     max-width: 99vw;
-  }
-  .appointmentItem {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 7px;
-    font-size: 0.98rem;
-    padding: 12px 8px;
   }
   .tabs {
     gap: 7px;
@@ -98,5 +57,8 @@
   .tabBtn {
     padding: 6px 14px;
     font-size: 0.97rem;
+  }
+  .appointmentList {
+    gap: 12px;
   }
 }

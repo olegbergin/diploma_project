@@ -29,7 +29,15 @@ function HomePage({ user }) {
       <div className={styles.actionButtons}>
         <button 
           className={styles.actionButton}
-          onClick={() => navigate('/profile/personal')}
+          onClick={() => {
+            if (user?.role === "customer") {
+              navigate('/profile/personal');
+            } else if (user?.role === "business") {
+              navigate(`/business/${user.businessId || user.id}`);
+            } else if (user?.role === "admin") {
+              navigate('/admin');
+            }
+          }}
         >
           👤 פרופיל אישי
         </button>

@@ -38,7 +38,16 @@ function Header({ user, onLogout }) {
   return (
     <header className={styles.header}>
       {/* Left Side: Profile Link */}
-      <Link to="/profile" className={styles.profileLink} aria-label="Go to your profile">
+      <Link 
+        to={
+          user?.role === "customer" ? "/profile" : 
+          user?.role === "business" ? `/business/${user.businessId || user.id}` : 
+          user?.role === "admin" ? "/admin" :
+          "/profile"
+        } 
+        className={styles.profileLink} 
+        aria-label="Go to your profile"
+      >
         {/* We can add logic here later to show a real avatar image if one exists */}
         <span className={styles.profileInitials}>{userInitials}</span>
       </Link>

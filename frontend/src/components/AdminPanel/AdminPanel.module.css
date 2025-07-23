@@ -1,0 +1,191 @@
+/* Admin Panel Styles - Based on existing design system */
+
+.adminContainer {
+  min-height: 85vh;
+  background: linear-gradient(145deg, #f4eafd 0%, #f8f4ff 50%, #f3e6fa 100%);
+  padding: 2rem 1rem;
+  direction: rtl;
+  font-family: 'Heebo', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Header Section */
+.header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f4ff 50%, #f3e6fa 100%);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(201, 178, 245, 0.15),
+    0 2px 8px rgba(103, 58, 183, 0.08);
+  border: 1px solid rgba(201, 178, 245, 0.2);
+  max-width: 800px;
+  margin: 0 auto 2.5rem auto;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d1b69;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #673ab7, #9c27b0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #5a4b7c;
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* Navigation Tabs */
+.navigationTabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 2rem;
+}
+
+.navTab {
+  background: linear-gradient(135deg, #f7eafd 0%, #ffffff 100%);
+  border: 2px solid rgba(201, 178, 245, 0.3);
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #673ab7;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 140px;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(201, 178, 245, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.navTab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.navTab:hover::before {
+  left: 100%;
+}
+
+.navTab:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px rgba(201, 178, 245, 0.4),
+    0 4px 12px rgba(103, 58, 183, 0.25);
+  background: linear-gradient(135deg, #c9b2f5 0%, #b39ddb 100%);
+  color: #fff;
+  border-color: rgba(201, 178, 245, 0.6);
+}
+
+.navTab.active {
+  background: linear-gradient(135deg, #673ab7 0%, #9c27b0 100%);
+  color: #fff;
+  border-color: #673ab7;
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 20px rgba(103, 58, 183, 0.4),
+    0 2px 8px rgba(103, 58, 183, 0.3);
+}
+
+.emoji {
+  font-size: 1.2rem;
+}
+
+.tabName {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Content Area */
+.contentArea {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(201, 178, 245, 0.15),
+    0 2px 8px rgba(103, 58, 183, 0.08);
+  border: 1px solid rgba(201, 178, 245, 0.2);
+  min-height: 500px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  overflow: hidden;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .adminContainer {
+    padding: 1rem 0.5rem;
+  }
+
+  .header {
+    padding: 1.5rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+  }
+
+  .navigationTabs {
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .navTab {
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    min-width: 120px;
+  }
+
+  .contentArea {
+    padding: 1.5rem 1rem;
+    margin: 0 0.5rem;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navigationTabs {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .navTab {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .contentArea {
+    padding: 1rem 0.8rem;
+  }
+}

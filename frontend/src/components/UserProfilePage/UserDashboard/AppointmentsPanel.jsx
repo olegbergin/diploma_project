@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../../api/axiosInstance";
+import AppointmentCard from "./AppointmentCard";
 import styles from "./AppointmentsPanel.module.css";
 
 // טאבים לתצוגה
@@ -72,25 +73,17 @@ export default function AppointmentsPanel({ user }) {
           אין {TABS.find((t) => t.key === type)?.label.toLowerCase()}.
         </div>
       ) : (
-        <ul className={styles.appointmentList}>
+        <div className={styles.appointmentList}>
           {appointments.map((app) => (
-            <li key={app.appointment_id} className={styles.appointmentItem}>
-              <div className={styles.appointmentDetails}>
-                <b>{app.business_name}</b> | {app.service_name} |{" "}
-                {new Date(app.appointment_datetime).toLocaleString("he-IL")}
-              </div>
-              {type === "upcoming" && (
-                <button
-                  onClick={() => handleCancel(app.appointment_id)}
-                  disabled={cancelingId === app.appointment_id}
-                  className={styles.cancelBtn}
-                >
-                  {cancelingId === app.appointment_id ? "מבטל..." : "בטל תור"}
-                </button>
-              )}
-            </li>
+            <AppointmentCard
+              key={app.appointment_id}
+              appointment={app}
+              type={type}
+              onCancel={type === "upcoming" ? handleCancel : null}
+              isCanceling={cancelingId === app.appointment_id}
+            />
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

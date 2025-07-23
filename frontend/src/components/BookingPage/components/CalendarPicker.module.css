@@ -1,0 +1,403 @@
+/* CalendarPicker.module.css */
+
+.calendarContainer {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  position: relative;
+}
+
+/* Header */
+.calendarHeader {
+  margin-bottom: 1.5rem;
+}
+
+.calendarTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.monthNavigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+
+.navButton {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #64748b;
+}
+
+.navButton:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.navButton:active {
+  transform: scale(0.95);
+}
+
+.monthDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.monthName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.yearName {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Calendar Grid */
+.calendar {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.dayNamesRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #1e293b;
+  color: white;
+}
+
+.dayName {
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: white;
+}
+
+/* Day Buttons */
+.dayButton {
+  position: relative;
+  aspect-ratio: 1;
+  min-height: 48px;
+  border: none;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 0.25rem;
+  gap: 0.25rem;
+}
+
+.dayButton:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.dayButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Day States */
+.dayButton.currentMonth {
+  color: #1e293b;
+}
+
+.dayButton.otherMonth {
+  color: #cbd5e1;
+  background: #fafafa;
+}
+
+.dayButton.pastDay {
+  color: #94a3b8;
+  background: #f8fafc;
+}
+
+.dayButton.today {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  font-weight: 600;
+}
+
+.dayButton.selected {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+}
+
+.dayButton.available:hover {
+  background: #e0f2fe;
+  transform: scale(1.05);
+}
+
+/* Day Number */
+.dayNumber {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.selected .dayNumber {
+  font-weight: 700;
+}
+
+/* Availability Indicators */
+.availabilityHigh,
+.availabilityMedium,
+.availabilityLow {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 2px;
+}
+
+.availabilityHigh {
+  background: #10b981;
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.3);
+}
+
+.availabilityMedium {
+  background: #f59e0b;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.3);
+}
+
+.availabilityLow {
+  background: #ef4444;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
+}
+
+.unavailableIcon {
+  width: 12px;
+  height: 12px;
+  color: #ef4444;
+  margin-top: 2px;
+}
+
+.selectedIcon {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 12px;
+  height: 12px;
+  color: white;
+}
+
+/* Loading State */
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.loadingSpinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .calendarContainer {
+    padding: 1rem;
+  }
+  
+  .monthNavigation {
+    padding: 0.5rem;
+  }
+  
+  .navButton {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .monthName {
+    font-size: 1rem;
+  }
+  
+  .legend {
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+  
+  .legendItem {
+    font-size: 0.7rem;
+  }
+  
+  .dayButton {
+    min-height: 44px;
+    padding: 0.125rem;
+  }
+  
+  .dayNumber {
+    font-size: 0.8rem;
+  }
+  
+  .dayName {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendarContainer {
+    padding: 0.75rem;
+    border-radius: 12px;
+  }
+  
+  .legend {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .monthNavigation {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+  
+  .dayButton {
+    min-height: 40px;
+  }
+  
+  .dayNumber {
+    font-size: 0.75rem;
+  }
+  
+  .availabilityHigh,
+  .availabilityMedium,
+  .availabilityLow {
+    width: 4px;
+    height: 4px;
+  }
+  
+  .unavailableIcon {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .dayButton,
+  .navButton,
+  .loadingSpinner {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .calendar {
+    border: 2px solid #000;
+  }
+  
+  .dayButton {
+    border: 1px solid #ccc;
+  }
+  
+  .dayButton.selected {
+    background: #000;
+    color: #fff;
+  }
+  
+  .availabilityHigh,
+  .availabilityMedium,
+  .availabilityLow {
+    border: 1px solid #000;
+  }
+}
+
+/* Focus styles */
+.dayButton:focus,
+.navButton:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Animation for month transitions */
+.calendar {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
