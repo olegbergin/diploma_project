@@ -9,14 +9,14 @@
  * @returns {JSX.Element} Personal info editing form
  */
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import styles from "./PersonalInfoPanel.module.css";
 
 export default function PersonalInfoPanel({ user, setUser }) {
   const [form, setForm] = useState({
-    firstName: user.firstName || "",
-    lastName: user.lastName || "",
+    firstName: user.first_name || user.firstName || "",
+    lastName: user.last_name || user.lastName || "",
     phone: user.phone || "",
   });
   const [saving, setSaving] = useState(false);
@@ -36,6 +36,33 @@ export default function PersonalInfoPanel({ user, setUser }) {
   const [pwMsg, setPwMsg] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
   const [pwErrors, setPwErrors] = useState({});
+
+  // Update form when user data changes
+  useEffect(() => {
+    setForm({
+      firstName: user.first_name || user.firstName || "",
+      lastName: user.last_name || user.lastName || "",
+      phone: user.phone || "",
+    });
+    setAvatarPreview(user.avatarUrl || user.avatar_url || "/default-avatar.png");
+  }, [user]);
+
+  // Load fresh user data from server on component mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (user.user_id) {
+        try {
+          const { data } = await axiosInstance.get(`/users/${user.user_id}`);
+          setUser(data);
+          localStorage.setItem("userInfo", JSON.stringify(data));
+        } catch (err) {
+          console.error("Failed to load user data:", err);
+        }
+      }
+    };
+    
+    loadUserData();
+  }, []); // Run only on mount
 
   /**
    * Validates form input fields
