@@ -41,11 +41,11 @@
   
   /* ==================== СИСТЕМНЫЕ ЦВЕТА ==================== */
   
-  /* Фоны */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-tertiary: #f3f4f6;
-  --bg-overlay: rgba(0, 0, 0, 0.5);
+  /* Фоны (с префиксом ds- для избежания конфликтов) */
+  --ds-bg-primary: #ffffff;
+  --ds-bg-secondary: #f9fafb;
+  --ds-bg-tertiary: #f3f4f6;
+  --ds-bg-overlay: rgba(0, 0, 0, 0.5);
   
   /* Границы */
   --border-light: #e5e7eb;
@@ -58,11 +58,11 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   
-  /* Цвета текста */
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --text-tertiary: #9ca3af;
-  --text-inverse: #ffffff;
+  /* Цвета текста (с префиксом ds- для избежания конфликтов) */
+  --ds-text-primary: #111827;
+  --ds-text-secondary: #6b7280;
+  --ds-text-tertiary: #9ca3af;
+  --ds-text-inverse: #ffffff;
   
   /* ==================== ТИПОГРАФИКА ==================== */
   

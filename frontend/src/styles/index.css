@@ -49,8 +49,8 @@ body {
   font-family: var(--font-primary);
   font-size: var(--text-base);
   line-height: var(--leading-normal);
-  color: var(--text-primary);
-  background: var(--bg-primary);
+  color: var(--ds-text-primary);
+  background: var(--ds-bg-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeSpeed;
