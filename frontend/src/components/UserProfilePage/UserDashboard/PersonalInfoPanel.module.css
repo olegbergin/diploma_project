@@ -26,8 +26,8 @@
 }
 
 .avatar {
-  width: 92px;
-  height: 92px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
   object-fit: cover;
   background: #e7d4f8;
@@ -72,6 +72,89 @@
   padding: 10px 12px;
   font-size: 1rem;
   margin-bottom: 4px;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.form input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+
+.inputError {
+  border-color: #e53e3e !important;
+  box-shadow: 0 0 0 1px rgba(229, 62, 62, 0.2);
+}
+
+.errorMsg {
+  color: #e53e3e;
+  font-size: 0.875rem;
+  margin-top: -2px;
+  margin-bottom: 8px;
+  text-align: right;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.editBtn {
+  background: #c9b2f5;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 0;
+  font-size: 1.08rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex: 1;
+  transition: background 0.2s;
+}
+
+.editBtn:hover {
+  background: #ae99df;
+}
+
+.saveBtn {
+  background: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 0;
+  font-size: 1.08rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex: 1;
+  transition: background 0.2s;
+}
+
+.saveBtn:hover {
+  background: #45a049;
+}
+
+.saveBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  background: #f44336;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 0;
+  font-size: 1.08rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex: 1;
+  transition: background 0.2s;
+}
+
+.cancelBtn:hover {
+  background: #da190b;
 }
 
 .form button[type="submit"] {

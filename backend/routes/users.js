@@ -35,13 +35,40 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const userId = req.params.id;
   const { firstName, lastName, phone, avatarUrl } = req.body;
+  
+  // Validation
+  const errors = {};
+  
+  if (!firstName || typeof firstName !== 'string' || firstName.trim().length < 2) {
+    errors.firstName = "שם פרטי נדרש ויש להכיל לפחות 2 תווים / First name required, minimum 2 characters";
+  }
+  
+  if (!lastName || typeof lastName !== 'string' || lastName.trim().length < 2) {
+    errors.lastName = "שם משפחה נדרש ויש להכיל לפחות 2 תווים / Last name required, minimum 2 characters";
+  }
+  
+  if (!phone || typeof phone !== 'string' || !/^[0-9+\-\s()]{10,}$/.test(phone.trim())) {
+    errors.phone = "מספר טלפון לא תקין / Invalid phone number";
+  }
+  
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({ errors });
+  }
+  
   try {
+    // Check if user exists
+    const [existingUser] = await db.query("SELECT user_id FROM users WHERE user_id = ?", [userId]);
+    if (existingUser.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
     await db.query(
       "UPDATE users SET first_name=?, last_name=?, phone=?, avatar_url=? WHERE user_id=?",
-      [firstName, lastName, phone, avatarUrl || null, userId]
+      [firstName.trim(), lastName.trim(), phone.trim(), avatarUrl || null, userId]
     );
-    res.json({ message: "User updated" });
+    res.json({ message: "User updated successfully" });
   } catch (err) {
+    console.error('User update error:', err);
     res.status(500).json({ error: "Update failed" });
   }
 });
@@ -52,6 +79,28 @@ router.put("/:id", async (req, res) => {
 router.post("/:id/change-password", async (req, res) => {
   const userId = req.params.id;
   const { currentPassword, newPassword } = req.body;
+  
+  // Validation
+  const errors = {};
+  
+  if (!currentPassword || typeof currentPassword !== 'string') {
+    errors.currentPassword = "יש למלא סיסמה נוכחית / Current password required";
+  }
+  
+  if (!newPassword || typeof newPassword !== 'string') {
+    errors.newPassword = "יש למלא סיסמה חדשה / New password required";
+  } else {
+    // Password validation using same rules as registration
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{3,8}$/;
+    if (!passwordRegex.test(newPassword)) {
+      errors.newPassword = "הסיסמה חייבת להכיל 3-8 תווים עם לפחות אות אחת וספרה אחת / Password must be 3-8 characters long and contain at least one letter and one number";
+    }
+  }
+  
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({ errors });
+  }
+  
   try {
     // בדיקת סיסמה קיימת
     const [rows] = await db.query(
@@ -60,12 +109,15 @@ router.post("/:id/change-password", async (req, res) => {
     );
     if (rows.length === 0)
       return res.status(404).json({ message: "User not found" });
+    
     const isMatch = await bcrypt.compare(
       currentPassword,
       rows[0].password_hash
     );
     if (!isMatch)
-      return res.status(400).json({ message: "סיסמה נוכחית לא נכונה" });
+      return res.status(400).json({ 
+        errors: { currentPassword: "סיסמה נוכחית לא נכונה / Current password is incorrect" }
+      });
 
     // עדכון סיסמה
     const hash = await bcrypt.hash(newPassword, 10);
@@ -75,6 +127,7 @@ router.post("/:id/change-password", async (req, res) => {
     ]);
     res.json({ message: "Password updated successfully" });
   } catch (err) {
+    console.error('Password change error:', err);
     res.status(500).json({ error: "Failed to update password" });
   }
 });

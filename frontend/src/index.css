@@ -1,11 +1,4 @@
-/* index.css */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* index.css - Интеграция с дизайн-системой */
 
-html, body, #root {          
-  height: 100%;
-  font-family: sans-serif;
-}
+/* Импорт полной дизайн-системы */
+@import url('./styles/index.css');

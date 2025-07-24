@@ -2,13 +2,15 @@
 
 import React, { useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
+import useErrorHandler from '../../hooks/useErrorHandler';
+import ErrorMessage from '../shared/ErrorMessage/ErrorMessage';
+import LoadingSpinner from '../shared/LoadingSpinner/LoadingSpinner';
 import styles from '../Forms/Form.module.css';
 
 function AuthPage({ onLoginSuccess }) {
   const [isLoginMode, setIsLoginMode] = useState(true);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const { error, isLoading, handleError, clearError, executeWithErrorHandling } = useErrorHandler();
 
   // Form data state
   const [formData, setFormData] = useState({
@@ -22,19 +24,19 @@ function AuthPage({ onLoginSuccess }) {
 
   // Validation function
   const validateInput = () => {
-    setError('');
+    clearError();
 
     // Email validation 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!emailRegex.test(formData.email)) {
-      setError("Please enter a valid email address.");
+      handleError("Please enter a valid email address.");
       return false;
     }
 
     // Password validation (3-8 characters, alphanumeric with at least one letter and one number)
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{3,8}$/;
     if (!passwordRegex.test(formData.password)) {
-      setError("Password must be 3-8 characters long and contain at least one letter and one number.");
+      handleError("Password must be 3-8 characters long and contain at least one letter and one number.");
       return false;
     }
 
@@ -42,19 +44,19 @@ function AuthPage({ onLoginSuccess }) {
     if (!isLoginMode) {
       // First name validation (minimum 2 letters only)
       if (formData.firstName.length < 2 || !/^[A-Za-z]+$/.test(formData.firstName)) {
-        setError("First name must contain only letters and have a minimum length of 2.");
+        handleError("First name must contain only letters and have a minimum length of 2.");
         return false;
       }
 
       // Last name validation (minimum 2 letters only)
       if (formData.lastName.length < 2 || !/^[A-Za-z]+$/.test(formData.lastName)) {
-        setError("Last name must contain only letters and have a minimum length of 2.");
+        handleError("Last name must contain only letters and have a minimum length of 2.");
         return false;
       }
 
       // Confirm password validation
       if (formData.password !== formData.confirmPassword) {
-        setError("Passwords do not match.");
+        handleError("Passwords do not match.");
         return false;
       }
     }
@@ -68,6 +70,11 @@ function AuthPage({ onLoginSuccess }) {
       ...prev,
       [name]: value
     }));
+    
+    // Clear error when user starts typing
+    if (error) {
+      clearError();
+    }
   };
 
   const handleQuickFill = (userType) => {
@@ -144,12 +151,6 @@ function AuthPage({ onLoginSuccess }) {
         ? 'Login failed. Please check your credentials and try again.'
         : 'Registration failed. Please try again.';
 
-      if (err.response?.data?.error) {
-        errorMessage = err.response.data.error;
-      }
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -165,8 +166,24 @@ function AuthPage({ onLoginSuccess }) {
         }
       </p>
 
-      {error && <p className={styles.errorMessage}>{error}</p>}
-      {success && <p className={styles.successMessage}>{success}</p>}
+      {/* Error Display */}
+      {error && (
+        <ErrorMessage 
+          error={error} 
+          onClose={clearError}
+          className={styles.errorMessage}
+        />
+      )}
+      
+      {/* Success Display */}
+      {success && (
+        <ErrorMessage 
+          error={success}
+          type="success"
+          onClose={() => setSuccess('')}
+          className={styles.successMessage}
+        />
+      )}
 
       <div className={styles.inputGrid}>
         {!isLoginMode && (
@@ -272,6 +289,7 @@ function AuthPage({ onLoginSuccess }) {
       )}
 
       <button type="submit" className={styles.submitButton} disabled={isLoading}>
+        {isLoading && <LoadingSpinner size="small" color="white" className={styles.buttonSpinner} />}
         {isLoading
           ? (isLoginMode ? 'מתחבר...' : 'רושם...')
           : (isLoginMode ? 'התחבר' : 'הרשם')

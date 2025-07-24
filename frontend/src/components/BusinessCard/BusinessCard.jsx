@@ -67,7 +67,7 @@ const BusinessCard = memo(function BusinessCard({
     location: business.location || "",
     phone: business.phone || "",
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const { error, isLoading, handleError, clearError, executeWithErrorHandling } = useErrorHandler();
   const [showModal, setShowModal] = useState(false);
 
   const {
@@ -117,36 +117,49 @@ const BusinessCard = memo(function BusinessCard({
   const handleUpdate = useCallback(
     async (e) => {
       e.preventDefault();
-      setIsLoading(true);
+      
+      // Client-side validation
+      if (!editData.name?.trim()) {
+        handleError('שם העסק נדרש / Business name is required');
+        return;
+      }
+      if (!editData.category?.trim()) {
+        handleError('קטגוריה נדרשת / Category is required');
+        return;
+      }
+      if (!editData.description?.trim()) {
+        handleError('תיאור נדרש / Description is required');
+        return;
+      }
+      
       try {
-        const response = await axiosInstance.put(
-          `/businesses/${business_id}`,
-          editData
-        );
-        if (onUpdate) onUpdate(response.data);
-        setIsEditing(false);
-      } catch {
-        alert("נכשל בעדכון העסק");
-      } finally {
-        setIsLoading(false);
+        await executeWithErrorHandling(async () => {
+          const response = await axiosInstance.put(
+            `/businesses/${business_id}`,
+            editData
+          );
+          if (onUpdate) onUpdate(response.data);
+          setIsEditing(false);
+        });
+      } catch (err) {
+        console.error('Failed to update business:', err);
       }
     },
-    [business_id, editData, onUpdate]
+    [business_id, editData, onUpdate, handleError, executeWithErrorHandling]
   );
 
   const handleDelete = useCallback(async () => {
     if (window.confirm("האם אתה בטוח שברצונך למחוק עסק זה?")) {
-      setIsLoading(true);
       try {
-        await axiosInstance.delete(`/businesses/${business_id}`);
-        if (onDelete) onDelete(business_id);
-      } catch {
-        alert("נכשל במחיקת העסק");
-      } finally {
-        setIsLoading(false);
+        await executeWithErrorHandling(async () => {
+          await axiosInstance.delete(`/businesses/${business_id}`);
+          if (onDelete) onDelete(business_id);
+        });
+      } catch (err) {
+        console.error('Failed to delete business:', err);
       }
     }
-  }, [business_id, onDelete]);
+  }, [business_id, onDelete, executeWithErrorHandling]);
 
   const handleImageClick = useCallback(
     (e) => {
@@ -164,6 +177,15 @@ const BusinessCard = memo(function BusinessCard({
     return (
       <>
         <div className={styles.businessCard}>
+          {/* Error Display */}
+          {error && (
+            <ErrorMessage 
+              error={error} 
+              onClose={clearError}
+              className={styles.errorMessage}
+            />
+          )}
+          
           <form onSubmit={handleUpdate} className={styles.editForm}>
             <input
               type="text"

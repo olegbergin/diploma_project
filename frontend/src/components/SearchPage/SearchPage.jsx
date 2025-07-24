@@ -31,8 +31,7 @@ function debounce(func, delay) {
 function SearchPage({ user }) {
   const [allBusinesses, setAllBusinesses] = useState([]);
   const [filteredBusinesses, setFilteredBusinesses] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { error, isLoading, handleError, clearError, executeWithErrorHandling, executeWithRetry } = useErrorHandler();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [orderBy, setOrderBy] = useState("name");
@@ -54,29 +53,22 @@ function SearchPage({ user }) {
   });
 
   const fetchAllBusinesses = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
     try {
-      const response = await axiosInstance.get("/businesses");
-      const businesses = response.data || [];
+      await executeWithRetry(async () => {
+        const response = await axiosInstance.get("/businesses");
+        const businesses = response.data || [];
 
-      setAllBusinesses(businesses);
-      setFilteredBusinesses(businesses);
-      setTotalItems(businesses.length);
+        setAllBusinesses(businesses);
+        setFilteredBusinesses(businesses);
+        setTotalItems(businesses.length);
+      }, { maxRetries: 2 });
     } catch (err) {
-      let errorMessage = "Could not load businesses. Please try again.";
-      if (err.response && err.response.data && err.response.data.error) {
-        errorMessage = err.response.data.error;
-      }
-      setError(errorMessage);
+      console.error("Error fetching businesses:", err);
       setAllBusinesses([]);
       setFilteredBusinesses([]);
       setTotalItems(0);
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [executeWithRetry]);
 
   const filterBusinesses = useCallback(() => {
     let filtered = [...allBusinesses];
@@ -310,6 +302,24 @@ function SearchPage({ user }) {
           </div>
         </form>
       </header>
+
+      {/* Error Display */}
+      {error && (
+        <ErrorMessage 
+          error={error} 
+          onRetry={fetchAllBusinesses}
+          onClose={clearError}
+          className={styles.errorMessage}
+        />
+      )}
+
+      {/* Loading Display */}
+      {isLoading && !error && (
+        <LoadingSpinner 
+          message="טוען עסקים..."
+          className={styles.loadingSpinner}
+        />
+      )}
 
       {(canCreateBusiness || !user?.role) && (
         <div className={styles.createBusinessSection}>
