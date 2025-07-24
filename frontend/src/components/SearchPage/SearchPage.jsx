@@ -3,8 +3,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import BusinessCard from "../BusinessCard/BusinessCard.jsx";
 import BusinessModal from "../BusinessModal/BusinessModal.jsx";
+import ErrorMessage from "../shared/ErrorMessage/ErrorMessage.jsx";
+import LoadingSpinner from "../shared/LoadingSpinner/LoadingSpinner.jsx";
 import styles from "./SearchPage.module.css";
 import axiosInstance from "../../api/axiosInstance.js";
+import useErrorHandler from "../../hooks/useErrorHandler.js";
 
 // Debounce utility function with cleanup
 function debounce(func, delay) {

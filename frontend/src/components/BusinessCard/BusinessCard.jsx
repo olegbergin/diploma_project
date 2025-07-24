@@ -3,6 +3,8 @@ import React, { useState, memo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axiosInstance from "../../api/axiosInstance";
 import BusinessModal from "../BusinessModal/BusinessModal";
+import ErrorMessage from "../shared/ErrorMessage/ErrorMessage";
+import useErrorHandler from "../../hooks/useErrorHandler";
 import styles from "./BusinessCard.module.css";
 
 const DEFAULT_PLACEHOLDER_IMAGE = "/images/placeholder_buisness.png"; // Adjust path as necessary
