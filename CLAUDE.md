@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Backend (Node.js/Express)
 - Start backend server: `cd backend && npm start`
-- Backend runs on port 3000 (or PORT env variable)
+- Backend runs on port 3030 (or PORT env variable)
 
 ### Frontend (React/Vite) 
 - Start development server: `cd frontend && npm run dev`

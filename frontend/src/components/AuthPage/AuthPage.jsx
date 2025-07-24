@@ -106,11 +106,10 @@ function AuthPage({ onLoginSuccess }) {
       return;
     }
 
-    setIsLoading(true);
-    setError('');
-    setSuccess('');
+    const authOperation = async () => {
+      clearError();
+      setSuccess('');
 
-    try {
       if (isLoginMode) {
         // Login
         const response = await axiosInstance.post('/auth/login', {
@@ -122,6 +121,7 @@ function AuthPage({ onLoginSuccess }) {
         localStorage.setItem('authToken', responseData.token);
         localStorage.setItem('userInfo', JSON.stringify(responseData.user));
         onLoginSuccess(responseData.user);
+        return responseData;
       } else {
         // Registration
         const userData = {
@@ -133,7 +133,7 @@ function AuthPage({ onLoginSuccess }) {
           role: "customer",
         };
 
-        await axiosInstance.post('/auth/register', userData);
+        const response = await axiosInstance.post('/auth/register', userData);
         setSuccess('Registration successful! Please login.');
         setIsLoginMode(true);
         setFormData({
@@ -144,13 +144,15 @@ function AuthPage({ onLoginSuccess }) {
           password: '',
           confirmPassword: ''
         });
+        return response.data;
       }
-    } catch (err) {
-      console.error('Auth process failed:', err);
-      let errorMessage = isLoginMode
-        ? 'Login failed. Please check your credentials and try again.'
-        : 'Registration failed. Please try again.';
+    };
 
+    try {
+      await executeWithErrorHandling(authOperation);
+    } catch (err) {
+      // Error is already handled by useErrorHandler
+      console.error('Auth process failed:', err);
     }
   };
 
