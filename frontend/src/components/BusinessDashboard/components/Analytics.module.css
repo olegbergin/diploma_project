@@ -1,0 +1,280 @@
+.container {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: var(--spacing-lg);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  gap: var(--spacing-md);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Chart Selector */
+.chartSelector {
+  display: flex;
+  gap: var(--spacing-xs);
+  background: var(--surface-secondary);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.chartButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.chartButton:hover {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.chartButton.active {
+  background: var(--primary-color);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.chartIcon {
+  font-size: 1rem;
+}
+
+/* Chart Container */
+.chartContainer {
+  margin-bottom: var(--spacing-xl);
+}
+
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-md);
+}
+
+.chartTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Period Selector */
+.periodSelector {
+  display: flex;
+  gap: var(--spacing-xs);
+  background: var(--surface-secondary);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.periodButton {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.periodButton:hover {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.periodButton.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Chart */
+.chart {
+  background: var(--background);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-light);
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Insights */
+.insights {
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-light);
+}
+
+.insightsTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.insightsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.insight {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: var(--surface-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.insightIcon {
+  font-size: 1.2rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.insightText {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Skeleton Loading */
+.skeleton {
+  margin-bottom: var(--spacing-xl);
+}
+
+.skeletonChart {
+  height: 300px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-secondary) 25%,
+    var(--border-light) 50%,
+    var(--surface-secondary) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: var(--radius-md);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
+  }
+  
+  .chartHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
+  }
+  
+  .chart {
+    padding: var(--spacing-md);
+    min-height: 250px;
+  }
+  
+  .chartSelector {
+    justify-content: center;
+  }
+  
+  .periodSelector {
+    justify-content: center;
+  }
+  
+  .insightsList {
+    gap: var(--spacing-xs);
+  }
+  
+  .insight {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  
+  .insightText {
+    font-size: 0.8rem;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  .chartButton span:not(.chartIcon) {
+    display: none;
+  }
+  
+  .periodButton {
+    padding: var(--spacing-xs);
+    font-size: 0.75rem;
+  }
+  
+  .chartTitle {
+    font-size: 1rem;
+  }
+}
+
+/* Focus and accessibility */
+.chartButton:focus-visible,
+.periodButton:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chartButton,
+  .periodButton,
+  .skeletonChart {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .chartSelector,
+  .periodSelector,
+  .chart,
+  .insight {
+    border-width: 2px;
+  }
+}

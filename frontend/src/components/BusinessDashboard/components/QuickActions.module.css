@@ -1,0 +1,231 @@
+.container {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: var(--spacing-lg);
+}
+
+.header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.grid.mobile {
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.grid.desktop {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .grid.desktop {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Small mobile: single column */
+@media (max-width: 480px) {
+  .grid.mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Action Card */
+.actionCard {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: right;
+  position: relative;
+  overflow: hidden;
+}
+
+.actionCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.actionCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-light);
+}
+
+.actionCard:hover::before {
+  width: 8px;
+}
+
+.actionCard:active {
+  transform: translateY(0);
+}
+
+/* Color variants */
+.actionCard.blue::before { background: var(--primary-color); }
+.actionCard.green::before { background: var(--success-color); }
+.actionCard.purple::before { background: #8b5cf6; }
+.actionCard.orange::before { background: var(--warning-color); }
+.actionCard.teal::before { background: #14b8a6; }
+.actionCard.gray::before { background: var(--secondary-color); }
+
+/* Mobile: Smaller cards */
+.grid.mobile .actionCard {
+  padding: var(--spacing-sm);
+  gap: var(--spacing-sm);
+  flex-direction: column;
+  text-align: center;
+}
+
+.grid.mobile .actionCard::before {
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: auto;
+  width: 100%;
+  height: 3px;
+}
+
+.grid.mobile .actionCard:hover::before {
+  height: 5px;
+  width: 100%;
+}
+
+/* Action Icon */
+.actionIcon {
+  font-size: 2rem;
+  min-width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+}
+
+.actionCard:hover .actionIcon {
+  background: var(--background);
+  border-color: var(--border);
+  transform: scale(1.05);
+}
+
+.grid.mobile .actionIcon {
+  font-size: 1.5rem;
+  min-width: 40px;
+  height: 40px;
+}
+
+/* Action Content */
+.actionContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.actionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+  line-height: 1.3;
+}
+
+.actionDescription {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.grid.mobile .actionTitle {
+  font-size: 0.9rem;
+}
+
+.grid.mobile .actionDescription {
+  font-size: 0.8rem;
+}
+
+/* Action Arrow */
+.actionArrow {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  margin-left: var(--spacing-xs);
+}
+
+.actionCard:hover .actionArrow {
+  color: var(--text-secondary);
+  transform: translateX(-2px);
+}
+
+.grid.mobile .actionArrow {
+  display: none;
+}
+
+/* Focus and accessibility */
+.actionCard:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actionCard,
+  .actionIcon,
+  .actionArrow {
+    transition: none;
+  }
+  
+  .actionCard:hover {
+    transform: none;
+  }
+  
+  .actionCard:hover .actionIcon {
+    transform: none;
+  }
+  
+  .actionCard:hover .actionArrow {
+    transform: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .actionCard {
+    border-width: 2px;
+  }
+  
+  .actionIcon {
+    border-width: 2px;
+  }
+}

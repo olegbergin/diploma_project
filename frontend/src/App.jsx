@@ -13,6 +13,7 @@ import Footer from "./components/layout/Footer/Footer";
 import AuthPage from "./components/AuthPage/AuthPage";
 import HomePage from "./components/HomePage/HomePage";
 import BusinessProfile from "./components/BusinessProfile/BusinessProfile";
+import BusinessDashboard from "./components/BusinessDashboard/BusinessDashboard";
 import UserProfilePage from "./components/UserProfilePage/UserProfilePage";
 import SearchPage from "./components/SearchPage/SearchPage";
 import BookingPage from "./components/BookingPage/BookingPage";
@@ -147,12 +148,23 @@ function App() {
               )
             }
           />
-          {/* Business profile (for business owners) */}
+          {/* Business dashboard (new modern dashboard) */}
+          <Route
+            path="/business/:id/dashboard"
+            element={
+              currentUser && currentUser.role === "business" ? (
+                <BusinessDashboard user={currentUser} />
+              ) : (
+                <Navigate replace to="/login" />
+              )
+            }
+          />
+          {/* Business profile (legacy - redirect to dashboard) */}
           <Route
             path="/business/:id"
             element={
               currentUser && currentUser.role === "business" ? (
-                <BusinessProfile user={currentUser} />
+                <Navigate replace to={`/business/${currentUser.businessId || currentUser.id}/dashboard`} />
               ) : (
                 <Navigate replace to="/login" />
               )

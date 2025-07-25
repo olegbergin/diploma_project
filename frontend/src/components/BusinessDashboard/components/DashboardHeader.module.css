@@ -1,0 +1,249 @@
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.header.mobile {
+  padding: var(--spacing-sm);
+}
+
+.header.desktop {
+  padding: var(--spacing-md) var(--spacing-xl);
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+/* Header Info */
+.headerInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.greeting {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.header.mobile .greeting {
+  font-size: 1.25rem;
+}
+
+.businessName {
+  color: var(--primary-color);
+}
+
+.date {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* Header Actions */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.actionButton:hover {
+  background: var(--border-light);
+  border-color: var(--secondary-color);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.actionButton:active {
+  transform: translateY(0);
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Refresh button animation */
+.actionButton.refreshing .refreshIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Notification button */
+.notificationButton {
+  position: relative;
+}
+
+.notificationIcon {
+  font-size: 1.1rem;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--error-color);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+/* Business Avatar */
+.businessAvatar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-md);
+  transition: background 0.2s ease;
+}
+
+.businessAvatar:hover {
+  background: var(--surface-secondary);
+}
+
+.avatarImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+  background: var(--surface-secondary);
+}
+
+.businessInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.businessInfo .businessName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.businessCategory {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mobile Stats Bar */
+.mobileStats {
+  display: flex;
+  justify-content: space-around;
+  padding: var(--spacing-sm) 0;
+  border-top: 1px solid var(--border-light);
+  margin-top: var(--spacing-sm);
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.875rem;
+}
+
+.statIcon {
+  font-size: 1rem;
+}
+
+.statValue {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .headerActions {
+    gap: var(--spacing-xs);
+  }
+  
+  .actionButton {
+    padding: var(--spacing-xs);
+    min-width: 40px;
+    justify-content: center;
+  }
+  
+  .actionButton span:not(.refreshIcon):not(.notificationIcon):not(.notificationBadge) {
+    display: none;
+  }
+  
+  .greeting {
+    font-size: 1.125rem;
+  }
+  
+  .date {
+    font-size: 0.8rem;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .actionButton {
+    border-width: 2px;
+  }
+  
+  .notificationBadge {
+    border: 2px solid white;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .refreshIcon,
+  .actionButton {
+    animation: none;
+    transition: none;
+  }
+}

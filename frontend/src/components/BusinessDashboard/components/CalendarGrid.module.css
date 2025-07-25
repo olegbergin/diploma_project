@@ -1,0 +1,537 @@
+/* Common Styles */
+.navButton {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.navButton:hover {
+  background: var(--surface-secondary);
+  border-color: var(--secondary-color);
+  color: var(--text-primary);
+}
+
+/* Status Colors */
+.confirmed {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: var(--success-color);
+  color: var(--success-color);
+}
+
+.pending {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: var(--warning-color);
+  color: var(--warning-color);
+}
+
+.completed {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.cancelled {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--error-color);
+  color: var(--error-color);
+}
+
+/* Day View */
+.dayView {
+  padding: var(--spacing-lg);
+}
+
+.dayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  gap: var(--spacing-md);
+}
+
+.dayTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+.timeSlotsContainer {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.timeColumn {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.timeSlot {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.appointmentsColumn {
+  flex: 1;
+}
+
+.appointmentSlot {
+  height: 60px;
+  border-bottom: 1px solid var(--border-light);
+  border-left: 1px solid var(--border-light);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.appointmentSlot:hover {
+  background: var(--surface-secondary);
+}
+
+.appointment {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 2px solid;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xs);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.appointment:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+.appointmentTime {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.appointmentCustomer {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appointmentService {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emptySlot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.appointmentSlot:hover .emptySlot {
+  opacity: 1;
+}
+
+/* Week View */
+.weekView {
+  padding: var(--spacing-lg);
+}
+
+.weekHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  gap: var(--spacing-md);
+}
+
+.weekTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+.weekGrid {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  gap: 1px;
+  background: var(--border-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.timeColumnHeader {
+  background: var(--surface-secondary);
+  height: 60px;
+}
+
+.dayHeader {
+  background: var(--surface-secondary);
+  padding: var(--spacing-sm);
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayHeader:hover {
+  background: var(--surface);
+}
+
+.dayHeader.today {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary-color);
+}
+
+.dayHeader.selected {
+  background: var(--primary-color);
+  color: white;
+}
+
+.dayName {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.dayNumber {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.weekRow {
+  display: contents;
+}
+
+.timeLabel {
+  background: var(--surface-secondary);
+  padding: var(--spacing-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+}
+
+.weekCell {
+  background: var(--surface);
+  padding: var(--spacing-xs);
+  min-height: 40px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  position: relative;
+}
+
+.weekCell:hover {
+  background: var(--surface-secondary);
+}
+
+.weekAppointment {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  margin-bottom: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weekAppointment:hover {
+  transform: scale(1.05);
+}
+
+/* Month View */
+.monthView {
+  padding: var(--spacing-lg);
+}
+
+.monthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  gap: var(--spacing-md);
+}
+
+.monthTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+.monthGrid {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.monthWeekHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--surface-secondary);
+}
+
+.monthWeekDay {
+  padding: var(--spacing-sm);
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-right: 1px solid var(--border-light);
+}
+
+.monthWeekDay:last-child {
+  border-right: none;
+}
+
+.monthWeek {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.monthDay {
+  min-height: 120px;
+  background: var(--surface);
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+  padding: var(--spacing-xs);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  position: relative;
+}
+
+.monthDay:hover {
+  background: var(--surface-secondary);
+}
+
+.monthDay.today {
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.monthDay.selected {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: var(--primary-color);
+}
+
+.monthDay.otherMonth {
+  background: var(--surface-secondary);
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.monthDay:last-child {
+  border-right: none;
+}
+
+.monthDayNumber {
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-primary);
+}
+
+.monthDay.today .monthDayNumber {
+  background: var(--primary-color);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+}
+
+.monthDayAppointments {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.monthAppointment {
+  font-size: 0.7rem;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.monthAppointment:hover {
+  transform: scale(1.02);
+}
+
+.moreAppointments {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.moreAppointments:hover {
+  color: var(--text-primary);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .dayView,
+  .weekView,
+  .monthView {
+    padding: var(--spacing-md);
+  }
+  
+  .dayTitle,
+  .weekTitle,
+  .monthTitle {
+    font-size: 1.25rem;
+  }
+  
+  /* Day view mobile */
+  .timeSlot {
+    height: 50px;
+    font-size: 0.8rem;
+  }
+  
+  .appointmentSlot {
+    height: 50px;
+  }
+  
+  .appointmentCustomer {
+    font-size: 0.8rem;
+  }
+  
+  .appointmentService {
+    font-size: 0.7rem;
+  }
+  
+  /* Week view mobile */
+  .weekGrid {
+    grid-template-columns: 60px repeat(7, 1fr);
+  }
+  
+  .dayHeader {
+    height: 50px;
+    padding: var(--spacing-xs);
+  }
+  
+  .dayName {
+    font-size: 0.7rem;
+  }
+  
+  .dayNumber {
+    font-size: 1rem;
+  }
+  
+  .timeLabel {
+    height: 35px;
+    font-size: 0.7rem;
+  }
+  
+  .weekCell {
+    min-height: 35px;
+  }
+  
+  .weekAppointment {
+    font-size: 0.7rem;
+    padding: 1px 3px;
+  }
+  
+  /* Month view mobile */
+  .monthDay {
+    min-height: 80px;
+    padding: 4px;
+  }
+  
+  .monthAppointment {
+    font-size: 0.65rem;
+    padding: 1px 3px;
+  }
+  
+  .moreAppointments {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dayHeader,
+  .weekHeader,
+  .monthHeader {
+    gap: var(--spacing-sm);
+  }
+  
+  .navButton {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+  
+  /* Week view - show only 3 days on very small screens */
+  .weekGrid {
+    grid-template-columns: 50px repeat(3, 1fr);
+  }
+  
+  /* Hide some week days on mobile */
+  .weekView .dayHeader:nth-child(n+6),
+  .weekView .weekCell:nth-child(7n+6),
+  .weekView .weekCell:nth-child(7n+7),
+  .weekView .weekCell:nth-child(7n+8) {
+    display: none;
+  }
+  
+  /* Month view adjustments */
+  .monthDay {
+    min-height: 60px;
+  }
+  
+  .monthWeekDay {
+    padding: var(--spacing-xs);
+    font-size: 0.8rem;
+  }
+}

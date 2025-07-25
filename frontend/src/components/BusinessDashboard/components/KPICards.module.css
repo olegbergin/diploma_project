@@ -1,0 +1,255 @@
+.grid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.grid.mobile {
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.grid.desktop {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Tablet: 2x2 grid */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .grid.desktop {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Very small mobile: single column */
+@media (max-width: 480px) {
+  .grid.mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card Base */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: var(--spacing-md);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-light);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+/* Color variants */
+.card.blue::before { background: var(--primary-color); }
+.card.green::before { background: var(--success-color); }
+.card.purple::before { background: #8b5cf6; }
+.card.orange::before { background: var(--warning-color); }
+
+/* Card Header */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.cardIcon {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.cardTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  flex: 1;
+  min-width: 0;
+}
+
+/* Mobile: Smaller header */
+.grid.mobile .cardHeader {
+  margin-bottom: var(--spacing-sm);
+}
+
+.grid.mobile .cardIcon {
+  width: 32px;
+  height: 32px;
+  font-size: 1.25rem;
+}
+
+.grid.mobile .cardTitle {
+  font-size: 0.8rem;
+}
+
+/* Card Content */
+.cardContent {
+  margin-bottom: var(--spacing-md);
+}
+
+.cardValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.2;
+}
+
+.grid.mobile .cardValue {
+  font-size: 1.5rem;
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .cardValue {
+    font-size: 1.25rem;
+  }
+}
+
+.cardChange {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.changeIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.grid.mobile .changeIndicator {
+  font-size: 0.8rem;
+}
+
+.changeValue {
+  font-weight: 600;
+}
+
+.changeLabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.grid.mobile .changeLabel {
+  font-size: 0.7rem;
+}
+
+/* Mini Chart */
+.miniChart {
+  height: 4px;
+  background: var(--surface-secondary);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.chartBar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s ease-in-out;
+  animation: growBar 1.5s ease-out;
+}
+
+.chartBar.up {
+  background: linear-gradient(90deg, var(--success-color), #22c55e);
+  width: 75%;
+}
+
+.chartBar.down {
+  background: linear-gradient(90deg, var(--error-color), #f87171);
+  width: 45%;
+}
+
+.chartBar:not(.up):not(.down) {
+  background: linear-gradient(90deg, var(--secondary-color), #64748b);
+  width: 60%;
+}
+
+@keyframes growBar {
+  0% { width: 0; }
+  100% { width: var(--final-width, 60%); }
+}
+
+/* Skeleton Loading */
+.card.skeleton {
+  pointer-events: none;
+  border-color: var(--border-light);
+}
+
+.card.skeleton::before {
+  background: var(--border-light);
+}
+
+.skeletonContent {
+  height: 120px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-secondary) 25%,
+    var(--border-light) 50%,
+    var(--surface-secondary) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: var(--radius-md);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Accessibility */
+.card:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .chartBar,
+  .skeletonContent {
+    animation: none;
+    transition: none;
+  }
+  
+  .card:hover {
+    transform: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .card {
+    border-width: 2px;
+  }
+  
+  .cardIcon {
+    border-width: 2px;
+  }
+}

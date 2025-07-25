@@ -8,7 +8,11 @@ import ExistingAppointments from "./sideBar/ExistingAppointments";
 import RequestsTab from "./sideBar/RequestsTab";
 import Calendar from "./tabs/Calendar/Calendar";
 import GalleryView from "./tabs/GalleryView/GalleryView";
-// TODO: Add ReviewsTab component for future implementation
+import MobileNavigation from "./components/MobileNavigation";
+import FloatingActionButton from "./components/FloatingActionButton";
+import PullToRefresh from "./components/PullToRefresh";
+import LazyImage from "./components/LazyImage";
+import { useSwipeGestures } from "./hooks/useSwipeGestures";
 
 /**
  * Business Profile Component - Main dashboard for business owners
@@ -26,6 +30,34 @@ export default function BusinessProfile() {
   // UI state management
   const [adminPanel, setAdminPanel] = useState(null); // Current admin panel: profile, services, galleryEdit, appointments, requests
   const [activeTab, setActiveTab] = useState("calendar"); // Active public tab: calendar, gallery, reviews
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  
+  // Tab management with swipe gestures
+  const tabs = ["calendar", "gallery", "reviews"];
+  
+  const handleSwipeLeft = () => {
+    if (!adminPanel && isMobile) {
+      const currentIndex = tabs.indexOf(activeTab);
+      const nextIndex = (currentIndex + 1) % tabs.length;
+      setActiveTab(tabs[nextIndex]);
+    }
+  };
+  
+  const handleSwipeRight = () => {
+    if (!adminPanel && isMobile) {
+      const currentIndex = tabs.indexOf(activeTab);
+      const prevIndex = currentIndex === 0 ? tabs.length - 1 : currentIndex - 1;
+      setActiveTab(tabs[prevIndex]);
+    }
+  };
+  
+  // Swipe gesture hook
+  const swipeRef = useSwipeGestures({
+    onSwipeLeft: handleSwipeLeft,
+    onSwipeRight: handleSwipeRight,
+    threshold: 50
+  });
   
   // Router hooks
   const { id: businessId } = useParams();
@@ -35,6 +67,20 @@ export default function BusinessProfile() {
    * Load business data from API
    * TODO: Replace mock data with actual API call
    */
+  // Handle responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     const loadBusinessData = async () => {
       try {
@@ -68,6 +114,22 @@ export default function BusinessProfile() {
       loadBusinessData();
     }
   }, [businessId]);
+  
+  // Pull to refresh handler
+  const handleRefresh = async () => {
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Reload business data
+      if (businessId) {
+        // In real implementation, this would be an actual API call
+        setBusiness(prev => ({ ...prev, lastUpdated: Date.now() }));
+      }
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    }
+  };
 
   /**
    * Renders the active public tab content
@@ -167,12 +229,42 @@ export default function BusinessProfile() {
     }
   };
 
-  if (!business) return <div className={styles.loading}>טוען נתוני עסק...</div>;
+  if (!business) return (
+    <div className={styles.loadingContainer}>
+      <div className={styles.loadingSpinner}></div>
+      <p className={styles.loadingText}>טוען נתוני עסק...</p>
+    </div>
+  );
 
-  return (
-    <div className={styles.pageLayout}>
+  const content = (
+    <div className={`${styles.pageLayout} ${isMobile ? styles.mobileLayout : ''}`}>
+      {/* Mobile Header */}
+      {isMobile && (
+        <header className={styles.mobileHeader}>
+          <button 
+            className={styles.menuToggle}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="תפריט ראשי"
+          >
+            <span className={styles.hamburger}></span>
+            <span className={styles.hamburger}></span>
+            <span className={styles.hamburger}></span>
+          </button>
+          <h1 className={styles.mobileTitle}>{business?.name}</h1>
+          <div className={styles.mobileActions}>
+            <button 
+              className={styles.mobileActionBtn}
+              onClick={() => navigate("/login")}
+              aria-label="יציאה"
+            >
+              ⏻
+            </button>
+          </div>
+        </header>
+      )}
+
       {/* -------- Sidebar -------- */}
-      <aside className={styles.sidebar}>
+      <aside className={`${styles.sidebar} ${isMobile && isMobileMenuOpen ? styles.sidebarOpen : ''} ${isMobile && !isMobileMenuOpen ? styles.sidebarClosed : ''}`}>
         <button
           className={styles.sidebarButton}
           onClick={() => {
@@ -212,22 +304,33 @@ export default function BusinessProfile() {
         >
           בקשות חדשות
         </button>
-        <button
-          className={`${styles.sidebarButton} ${styles.logoutButton}`}
-          onClick={() => navigate("/login")}
-        >
-          יציאה מהמערכת
-        </button>
+        {!isMobile && (
+          <button
+            className={`${styles.sidebarButton} ${styles.logoutButton}`}
+            onClick={() => navigate("/login")}
+          >
+            יציאה מהמערכת
+          </button>
+        )}
       </aside>
+
+      {/* Mobile Menu Overlay */}
+      {isMobile && isMobileMenuOpen && (
+        <div 
+          className={styles.mobileOverlay}
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
       {/* -------- Main Content -------- */}
       <main className={styles.profileContent}>
-        {/* Always show business card */}
-        <section className={styles.businessHeader}>
-          <img
-            src={business?.image_url || "/images/placeholder_business.png"}
-            alt="Business"
+        {/* Business Card */}
+        <section className={styles.businessCard}>
+          <LazyImage
+            src={business?.image_url}
+            alt={business?.name || "Business"}
             className={styles.businessProfileImg}
+            placeholder="/images/placeholder_business.png"
           />
           <div className={styles.businessInfo}>
             <div className={styles.businessName}>{business?.name}</div>
@@ -240,10 +343,16 @@ export default function BusinessProfile() {
           </div>
         </section>
 
-        {/* Show public tabs only if not in admin panel */}
+        {/* Navigation Tabs */}
         {!adminPanel && (
           <>
-            <div className={styles.tabBar}>
+            {isMobile ? (
+              <MobileNavigation 
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+              />
+            ) : (
+              <div className={styles.tabBar}>
               <button
                 className={activeTab === "calendar" ? styles.activeTab : ""}
                 onClick={() => setActiveTab("calendar")}
@@ -262,16 +371,36 @@ export default function BusinessProfile() {
               >
                 ביקורות
               </button>
+              </div>
+            )}
+            <div 
+              className={styles.tabContent}
+              ref={isMobile ? swipeRef : null}
+            >
+              {renderPublicTab()}
             </div>
-            <div className={styles.tabContent}>{renderPublicTab()}</div>
           </>
         )}
 
-        {/* Admin panel replaces tabs */}
+        {/* Admin panel */}
         {adminPanel && (
           <div className={styles.adminPanel}>{renderAdminPanel()}</div>
         )}
       </main>
+
+      {/* Floating Action Button for Mobile */}
+      {isMobile && !adminPanel && (
+        <FloatingActionButton
+          onQuickAction={(action) => setAdminPanel(action)}
+        />
+      )}
     </div>
   );
+  
+  // Wrap with pull-to-refresh on mobile
+  return isMobile ? (
+    <PullToRefresh onRefresh={handleRefresh}>
+      {content}
+    </PullToRefresh>
+  ) : content;
 }
