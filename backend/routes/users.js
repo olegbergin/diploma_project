@@ -190,4 +190,214 @@ router.delete("/:id/favorites/:businessId", async (req, res) => {
   }
 });
 
+// ------------------------------------------------------------
+// User Dashboard Data - comprehensive data for user dashboard
+// GET /api/users/:id/dashboard
+router.get("/:id/dashboard", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    
+    // Check if user exists
+    const [userRows] = await db.query(
+      "SELECT user_id, first_name, last_name, email, phone, role, avatar_url FROM users WHERE user_id = ?",
+      [userId]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = userRows[0];
+
+    // Get appointment statistics
+    const [appointmentStats] = await db.query(`
+      SELECT 
+        COUNT(*) as total_bookings,
+        COUNT(CASE WHEN status = 'approved' AND appointment_datetime >= NOW() THEN 1 END) as upcoming_bookings,
+        COUNT(CASE WHEN status = 'approved' AND appointment_datetime < NOW() THEN 1 END) as past_bookings,
+        COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_bookings,
+        COUNT(CASE WHEN appointment_datetime >= CURDATE() AND appointment_datetime < DATE_ADD(CURDATE(), INTERVAL 14 DAY) THEN 1 END) as bookings_next_two_weeks
+      FROM appointments 
+      WHERE customer_id = ?
+    `, [userId]);
+
+    // Get favorites count
+    const [favoritesStats] = await db.query(`
+      SELECT COUNT(*) as favorite_businesses
+      FROM user_favorites
+      WHERE user_id = ?
+    `, [userId]);
+
+    // Get average rating given by user (if we have a ratings table)
+    // For now, we'll use a placeholder calculation
+    const [ratingStats] = await db.query(`
+      SELECT 
+        COALESCE(AVG(CASE WHEN a.status = 'approved' THEN 4.5 END), 0) as average_rating
+      FROM appointments a
+      WHERE a.customer_id = ? AND a.status = 'approved'
+    `, [userId]);
+
+    // Get recent activities
+    const [recentActivities] = await db.query(`
+      SELECT 
+        'booking' as type,
+        CONCAT('תור בעסק ', b.name) as title,
+        CONCAT('תור ב', s.name, ' בתאריך ', DATE_FORMAT(a.appointment_datetime, '%d/%m/%Y'), ' בשעה ', DATE_FORMAT(a.appointment_datetime, '%H:%i')) as description,
+        a.appointment_datetime as activity_date,
+        a.status,
+        b.name as business_name,
+        '📅' as icon
+      FROM appointments a
+      LEFT JOIN businesses b ON a.business_id = b.business_id
+      LEFT JOIN services s ON a.service_id = s.service_id
+      WHERE a.customer_id = ?
+      ORDER BY a.appointment_datetime DESC
+      LIMIT 10
+    `, [userId]);
+
+    // Get detailed favorites with business info
+    const [detailedFavorites] = await db.query(`
+      SELECT 
+        b.business_id,
+        b.name,
+        b.category,
+        b.description,
+        b.address,
+        b.phone,
+        b.image_url,
+        b.opening_hours,
+        f.created_at as favorited_date,
+        (SELECT COUNT(*) FROM appointments WHERE customer_id = ? AND business_id = b.business_id AND status = 'approved') as visit_count,
+        (SELECT MAX(appointment_datetime) FROM appointments WHERE customer_id = ? AND business_id = b.business_id AND status = 'approved') as last_visit
+      FROM user_favorites f
+      JOIN businesses b ON f.business_id = b.business_id
+      WHERE f.user_id = ?
+      ORDER BY f.created_at DESC
+    `, [userId, userId, userId]);
+
+    // Get upcoming appointments with full details
+    const [upcomingAppointments] = await db.query(`
+      SELECT 
+        a.appointment_id,
+        a.appointment_datetime,
+        a.status,
+        a.notes,
+        b.name as business_name,
+        b.address as business_address,
+        b.phone as business_phone,
+        b.image_url as business_image,
+        s.name as service_name,
+        s.price,
+        s.duration_minutes
+      FROM appointments a
+      LEFT JOIN businesses b ON a.business_id = b.business_id
+      LEFT JOIN services s ON a.service_id = s.service_id
+      WHERE a.customer_id = ? 
+      AND a.status = 'approved' 
+      AND a.appointment_datetime >= NOW()
+      ORDER BY a.appointment_datetime ASC
+      LIMIT 5
+    `, [userId]);
+
+    // Get past appointments with ratings (for history)
+    const [pastAppointments] = await db.query(`
+      SELECT 
+        a.appointment_id,
+        a.appointment_datetime,
+        a.status,
+        b.name as business_name,
+        b.address as business_address,
+        b.image_url as business_image,
+        s.name as service_name,
+        s.price,
+        s.duration_minutes
+      FROM appointments a
+      LEFT JOIN businesses b ON a.business_id = b.business_id
+      LEFT JOIN services s ON a.service_id = s.service_id
+      WHERE a.customer_id = ? 
+      AND a.status = 'approved' 
+      AND a.appointment_datetime < NOW()
+      ORDER BY a.appointment_datetime DESC
+      LIMIT 10
+    `, [userId]);
+
+    // Compile dashboard data
+    const dashboardData = {
+      user: {
+        ...user,
+        avatarUrl: user.avatar_url || null
+      },
+      totalBookings: appointmentStats[0].total_bookings || 0,
+      upcomingBookings: appointmentStats[0].upcoming_bookings || 0,
+      pastBookings: appointmentStats[0].past_bookings || 0,
+      cancelledBookings: appointmentStats[0].cancelled_bookings || 0,
+      bookingsNextTwoWeeks: appointmentStats[0].bookings_next_two_weeks || 0,
+      favoriteBusinesses: favoritesStats[0].favorite_businesses || 0,
+      averageRating: parseFloat(ratingStats[0].average_rating) || 4.5,
+      recentActivities: recentActivities.map(activity => ({
+        id: Math.random().toString(36).substr(2, 9),
+        type: activity.type,
+        title: activity.title,
+        description: activity.description,
+        time: formatTimeAgo(activity.activity_date),
+        icon: activity.icon,
+        status: activity.status,
+        business: activity.business_name
+      })),
+      favorites: detailedFavorites.map(fav => ({
+        id: fav.business_id,
+        name: fav.name,
+        category: fav.category,
+        address: fav.address,
+        phone: fav.phone,
+        image: fav.image_url,
+        visitCount: fav.visit_count || 0,
+        lastVisit: fav.last_visit,
+        favoritedDate: fav.favorited_date
+      })),
+      upcomingAppointments: upcomingAppointments.map(apt => ({
+        id: apt.appointment_id,
+        businessName: apt.business_name,
+        serviceName: apt.service_name,
+        date: apt.appointment_datetime,
+        price: apt.price,
+        duration: apt.duration_minutes,
+        status: apt.status,
+        businessImage: apt.business_image,
+        businessAddress: apt.business_address,
+        businessPhone: apt.business_phone
+      })),
+      pastAppointments: pastAppointments.map(apt => ({
+        id: apt.appointment_id,
+        businessName: apt.business_name,
+        serviceName: apt.service_name,
+        date: apt.appointment_datetime,
+        price: apt.price,
+        duration: apt.duration_minutes,
+        status: apt.status,
+        businessImage: apt.business_image
+      }))
+    };
+
+    res.json(dashboardData);
+  } catch (err) {
+    console.error(`DB error fetching dashboard data for user ${req.params.id}:`, err);
+    res.status(500).json({ error: "Failed to fetch dashboard data." });
+  }
+});
+
+// Helper function to format time ago (can be moved to utils)
+function formatTimeAgo(date) {
+  const now = new Date();
+  const diffMs = now - new Date(date);
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+  
+  if (diffHours < 1) return 'לפני פחות משעה';
+  if (diffHours < 24) return `לפני ${diffHours} שעות`;
+  if (diffDays < 7) return `לפני ${diffDays} ימים`;
+  if (diffDays < 30) return `לפני ${Math.floor(diffDays / 7)} שבועות`;
+  return `לפני ${Math.floor(diffDays / 30)} חודשים`;
+}
+
 module.exports = router;

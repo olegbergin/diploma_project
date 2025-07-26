@@ -1,0 +1,338 @@
+/* Base navigation styles */
+.navigation {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(112, 56, 183, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+/* Mobile navigation */
+.mobileNav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  box-shadow: -4px 0 20px rgba(112, 56, 183, 0.15);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobileNav.open {
+  transform: translateX(0);
+}
+
+/* Desktop navigation */
+.desktopNav {
+  grid-area: nav;
+  position: static;
+  width: auto;
+  height: auto;
+  min-height: 100vh;
+  border-radius: 0 20px 20px 0;
+  margin: 1rem 0 1rem 1rem;
+  box-shadow: 4px 0 20px rgba(112, 56, 183, 0.1);
+}
+
+/* Navigation header */
+.navHeader {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(112, 56, 183, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@media (min-width: 769px) {
+  .navHeader {
+    padding: 2rem;
+  }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logoIcon {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 2px 4px rgba(112, 56, 183, 0.3));
+}
+
+.logoText {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #7038b7;
+  letter-spacing: 0.5px;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #7038b7;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.closeButton:hover {
+  background: rgba(112, 56, 183, 0.1);
+}
+
+@media (min-width: 769px) {
+  .closeButton {
+    display: none;
+  }
+}
+
+/* Navigation content */
+.navContent {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+@media (min-width: 769px) {
+  .navContent {
+    padding: 1.5rem;
+  }
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.navItem {
+  margin: 0;
+}
+
+.navButton {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: right;
+  position: relative;
+  overflow: hidden;
+}
+
+.navButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: right 0.5s;
+}
+
+.navButton:hover::before {
+  right: 100%;
+}
+
+.navButton:hover {
+  background: rgba(112, 56, 183, 0.05);
+  transform: translateX(-4px);
+  box-shadow: 4px 0 12px rgba(112, 56, 183, 0.1);
+}
+
+.navButton.active {
+  background: linear-gradient(135deg, rgba(112, 56, 183, 0.1), rgba(156, 39, 176, 0.05));
+  color: #7038b7;
+  transform: translateX(-4px);
+  box-shadow: 4px 0 16px rgba(112, 56, 183, 0.2);
+  border: 1px solid rgba(112, 56, 183, 0.2);
+}
+
+.navIcon {
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.navTextContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.navLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #7038b7;
+  line-height: 1.2;
+}
+
+.navDescription {
+  font-size: 0.8rem;
+  color: #8b7fb8;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.activeIndicator {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60%;
+  background: linear-gradient(135deg, #7038b7, #9c27b0);
+  border-radius: 2px 0 0 2px;
+  box-shadow: 0 0 8px rgba(112, 56, 183, 0.4);
+}
+
+/* Navigation footer */
+.navFooter {
+  padding: 1rem;
+  border-top: 1px solid rgba(112, 56, 183, 0.1);
+  background: rgba(112, 56, 183, 0.02);
+}
+
+@media (min-width: 769px) {
+  .navFooter {
+    padding: 1.5rem;
+  }
+}
+
+.quickStats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.quickStatItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  border: 1px solid rgba(112, 56, 183, 0.1);
+}
+
+.quickStatIcon {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.quickStatText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.quickStatNumber {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #7038b7;
+  line-height: 1;
+}
+
+.quickStatLabel {
+  font-size: 0.75rem;
+  color: #8b7fb8;
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* Logout button */
+.logoutButton {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(233, 30, 99, 0.05));
+  border: 1px solid rgba(244, 67, 54, 0.2);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+  color: #d32f2f;
+}
+
+.logoutButton:hover {
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.15), rgba(233, 30, 99, 0.1));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.2);
+}
+
+.logoutIcon {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoutText {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Scrollbar styling */
+.navigation::-webkit-scrollbar {
+  width: 6px;
+}
+
+.navigation::-webkit-scrollbar-track {
+  background: rgba(112, 56, 183, 0.05);
+  border-radius: 3px;
+}
+
+.navigation::-webkit-scrollbar-thumb {
+  background: rgba(112, 56, 183, 0.2);
+  border-radius: 3px;
+}
+
+.navigation::-webkit-scrollbar-thumb:hover {
+  background: rgba(112, 56, 183, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .mobileNav {
+    width: 280px;
+  }
+  
+  .navHeader {
+    padding: 1.25rem;
+  }
+  
+  .navContent {
+    padding: 0.75rem;
+  }
+  
+  .navFooter {
+    padding: 0.75rem;
+  }
+}

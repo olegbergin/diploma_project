@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import axios from '../../../config/axios';
 
 export function useAppointments(businessId) {
   const [appointments, setAppointments] = useState([]);
@@ -58,22 +59,45 @@ export function useAppointments(businessId) {
     setError(null);
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Get current month in YYYY-MM format for API call
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      
+      // Fetch appointments from API
+      const response = await axios.get(`/api/appointments`, {
+        params: {
+          businessId: businessId,
+          month: currentMonth
+        }
+      });
+      
+      // Transform API data to match expected structure
+      const transformedAppointments = response.data.map(apt => ({
+        id: apt.appointment_id,
+        businessId: businessId,
+        customerId: apt.customer_id,
+        customerName: `${apt.first_name || 'לקוח'} ${apt.last_name || ''}`.trim(),
+        customerPhone: apt.phone || '',
+        serviceId: apt.service_id,
+        serviceName: apt.service_name || 'שירות',
+        date: apt.date,
+        time: apt.time,
+        duration: apt.duration_minutes || 60,
+        status: apt.status,
+        price: apt.price || 0,
+        notes: apt.notes || '',
+        createdAt: apt.appointment_datetime,
+        updatedAt: apt.appointment_datetime
+      }));
 
-      // In production, this would be:
-      // const response = await fetch(`/api/businesses/${businessId}/appointments`);
-      // if (!response.ok) throw new Error('Failed to load appointments');
-      // const data = await response.json();
-      // setAppointments(data);
-
-      // For now, use mock data
-      const mockData = generateMockAppointments();
-      setAppointments(mockData);
+      setAppointments(transformedAppointments);
 
     } catch (err) {
       setError('שגיאה בטעינת התורים. אנא נסה שוב.');
       console.error('Failed to load appointments:', err);
+      
+      // Fallback to mock data if API fails
+      const mockData = generateMockAppointments();
+      setAppointments(mockData);
     } finally {
       setIsLoading(false);
     }

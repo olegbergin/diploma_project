@@ -152,4 +152,152 @@ router.get("/:id/services", async (req, res) => {
   }
 });
 
+/* ───────────────────────────────
+   6. Get dashboard analytics for a business (GET /api/businesses/:id/dashboard)
+   Returns comprehensive dashboard data including analytics, appointments, and stats
+   ─────────────────────────────── */
+router.get("/:id/dashboard", async (req, res) => {
+  try {
+    const businessId = req.params.id;
+    
+    // Check if business exists
+    const [businessRows] = await db.query(
+      "SELECT * FROM businesses WHERE business_id = ?",
+      [businessId]
+    );
+
+    if (businessRows.length === 0) {
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    const business = businessRows[0];
+
+    // Get current month analytics
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+    
+    // Get appointment statistics
+    const [appointmentStats] = await db.query(`
+      SELECT 
+        COUNT(*) as total_appointments,
+        COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved_appointments,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_appointments,
+        COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_appointments,
+        COUNT(CASE WHEN DATE_FORMAT(appointment_datetime, '%Y-%m') = ? THEN 1 END) as monthly_appointments,
+        COUNT(CASE WHEN appointment_datetime >= CURDATE() AND appointment_datetime < DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 1 END) as weekly_appointments
+      FROM appointments 
+      WHERE business_id = ?
+    `, [currentMonth, businessId]);
+
+    // Get revenue statistics (assuming appointments have a price from services)
+    const [revenueStats] = await db.query(`
+      SELECT 
+        COALESCE(SUM(CASE WHEN a.status = 'approved' THEN s.price END), 0) as total_revenue,
+        COALESCE(SUM(CASE WHEN a.status = 'approved' AND DATE_FORMAT(a.appointment_datetime, '%Y-%m') = ? THEN s.price END), 0) as monthly_revenue,
+        COALESCE(AVG(CASE WHEN a.status = 'approved' THEN s.price END), 0) as average_service_price
+      FROM appointments a
+      LEFT JOIN services s ON a.service_id = s.service_id
+      WHERE a.business_id = ?
+    `, [currentMonth, businessId]);
+
+    // Get recent appointments with customer and service details
+    const [recentAppointments] = await db.query(`
+      SELECT 
+        a.appointment_id,
+        a.appointment_datetime,
+        a.status,
+        a.notes,
+        u.first_name,
+        u.last_name, 
+        u.phone,
+        s.name as service_name,
+        s.price,
+        s.duration_minutes
+      FROM appointments a
+      LEFT JOIN users u ON a.customer_id = u.user_id
+      LEFT JOIN services s ON a.service_id = s.service_id
+      WHERE a.business_id = ?
+      ORDER BY a.appointment_datetime DESC
+      LIMIT 10
+    `, [businessId]);
+
+    // Get monthly appointment trends (last 12 months)
+    const [monthlyTrends] = await db.query(`
+      SELECT 
+        DATE_FORMAT(appointment_datetime, '%Y-%m') as month,
+        COUNT(*) as appointment_count,
+        COALESCE(SUM(CASE WHEN a.status = 'approved' THEN s.price END), 0) as revenue
+      FROM appointments a
+      LEFT JOIN services s ON a.service_id = s.service_id
+      WHERE a.business_id = ? 
+      AND appointment_datetime >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+      GROUP BY DATE_FORMAT(appointment_datetime, '%Y-%m')
+      ORDER BY month ASC
+    `, [businessId]);
+
+    // Get service popularity
+    const [serviceStats] = await db.query(`
+      SELECT 
+        s.name as service_name,
+        s.service_id,
+        COUNT(a.appointment_id) as booking_count,
+        COALESCE(SUM(CASE WHEN a.status = 'approved' THEN s.price END), 0) as service_revenue
+      FROM services s
+      LEFT JOIN appointments a ON s.service_id = a.service_id
+      WHERE s.business_id = ?
+      GROUP BY s.service_id, s.name
+      ORDER BY booking_count DESC
+    `, [businessId]);
+
+    // Get today's appointments
+    const [todayAppointments] = await db.query(`
+      SELECT 
+        a.appointment_id,
+        a.appointment_datetime,
+        a.status,
+        u.first_name,
+        u.last_name,
+        s.name as service_name,
+        s.duration_minutes
+      FROM appointments a
+      LEFT JOIN users u ON a.customer_id = u.user_id
+      LEFT JOIN services s ON a.service_id = s.service_id
+      WHERE a.business_id = ? 
+      AND DATE(a.appointment_datetime) = CURDATE()
+      ORDER BY a.appointment_datetime ASC
+    `, [businessId]);
+
+    // Compile dashboard data
+    const dashboardData = {
+      business: {
+        ...business,
+        total_services: serviceStats.length
+      },
+      analytics: {
+        total_appointments: appointmentStats[0].total_appointments || 0,
+        approved_appointments: appointmentStats[0].approved_appointments || 0,
+        pending_appointments: appointmentStats[0].pending_appointments || 0,
+        cancelled_appointments: appointmentStats[0].cancelled_appointments || 0,
+        monthly_appointments: appointmentStats[0].monthly_appointments || 0,
+        weekly_appointments: appointmentStats[0].weekly_appointments || 0,
+        total_revenue: parseFloat(revenueStats[0].total_revenue) || 0,
+        monthly_revenue: parseFloat(revenueStats[0].monthly_revenue) || 0,
+        average_service_price: parseFloat(revenueStats[0].average_service_price) || 0,
+        monthly_trends: monthlyTrends,
+        service_stats: serviceStats
+      },
+      recent_appointments: recentAppointments,
+      today_appointments: todayAppointments,
+      notifications: {
+        pending_count: appointmentStats[0].pending_appointments || 0,
+        today_count: todayAppointments.length || 0
+      }
+    };
+
+    res.json(dashboardData);
+  } catch (err) {
+    console.error(`DB error fetching dashboard data for business ${req.params.id}:`, err);
+    res.status(500).json({ error: "Failed to fetch dashboard data." });
+  }
+});
+
 module.exports = router;

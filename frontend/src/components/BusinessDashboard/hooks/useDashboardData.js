@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import axios from '../../../config/axios';
 
 export function useDashboardData(businessId) {
   const [business, setBusiness] = useState(null);
@@ -8,7 +9,24 @@ export function useDashboardData(businessId) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Mock data generator for development
+  // Helper function to format time ago
+  const formatTimeAgo = useCallback((dateString) => {
+    if (!dateString) return 'לא ידוע';
+    
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now - date;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffHours < 1) return 'לפני פחות משעה';
+    if (diffHours < 24) return `לפני ${diffHours} שעות`;
+    if (diffDays < 7) return `לפני ${diffDays} ימים`;
+    if (diffDays < 30) return `לפני ${Math.floor(diffDays / 7)} שבועות`;
+    return `לפני ${Math.floor(diffDays / 30)} חודשים`;
+  }, []);
+
+  // Fallback mock data generator for development (in case API fails)
   const generateMockData = useCallback(() => {
     const today = new Date();
     const thisMonth = today.getMonth();
@@ -175,32 +193,115 @@ export function useDashboardData(businessId) {
     setError(null);
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // In production, this would be actual API calls
-      // const [businessRes, analyticsRes, activityRes, notificationsRes] = await Promise.all([
-      //   fetch(`/api/businesses/${businessId}`),
-      //   fetch(`/api/businesses/${businessId}/analytics`),
-      //   fetch(`/api/businesses/${businessId}/activity`),
-      //   fetch(`/api/businesses/${businessId}/notifications`)
-      // ]);
-
-      // For now, use mock data
-      const mockData = generateMockData();
+      // Fetch dashboard data from API
+      const response = await axios.get(`/api/businesses/${businessId}/dashboard`);
+      const data = response.data;
       
+      setBusiness(data.business);
+      
+      // Transform API data to match expected analytics structure
+      const transformedAnalytics = {
+        revenue: {
+          current: data.analytics?.total_revenue || 0,
+          previous: data.analytics?.monthly_revenue || 0,
+          change: data.analytics?.total_revenue > 0 ? 
+            ((data.analytics.total_revenue - data.analytics.monthly_revenue) / data.analytics.monthly_revenue * 100) : 0,
+          trend: 'up'
+        },
+        appointments: {
+          current: data.analytics?.total_appointments || 0,
+          previous: data.analytics?.monthly_appointments || 0,
+          change: data.analytics?.total_appointments > 0 ? 
+            ((data.analytics.total_appointments - data.analytics.monthly_appointments) / data.analytics.monthly_appointments * 100) : 0,
+          trend: 'up'
+        },
+        customers: {
+          current: data.analytics?.approved_appointments || 0,
+          previous: data.analytics?.monthly_appointments || 0,
+          change: 9.9,
+          trend: 'up'
+        },
+        rating: {
+          current: 4.8, // TODO: Calculate from reviews
+          previous: 4.6,
+          change: 4.3,
+          trend: 'up'
+        },
+        chartData: {
+          revenue: data.analytics?.monthly_trends?.map(trend => ({
+            date: trend.month,
+            value: parseFloat(trend.revenue) || 0
+          })) || [],
+          appointments: Array.from({ length: 7 }, (_, i) => ({
+            day: ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'][i],
+            value: Math.floor((data.analytics?.weekly_appointments || 0) / 7) + Math.floor(Math.random() * 5)
+          })),
+          topServices: data.analytics?.service_stats?.map(service => ({
+            name: service.service_name,
+            bookings: service.booking_count,
+            revenue: parseFloat(service.service_revenue) || 0
+          })).slice(0, 4) || []
+        }
+      };
+      
+      setAnalytics(transformedAnalytics);
+      
+      // Transform recent appointments to activity format
+      const transformedActivity = data.recent_appointments?.map((appointment, index) => ({
+        id: appointment.appointment_id || index,
+        type: appointment.status === 'pending' ? 'booking' : 
+              appointment.status === 'cancelled' ? 'cancellation' : 'booking',
+        title: appointment.status === 'pending' ? 'הזמנה חדשה' :
+               appointment.status === 'cancelled' ? 'ביטול הזמנה' : 'הזמנה הושלמה',
+        description: `${appointment.first_name || 'לקוח'} ${appointment.last_name || ''} - ${appointment.service_name || 'שירות'}`,
+        time: formatTimeAgo(appointment.appointment_datetime),
+        icon: appointment.status === 'pending' ? '📅' : 
+              appointment.status === 'cancelled' ? '❌' : '✅',
+        priority: appointment.status === 'pending' ? 'high' : 'normal'
+      })).slice(0, 5) || [];
+      
+      setRecentActivity(transformedActivity);
+      
+      // Transform notifications
+      const transformedNotifications = {
+        unread: data.notifications?.pending_count || 0,
+        items: [
+          ...(data.notifications?.pending_count > 0 ? [{
+            id: 1,
+            title: 'תורים ממתינים לאישור',
+            message: `יש לך ${data.notifications.pending_count} תורים ממתינים לאישור`,
+            time: 'עכשיו',
+            type: 'urgent',
+            read: false
+          }] : []),
+          ...(data.notifications?.today_count > 0 ? [{
+            id: 2,
+            title: 'תורים להיום',
+            message: `יש לך ${data.notifications.today_count} תורים מתוכננים להיום`,
+            time: 'לפני שעה',
+            type: 'info',
+            read: false
+          }] : [])
+        ]
+      };
+      
+      setNotifications(transformedNotifications);
+      
+    } catch (err) {
+      setError('שגיאה بטעינת נתוני הדשבורד. אנא נסה שוב.');
+      console.error('Dashboard data loading error:', err);
+      
+      // Fallback to mock data if API fails
+      console.log('Falling back to mock data...');
+      const mockData = generateMockData();
       setBusiness(mockData.business);
       setAnalytics(mockData.analytics);
       setRecentActivity(mockData.recentActivity);
       setNotifications(mockData.notifications);
-      
-    } catch (err) {
-      setError('שגיאה בטעינת נתוני הדשבורד. אנא נסה שוב.');
-      console.error('Dashboard data loading error:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [businessId, generateMockData]);
+  }, [businessId, generateMockData, formatTimeAgo]);
 
   // Refresh data function
   const refreshData = useCallback(() => {

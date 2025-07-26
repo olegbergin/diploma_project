@@ -14,6 +14,7 @@ import AuthPage from "./components/AuthPage/AuthPage";
 import HomePage from "./components/HomePage/HomePage";
 import BusinessProfile from "./components/BusinessProfile/BusinessProfile";
 import BusinessDashboard from "./components/BusinessDashboard/BusinessDashboard";
+import UserDashboard from "./components/UserDashboard/UserDashboard";
 import UserProfilePage from "./components/UserProfilePage/UserProfilePage";
 import SearchPage from "./components/SearchPage/SearchPage";
 import BookingPage from "./components/BookingPage/BookingPage";
@@ -35,9 +36,9 @@ function App() {
     if (!user) return "/login";
     switch (user.role) {
       case "business":
-        return `/business/${user.businessId || user.id}`;
+        return `/business/${user.businessId || user.id}/dashboard`;
       case "customer":
-        return "/profile";
+        return `/user/${user.id}/dashboard`;
       case "admin":
         return "/admin";
       default:
@@ -133,9 +134,31 @@ function App() {
               )
             }
           />
-          {/* User profile: contains all sub-pages (inc. HomePage) */}
+          {/* User dashboard (new modern dashboard) */}
+          <Route
+            path="/user/:id/dashboard"
+            element={
+              currentUser && currentUser.role === "customer" ? (
+                <UserDashboard user={currentUser} />
+              ) : (
+                <Navigate replace to="/login" />
+              )
+            }
+          />
+          {/* User profile (legacy - redirect to dashboard) */}
           <Route
             path="/profile/*"
+            element={
+              currentUser && currentUser.role === "customer" ? (
+                <Navigate replace to={`/user/${currentUser.id}/dashboard`} />
+              ) : (
+                <Navigate replace to="/login" />
+              )
+            }
+          />
+          {/* Legacy user profile page (backup for compatibility) */}
+          <Route
+            path="/user/:id/profile"
             element={
               currentUser && currentUser.role === "customer" ? (
                 <UserProfilePage
