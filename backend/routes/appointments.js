@@ -55,20 +55,26 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const {
-      business_id,
-      customer_id = 0,
-      service_id = 0,
+      businessId,
+      serviceId,
       date, // 'YYYY-MM-DD'
       time, // 'HH:MM'
+      firstName,
+      lastName,
+      phone,
+      email,
       notes = "",
-      status,
     } = req.body;
 
     // Validation
     const errors = {};
     
-    if (!business_id || isNaN(parseInt(business_id))) {
-      errors.business_id = "Valid business ID is required / נדרש מזהה עסק תקין";
+    if (!businessId || isNaN(parseInt(businessId))) {
+      errors.businessId = "Valid business ID is required / נדרש מזהה עסק תקין";
+    }
+    
+    if (!serviceId || isNaN(parseInt(serviceId))) {
+      errors.serviceId = "Valid service ID is required / נדרש מזהה שירות תקין";
     }
     
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -78,17 +84,9 @@ router.post("/", async (req, res) => {
     if (!time || !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time)) {
       errors.time = "Time must be in HH:MM format / שעה חייבת להיות בפורמט HH:MM";
     }
-    
-    if (customer_id && isNaN(parseInt(customer_id))) {
-      errors.customer_id = "Customer ID must be a number / מזהה לקוח חייב להיות מספר";
-    }
-    
-    if (service_id && isNaN(parseInt(service_id))) {
-      errors.service_id = "Service ID must be a number / מזהה שירות חייב להיות מספר";
-    }
-    
-    if (status && !['pending', 'approved', 'cancelled'].includes(status)) {
-      errors.status = "Status must be pending, approved, or cancelled / סטטוס חייב להיות pending, approved או cancelled";
+
+    if (!firstName || !lastName || !phone) {
+      errors.customer = "Customer information is required / פרטי לקוח נדרשים";
     }
     
     if (Object.keys(errors).length > 0) {
@@ -106,21 +104,21 @@ router.post("/", async (req, res) => {
     // Check if business exists
     const [businessCheck] = await db.query(
       "SELECT business_id FROM businesses WHERE business_id = ?",
-      [parseInt(business_id)]
+      [parseInt(businessId)]
     );
     
     if (businessCheck.length === 0) {
       return res.status(404).json({ 
-        errors: { business_id: "Business not found / עסק לא נמצא" }
+        errors: { businessId: "Business not found / עסק לא נמצא" }
       });
     }
 
     // Check for conflicting appointments
-    const datetime = `${date} ${time}`;
+    const datetime = `${date} ${time}:00`;
     const [existingAppointment] = await db.query(
       `SELECT appointment_id FROM appointments 
        WHERE business_id = ? AND appointment_datetime = ? AND status != 'cancelled'`,
-      [parseInt(business_id), datetime]
+      [parseInt(businessId), datetime]
     );
     
     if (existingAppointment.length > 0) {
@@ -129,18 +127,29 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const statusToSet = status || "pending";
+    // Find or create customer
+    let customerId;
+    const findCustomerQuery = 'SELECT user_id FROM users WHERE phone = ?';
+    const [existingCustomer] = await db.query(findCustomerQuery, [phone]);
+    
+    if (existingCustomer.length > 0) {
+      customerId = existingCustomer[0].user_id;
+    } else {
+      // Create new customer
+      const createCustomerQuery = `INSERT INTO users (first_name, last_name, phone, email, role, created_at) VALUES (?, ?, ?, ?, 'customer', NOW())`;
+      const [customerResult] = await db.query(createCustomerQuery, [firstName, lastName, phone, email || null]);
+      customerId = customerResult.insertId;
+    }
 
+    // Create appointment
     const [result] = await db.query(
-      `INSERT INTO appointments
-         (customer_id, business_id, service_id,
-          appointment_datetime, status, notes)
-       VALUES (?,?,?,?,?,?)`,
-      [parseInt(customer_id), parseInt(business_id), parseInt(service_id), datetime, statusToSet, notes]
+      `INSERT INTO appointments (customer_id, business_id, service_id, appointment_datetime, status, notes, created_at) 
+       VALUES (?, ?, ?, ?, 'scheduled', ?, NOW())`,
+      [customerId, parseInt(businessId), parseInt(serviceId), datetime, notes || null]
     );
     
     res.status(201).json({
-      message: "Appointment request sent / בקשת תור נשלחה",
+      message: "Appointment created successfully / תור נוצר בהצלחה",
       appointmentId: result.insertId,
     });
   } catch (error) {

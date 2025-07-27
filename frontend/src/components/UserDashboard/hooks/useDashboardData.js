@@ -83,7 +83,7 @@ export function useDashboardData(userId) {
 
     try {
       // Fetch dashboard data from API
-      const response = await axios.get(`/api/users/${userId}/dashboard`);
+      const response = await axios.get(`/users/${userId}/dashboard`);
       const data = response.data;
       
       // Transform API data to match expected structure
@@ -93,15 +93,8 @@ export function useDashboardData(userId) {
         favoriteBusinesses: data.favoriteBusinesses || 0,
         averageRating: data.averageRating || 4.5,
         recentActivities: data.recentActivities || [],
-        monthlyStats: {
-          bookings: Array.from({ length: 12 }, (_, i) => Math.floor(Math.random() * 5) + 1),
-          spending: Array.from({ length: 12 }, (_, i) => Math.floor(Math.random() * 300) + 100)
-        },
-        topCategories: [
-          { name: 'יופי ועיצוב', count: Math.floor(data.totalBookings * 0.5), percentage: 50 },
-          { name: 'בריאות ורווחה', count: Math.floor(data.totalBookings * 0.33), percentage: 33 },
-          { name: 'קוסמטיקה', count: Math.floor(data.totalBookings * 0.17), percentage: 17 }
-        ],
+        monthlyStats: data.monthlyStats || null,
+        topCategories: data.topCategories || [],
         upcomingAppointments: data.upcomingAppointments || [],
         pastAppointments: data.pastAppointments || [],
         favorites: data.favorites || []
@@ -117,7 +110,7 @@ export function useDashboardData(userId) {
     } finally {
       setLoading(false);
     }
-  }, [userId, mockDashboardData]);
+  }, [userId]);
 
   const refreshData = useCallback(async () => {
     return fetchDashboardData();

@@ -104,8 +104,6 @@ export default function CalendarPicker({ businessId, serviceId, onDateSelect, se
     
     // First day of the month
     const firstDay = new Date(year, month, 1);
-    // Last day of the month
-    const lastDay = new Date(year, month + 1, 0);
     
     // Start from the first Sunday before or equal to the first day of month
     const startDate = new Date(firstDay);

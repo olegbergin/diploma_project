@@ -11,9 +11,10 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Header from "./components/layout/Header/Header";
 import Footer from "./components/layout/Footer/Footer";
 import AuthPage from "./components/AuthPage/AuthPage";
+import BusinessRegistration from "./components/BusinessRegistration/BusinessRegistration";
 import HomePage from "./components/HomePage/HomePage";
 import BusinessProfile from "./components/BusinessProfile/BusinessProfile";
-import BusinessDashboard from "./components/BusinessDashboard/BusinessDashboard";
+import SimplifiedBusinessDashboard from "./components/BusinessDashboard/SimplifiedBusinessDashboard";
 import UserDashboard from "./components/UserDashboard/UserDashboard";
 import UserProfilePage from "./components/UserProfilePage/UserProfilePage";
 import SearchPage from "./components/SearchPage/SearchPage";
@@ -27,24 +28,6 @@ function App() {
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
-  /**
-   * Determines the appropriate home path based on user role
-   * @param {Object|null} user - User object with role information
-   * @returns {string} Path to redirect user to based on their role
-   */
-  const getHomePath = (user) => {
-    if (!user) return "/login";
-    switch (user.role) {
-      case "business":
-        return `/business/${user.businessId || user.id}/dashboard`;
-      case "customer":
-        return `/user/${user.id}/dashboard`;
-      case "admin":
-        return "/admin";
-      default:
-        return "/login";
-    }
-  };
 
   /**
    * Initialize authentication state from localStorage on app startup
@@ -82,7 +65,38 @@ function App() {
     navigate("/login");
   };
 
-  if (!authChecked) return <div>Loading...</div>;
+  if (!authChecked) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#f8f4ff'
+      }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1rem'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid rgba(201, 178, 245, 0.3)',
+            borderTop: '3px solid var(--primary-purple)',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+          <p style={{
+            color: 'var(--text-secondary)',
+            fontSize: '1rem',
+            margin: 0
+          }}>טוען...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="AppContainer">
@@ -96,6 +110,14 @@ function App() {
           />
           {/* Redirect signup to login (now handled by AuthPage) */}
           <Route path="/signup" element={<Navigate replace to="/login" />} />
+          {/* Business Registration */}
+          <Route
+            path="/register-business"
+            element={<BusinessRegistration onRegistrationSuccess={() => {
+              // Delay navigation to allow user to see success message
+              setTimeout(() => navigate('/login'), 3000);
+            }} />}
+          />
           {/* Booking page - accessible to logged in users */}
           <Route
             path="/booking/:businessId/:serviceId"
@@ -176,7 +198,7 @@ function App() {
             path="/business/:id/dashboard"
             element={
               currentUser && currentUser.role === "business" ? (
-                <BusinessDashboard user={currentUser} />
+                <SimplifiedBusinessDashboard user={currentUser} />
               ) : (
                 <Navigate replace to="/login" />
               )

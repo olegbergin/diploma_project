@@ -300,4 +300,249 @@ router.get("/:id/dashboard", async (req, res) => {
   }
 });
 
+/* ───────────────────────────────
+   7. Get calendar availability for a business (GET /api/businesses/:id/calendar)
+   Returns available dates for a given month and service
+   ─────────────────────────────── */
+router.get("/:id/calendar", async (req, res) => {
+  try {
+    const businessId = req.params.id;
+    const { month, serviceId } = req.query;
+    
+    // Check if business exists
+    const [businessRows] = await db.query(
+      "SELECT business_id FROM businesses WHERE business_id = ?",
+      [businessId]
+    );
+
+    if (businessRows.length === 0) {
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    // For now, return mock availability data
+    // In a real implementation, this would check actual appointments and business hours
+    const startDate = new Date(month + '-01');
+    const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+    
+    const availableDates = [];
+    for (let day = 1; day <= endDate.getDate(); day++) {
+      const date = new Date(startDate.getFullYear(), startDate.getMonth(), day);
+      const dayOfWeek = date.getDay();
+      
+      // Skip past dates and weekends for simplicity
+      if (date >= new Date() && dayOfWeek !== 0 && dayOfWeek !== 6) {
+        availableDates.push({
+          date: date.toISOString().split('T')[0],
+          available: true,
+          availableSlots: Math.floor(Math.random() * 8) + 2 // 2-10 available slots
+        });
+      }
+    }
+
+    res.json({
+      businessId: parseInt(businessId),
+      serviceId: serviceId ? parseInt(serviceId) : null,
+      month,
+      availableDates
+    });
+  } catch (err) {
+    console.error(`Error fetching calendar for business ${req.params.id}:`, err);
+    res.status(500).json({ error: "Failed to fetch calendar availability." });
+  }
+});
+
+/* ───────────────────────────────
+   8. Get time slot availability for a specific date (GET /api/businesses/:id/availability)
+   Returns available time slots for a given date and service
+   ─────────────────────────────── */
+router.get("/:id/availability", async (req, res) => {
+  try {
+    const businessId = req.params.id;
+    const { date, serviceId } = req.query;
+    
+    if (!date) {
+      return res.status(400).json({ error: "Date parameter is required" });
+    }
+
+    // Check if business exists
+    const [businessRows] = await db.query(
+      "SELECT business_id FROM businesses WHERE business_id = ?",
+      [businessId]
+    );
+
+    if (businessRows.length === 0) {
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    // Get existing appointments for the date
+    const [existingAppointments] = await db.query(
+      "SELECT TIME(appointment_datetime) as time FROM appointments WHERE business_id = ? AND DATE(appointment_datetime) = ? AND status != 'cancelled'",
+      [businessId, date]
+    );
+
+    const bookedTimes = existingAppointments.map(apt => apt.time);
+    
+    // Generate available time slots (8 AM to 8 PM, 30-minute intervals)
+    const availableSlots = [];
+    for (let hour = 8; hour <= 20; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const timeSlot = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`;
+        const displayTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        
+        if (!bookedTimes.includes(timeSlot)) {
+          availableSlots.push(displayTime);
+        }
+      }
+    }
+
+    res.json({
+      businessId: parseInt(businessId),
+      serviceId: serviceId ? parseInt(serviceId) : null,
+      date,
+      availableSlots
+    });
+  } catch (err) {
+    console.error(`Error fetching availability for business ${req.params.id}:`, err);
+    res.status(500).json({ error: "Failed to fetch time slot availability." });
+  }
+});
+
+/* ───────────────────────────────
+   9. Add a new service to a business (POST /api/businesses/:id/services)
+   ─────────────────────────────── */
+router.post("/:id/services", async (req, res) => {
+  try {
+    const businessId = req.params.id;
+    const { name, description, price, duration_minutes } = req.body;
+
+    // Validate required fields
+    if (!name || !price || !duration_minutes) {
+      return res.status(400).json({ error: "Name, price, and duration_minutes are required" });
+    }
+
+    // Check if business exists
+    const [businessRows] = await db.query(
+      "SELECT business_id FROM businesses WHERE business_id = ?",
+      [businessId]
+    );
+
+    if (businessRows.length === 0) {
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    // Insert new service
+    const [result] = await db.query(
+      "INSERT INTO services (business_id, name, description, price, duration_minutes) VALUES (?, ?, ?, ?, ?)",
+      [businessId, name, description || '', price, duration_minutes]
+    );
+
+    res.status(201).json({
+      service_id: result.insertId,
+      business_id: parseInt(businessId),
+      name,
+      description: description || '',
+      price,
+      duration_minutes,
+      message: "Service created successfully"
+    });
+
+  } catch (err) {
+    console.error(`Error creating service for business ${req.params.id}:`, err);
+    res.status(500).json({ error: "Failed to create service" });
+  }
+});
+
+/* ───────────────────────────────
+   10. Update a service (PUT /api/businesses/:id/services/:serviceId)
+   ─────────────────────────────── */
+router.put("/:id/services/:serviceId", async (req, res) => {
+  try {
+    const businessId = req.params.id;
+    const serviceId = req.params.serviceId;
+    const { name, description, price, duration_minutes } = req.body;
+
+    // Validate required fields
+    if (!name || !price || !duration_minutes) {
+      return res.status(400).json({ error: "Name, price, and duration_minutes are required" });
+    }
+
+    // Check if service exists and belongs to this business
+    const [serviceRows] = await db.query(
+      "SELECT service_id FROM services WHERE service_id = ? AND business_id = ?",
+      [serviceId, businessId]
+    );
+
+    if (serviceRows.length === 0) {
+      return res.status(404).json({ error: "Service not found or doesn't belong to this business" });
+    }
+
+    // Update service
+    await db.query(
+      "UPDATE services SET name = ?, description = ?, price = ?, duration_minutes = ? WHERE service_id = ? AND business_id = ?",
+      [name, description || '', price, duration_minutes, serviceId, businessId]
+    );
+
+    res.status(200).json({
+      service_id: parseInt(serviceId),
+      business_id: parseInt(businessId),
+      name,
+      description: description || '',
+      price,
+      duration_minutes,
+      message: "Service updated successfully"
+    });
+
+  } catch (err) {
+    console.error(`Error updating service ${req.params.serviceId} for business ${req.params.id}:`, err);
+    res.status(500).json({ error: "Failed to update service" });
+  }
+});
+
+/* ───────────────────────────────
+   11. Delete a service (DELETE /api/businesses/:id/services/:serviceId)
+   ─────────────────────────────── */
+router.delete("/:id/services/:serviceId", async (req, res) => {
+  try {
+    const businessId = req.params.id;
+    const serviceId = req.params.serviceId;
+
+    // Check if service exists and belongs to this business
+    const [serviceRows] = await db.query(
+      "SELECT service_id FROM services WHERE service_id = ? AND business_id = ?",
+      [serviceId, businessId]
+    );
+
+    if (serviceRows.length === 0) {
+      return res.status(404).json({ error: "Service not found or doesn't belong to this business" });
+    }
+
+    // Check if service has any appointments
+    const [appointmentRows] = await db.query(
+      "SELECT COUNT(*) as count FROM appointments WHERE service_id = ?",
+      [serviceId]
+    );
+
+    if (appointmentRows[0].count > 0) {
+      return res.status(400).json({ 
+        error: "Cannot delete service with existing appointments. Please reschedule or cancel appointments first." 
+      });
+    }
+
+    // Delete service
+    await db.query(
+      "DELETE FROM services WHERE service_id = ? AND business_id = ?",
+      [serviceId, businessId]
+    );
+
+    res.status(200).json({
+      message: "Service deleted successfully",
+      service_id: parseInt(serviceId)
+    });
+
+  } catch (err) {
+    console.error(`Error deleting service ${req.params.serviceId} for business ${req.params.id}:`, err);
+    res.status(500).json({ error: "Failed to delete service" });
+  }
+});
+
 module.exports = router;

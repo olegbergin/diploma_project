@@ -142,13 +142,22 @@ export default function BookingPage() {
 
       const response = await axiosInstance.post('/appointments', bookingData);
       
-      // Success - redirect to user profile with success message
-      navigate('/profile/appointments', {
-        state: { 
-          message: 'הזמנה נוצרה בהצלחה!', 
-          appointmentId: response.data.appointmentId 
-        }
-      });
+      // Success - redirect to user dashboard with success message
+      const currentUser = JSON.parse(localStorage.getItem("userInfo"));
+      if (currentUser) {
+        navigate(`/user/${currentUser.id}/dashboard`, {
+          state: { 
+            message: 'הזמנה נוצרה בהצלחה!', 
+            appointmentId: response.data.appointmentId 
+          }
+        });
+      } else {
+        navigate('/home', {
+          state: { 
+            message: 'הזמנה נוצרה בהצלחה!' 
+          }
+        });
+      }
     } catch (err) {
       console.error('Failed to create appointment:', err);
       setError('שגיאה ביצירת התור. אנא נסה שוב.');
@@ -273,8 +282,13 @@ export default function BookingPage() {
 
         {currentStep === BOOKING_STEPS.FORM && (
           <BookingForm
+            business={business}
+            service={service}
+            selectedDate={selectedDate}
+            selectedTime={selectedTime}
             onSubmit={handleFormSubmit}
             initialData={customerData}
+            isLoading={isLoading}
           />
         )}
 

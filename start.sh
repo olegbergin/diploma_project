@@ -45,10 +45,18 @@ cd ..
 
 echo -e "${GREEN}✅ Dependencies ready${NC}"
 
+# Create logs directory if it doesn't exist
+mkdir -p logs
+
+# Clear old log files
+echo -e "${BLUE}📋 Clearing old logs...${NC}"
+> logs/backend.log
+> logs/frontend.log
+
 # Start backend on port 3030
 echo -e "${BLUE}🔧 Starting Backend on port 3030...${NC}"
 cd backend
-PORT=3030 npm start &
+PORT=3030 npm start > ../logs/backend.log 2>&1 &
 BACKEND_PID=$!
 echo -e "${GREEN}Backend started (PID: $BACKEND_PID)${NC}"
 
@@ -57,7 +65,7 @@ sleep 2
 
 cd ../frontend
 echo -e "${BLUE}🎨 Starting Frontend on port 3000...${NC}"
-npm run dev &
+npm run dev > ../logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo -e "${GREEN}Frontend started (PID: $FRONTEND_PID)${NC}"
 
@@ -65,6 +73,15 @@ echo ""
 echo -e "${GREEN}🎉 Both servers are running!${NC}"
 echo -e "${YELLOW}Backend:${NC}  http://localhost:3030"
 echo -e "${YELLOW}Frontend:${NC} http://localhost:3000"
+echo ""
+echo -e "${BLUE}📋 Logs are being written to:${NC}"
+echo -e "${YELLOW}Backend logs:${NC}  logs/backend.log"
+echo -e "${YELLOW}Frontend logs:${NC} logs/frontend.log"
+echo ""
+echo -e "${BLUE}To view logs in real-time:${NC}"
+echo -e "${YELLOW}Backend:${NC}  tail -f logs/backend.log"
+echo -e "${YELLOW}Frontend:${NC} tail -f logs/frontend.log"
+echo -e "${YELLOW}Both:${NC}     tail -f logs/*.log"
 echo ""
 echo -e "${BLUE}Press Ctrl+C to stop both servers${NC}"
 

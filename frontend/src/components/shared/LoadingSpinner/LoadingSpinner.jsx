@@ -24,12 +24,8 @@ const LoadingSpinner = ({
   const spinnerClass = `${styles.spinner} ${styles[size]} ${styles[color]} ${className}`;
 
   const spinner = (
-    <div className={spinnerClass} role="status" aria-label="Загрузка">
+    <div className={spinnerClass} role="status" aria-label="טוען">
       <div className={styles.spinnerCircle}></div>
-      <div className={styles.spinnerCircle}></div>
-      <div className={styles.spinnerCircle}></div>
-      <div className={styles.spinnerCircle}></div>
-      <span className="sr-only">Загрузка...</span>
     </div>
   );
 

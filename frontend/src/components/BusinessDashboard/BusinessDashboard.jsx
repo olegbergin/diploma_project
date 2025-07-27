@@ -134,11 +134,11 @@ export default function BusinessDashboard() {
             <ServicesView businessId={businessId} />
           )}
 
-          {/* Customers View - Coming Soon */}
+          {/* Customers View */}
           {activeView === 'customers' && (
             <div className={styles.placeholder}>
               <h2>לקוחות</h2>
-              <p>ניהול לקוחות יתווסף בקרוב</p>
+              <p>תכונה זו תהיה זמינה בעדכון הבא</p>
             </div>
           )}
         </div>

@@ -1,6 +1,7 @@
 // src/components/AuthPage/AuthPage.jsx
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import useErrorHandler from '../../hooks/useErrorHandler';
 import ErrorMessage from '../shared/ErrorMessage/ErrorMessage';
@@ -10,6 +11,7 @@ import styles from '../Forms/Form.module.css';
 function AuthPage({ onLoginSuccess }) {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
   const { error, isLoading, handleError, clearError, executeWithErrorHandling } = useErrorHandler();
 
   // Form data state
@@ -87,8 +89,8 @@ function AuthPage({ onLoginSuccess }) {
     } else if (userType === 'business_owner') {
       setFormData(prev => ({
         ...prev,
-        email: 'business@mail.com',
-        password: 'biz1'
+        email: 'danny.cohen@cornercafe.co.il',
+        password: 'cafe456'
       }));
     } else if (userType === 'admin') {
       setFormData(prev => ({
@@ -306,6 +308,19 @@ function AuthPage({ onLoginSuccess }) {
       >
         {isLoginMode ? "אין לך חשבון? הרשם כאן" : "יש לך כבר חשבון? התחבר כאן"}
       </button>
+
+      {/* Business Registration Link */}
+      <div className={styles.businessRegisterContainer}>
+        <p className={styles.businessRegisterText}>יש לך עסק?</p>
+        <button
+          type="button"
+          className={styles.businessRegisterLink}
+          onClick={() => navigate('/register-business')}
+          disabled={isLoading}
+        >
+          רשום את העסק שלך כאן
+        </button>
+      </div>
     </form>
   );
 }

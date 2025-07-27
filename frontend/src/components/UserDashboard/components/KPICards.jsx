@@ -1,4 +1,5 @@
 import React from 'react';
+import LoadingSpinner from '../../shared/LoadingSpinner/LoadingSpinner';
 import styles from './KPICards.module.css';
 
 export default function KPICards({ data, loading }) {
@@ -6,41 +7,41 @@ export default function KPICards({ data, loading }) {
     {
       key: 'totalBookings',
       title: 'סה״כ תורים',
-      value: data?.totalBookings || 12,
+      value: data?.totalBookings || 0,
       subtitle: 'השנה',
       icon: '📅',
-      trend: '+15%',
-      trendType: 'positive',
+      trend: data?.totalBookings > 0 ? '+15%' : '-',
+      trendType: data?.totalBookings > 0 ? 'positive' : 'neutral',
       color: 'primary'
     },
     {
       key: 'upcomingBookings',
       title: 'תורים קרובים',
-      value: data?.upcomingBookings || 3,
+      value: data?.upcomingBookings || 0,
       subtitle: 'השבועיים הקרובים',
       icon: '⏰',
-      trend: '+2',
-      trendType: 'positive',
+      trend: data?.upcomingBookings > 0 ? '+2' : '-',
+      trendType: data?.upcomingBookings > 0 ? 'positive' : 'neutral',
       color: 'success'
     },
     {
       key: 'favoriteBusinesses',
       title: 'עסקים מועדפים',
-      value: data?.favoriteBusinesses || 7,
+      value: data?.favoriteBusinesses || 0,
       subtitle: 'ברשימה שלך',
       icon: '⭐',
-      trend: '+1',
-      trendType: 'positive',
+      trend: data?.favoriteBusinesses > 0 ? '+1' : '-',
+      trendType: data?.favoriteBusinesses > 0 ? 'positive' : 'neutral',
       color: 'warning'
     },
     {
       key: 'averageRating',
       title: 'דירוג ממוצע',
-      value: data?.averageRating || 4.8,
+      value: data?.averageRating || 0,
       subtitle: 'מהביקורות שלך',
       icon: '🌟',
-      trend: '+0.2',
-      trendType: 'positive',
+      trend: data?.averageRating > 0 ? '+0.2' : '-',
+      trendType: data?.averageRating > 0 ? 'positive' : 'neutral',
       color: 'info'
     }
   ];
@@ -48,11 +49,9 @@ export default function KPICards({ data, loading }) {
   if (loading) {
     return (
       <div className={styles.kpiContainer}>
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className={`${styles.kpiCard} ${styles.loading}`}>
-            <div className={styles.loadingSkeleton}></div>
-          </div>
-        ))}
+        <div className={styles.loadingContainer}>
+          <LoadingSpinner size="medium" message="טוען נתוני מדדים..." />
+        </div>
       </div>
     );
   }

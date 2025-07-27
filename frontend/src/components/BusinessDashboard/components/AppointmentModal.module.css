@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-lg);
+  padding: var(--space-6);
   animation: fadeIn 0.3s ease;
 }
 
@@ -29,7 +29,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-lg);
+  padding: var(--space-6);
   border-bottom: 1px solid var(--border);
   background: var(--surface-secondary);
 }
@@ -62,23 +62,23 @@
 }
 
 .modalForm {
-  padding: var(--spacing-lg);
+  padding: var(--space-6);
   max-height: calc(90vh - 120px);
   overflow-y: auto;
 }
 
 /* Sections */
 .section {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--space-8);
 }
 
 .sectionTitle {
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
-  padding-bottom: var(--spacing-xs);
-  border-bottom: 2px solid var(--primary-color);
+  margin: 0 0 var(--space-4) 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--primary-purple);
   display: inline-block;
 }
 
@@ -86,13 +86,13 @@
 .formRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
+  gap: var(--space-4);
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: var(--space-2);
 }
 
 .label {
@@ -104,7 +104,7 @@
 .input,
 .select,
 .textarea {
-  padding: var(--spacing-sm);
+  padding: var(--space-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   font-size: 0.9rem;
@@ -117,7 +117,7 @@
 .select:focus,
 .textarea:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--primary-purple);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -144,17 +144,17 @@
 .errorText {
   font-size: 0.8rem;
   color: var(--error-color);
-  margin-top: var(--spacing-xs);
+  margin-top: var(--space-2);
 }
 
 .submitError {
   background: rgba(239, 68, 68, 0.1);
   color: var(--error-color);
-  padding: var(--spacing-sm);
+  padding: var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid rgba(239, 68, 68, 0.2);
   font-size: 0.875rem;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--space-4);
   text-align: center;
 }
 
@@ -163,27 +163,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-md);
-  padding-top: var(--spacing-lg);
+  gap: var(--space-4);
+  padding-top: var(--space-6);
   border-top: 1px solid var(--border);
-  margin-top: var(--spacing-lg);
+  margin-top: var(--space-6);
 }
 
 .leftActions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--space-3);
 }
 
 .rightActions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--space-3);
 }
 
 .deleteButton {
   background: rgba(239, 68, 68, 0.1);
   color: var(--error-color);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
@@ -201,7 +201,7 @@
   background: var(--surface-secondary);
   color: var(--text-secondary);
   border: 1px solid var(--border);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
@@ -216,10 +216,10 @@
 }
 
 .saveButton {
-  background: var(--primary-color);
+  background: var(--primary-purple);
   color: white;
-  border: 1px solid var(--primary-color);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  border: 1px solid var(--primary-purple);
+  padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
@@ -228,8 +228,8 @@
 }
 
 .saveButton:hover {
-  background: var(--primary-dark);
-  border-color: var(--primary-dark);
+  background: var(--business-purple-dark);
+  border-color: var(--business-purple-dark);
   transform: translateY(-1px);
 }
 
@@ -261,7 +261,7 @@
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .backdrop {
-    padding: var(--spacing-md);
+    padding: var(--space-4);
   }
   
   .modal {
@@ -269,7 +269,7 @@
   }
   
   .modalHeader {
-    padding: var(--spacing-md);
+    padding: var(--space-4);
   }
   
   .modalTitle {
@@ -277,17 +277,17 @@
   }
   
   .modalForm {
-    padding: var(--spacing-md);
+    padding: var(--space-4);
   }
   
   .formRow {
     grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
+    gap: var(--space-3);
   }
   
   .modalActions {
     flex-direction: column-reverse;
-    gap: var(--spacing-sm);
+    gap: var(--space-3);
   }
   
   .leftActions,
@@ -314,15 +314,15 @@
 
 @media (max-width: 480px) {
   .backdrop {
-    padding: var(--spacing-sm);
+    padding: var(--space-3);
   }
   
   .modalHeader {
-    padding: var(--spacing-sm);
+    padding: var(--space-3);
   }
   
   .modalForm {
-    padding: var(--spacing-sm);
+    padding: var(--space-3);
   }
   
   .sectionTitle {
@@ -344,7 +344,7 @@
 .cancelButton:focus-visible,
 .saveButton:focus-visible,
 .closeButton:focus-visible {
-  outline: 2px solid var(--primary-color);
+  outline: 2px solid var(--primary-purple);
   outline-offset: 2px;
 }
 

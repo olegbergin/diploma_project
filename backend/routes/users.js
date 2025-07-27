@@ -14,18 +14,17 @@ router.get("/:id", async (req, res) => {
   console.log(`Fetching user with ID: ${userId}`);
   try {
     const sql =
-      "SELECT user_id, first_name, last_name, email, phone, role, avatar_url FROM users WHERE user_id = ?";
+      "SELECT user_id, first_name, last_name, email, phone, role FROM users WHERE user_id = ?";
     const [rows] = await db.query(sql, [userId]);
     console.log(`Query result for user ${userId}:`, rows);
     
     if (rows.length === 0)
       return res.status(404).json({ message: "User not found" });
 
-    // חשוב למפות avatar_url => avatarUrl, כל השאר נשאר
     const user = rows[0];
     const response = {
       ...user,
-      avatarUrl: user.avatar_url || null,
+      avatarUrl: null, // No avatar support in current DB schema
     };
     console.log(`Sending user data:`, response);
     res.json(response);
@@ -40,7 +39,7 @@ router.get("/:id", async (req, res) => {
 // PUT /api/users/:id
 router.put("/:id", async (req, res) => {
   const userId = req.params.id;
-  const { firstName, lastName, phone, avatarUrl } = req.body;
+  const { firstName, lastName, phone } = req.body;
   
   // Validation
   const errors = {};
@@ -69,8 +68,8 @@ router.put("/:id", async (req, res) => {
     }
     
     await db.query(
-      "UPDATE users SET first_name=?, last_name=?, phone=?, avatar_url=? WHERE user_id=?",
-      [firstName.trim(), lastName.trim(), phone.trim(), avatarUrl || null, userId]
+      "UPDATE users SET first_name=?, last_name=?, phone=? WHERE user_id=?",
+      [firstName.trim(), lastName.trim(), phone.trim(), userId]
     );
     res.json({ message: "User updated successfully" });
   } catch (err) {
@@ -199,7 +198,7 @@ router.get("/:id/dashboard", async (req, res) => {
     
     // Check if user exists
     const [userRows] = await db.query(
-      "SELECT user_id, first_name, last_name, email, phone, role, avatar_url FROM users WHERE user_id = ?",
+      "SELECT user_id, first_name, last_name, email, phone, role FROM users WHERE user_id = ?",
       [userId]
     );
 
@@ -325,7 +324,7 @@ router.get("/:id/dashboard", async (req, res) => {
     const dashboardData = {
       user: {
         ...user,
-        avatarUrl: user.avatar_url || null
+        avatarUrl: null // No avatar support in current DB schema
       },
       totalBookings: appointmentStats[0].total_bookings || 0,
       upcomingBookings: appointmentStats[0].upcoming_bookings || 0,

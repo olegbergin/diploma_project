@@ -74,13 +74,10 @@ export function useDashboardData(businessId) {
         trend: 'up'
       },
       chartData: {
-        revenue: Array.from({ length: 30 }, (_, i) => ({
-          date: new Date(thisYear, thisMonth, i + 1).toISOString().split('T')[0],
-          value: Math.floor(Math.random() * 2000) + 1000 + (i * 50)
-        })),
+        revenue: [],
         appointments: Array.from({ length: 7 }, (_, i) => ({
           day: ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'][i],
-          value: Math.floor(Math.random() * 20) + 5
+          value: 0
         })),
         topServices: [
           { name: 'חלה לשבת', bookings: 45, revenue: 1350 },
@@ -194,7 +191,7 @@ export function useDashboardData(businessId) {
 
     try {
       // Fetch dashboard data from API
-      const response = await axios.get(`/api/businesses/${businessId}/dashboard`);
+      const response = await axios.get(`/businesses/${businessId}/dashboard`);
       const data = response.data;
       
       setBusiness(data.business);
@@ -234,7 +231,7 @@ export function useDashboardData(businessId) {
           })) || [],
           appointments: Array.from({ length: 7 }, (_, i) => ({
             day: ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'][i],
-            value: Math.floor((data.analytics?.weekly_appointments || 0) / 7) + Math.floor(Math.random() * 5)
+            value: Math.floor((data.analytics?.weekly_appointments || 0) / 7)
           })),
           topServices: data.analytics?.service_stats?.map(service => ({
             name: service.service_name,

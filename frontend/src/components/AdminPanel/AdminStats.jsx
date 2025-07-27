@@ -7,6 +7,7 @@
  */
 
 import React, { useState, useEffect } from "react";
+import LoadingSpinner from "../shared/LoadingSpinner/LoadingSpinner";
 import styles from "./AdminStats.module.css";
 
 function AdminStats() {
@@ -19,19 +20,17 @@ function AdminStats() {
   });
 
   useEffect(() => {
-    // TODO: Replace with actual API call
+    // TODO: Implement admin API endpoints
     const loadStats = async () => {
       try {
-        // Mock data for now
-        setTimeout(() => {
-          setStats({
-            totalUsers: 1247,
-            totalBusinesses: 156,
-            totalAppointments: 8932,
-            todayAppointments: 47,
-            loading: false
-          });
-        }, 1000);
+        // No admin API endpoints implemented yet
+        setStats({
+          totalUsers: 0,
+          totalBusinesses: 0,
+          totalAppointments: 0,
+          todayAppointments: 0,
+          loading: false
+        });
       } catch (error) {
         console.error("Failed to load stats:", error);
         setStats(prev => ({ ...prev, loading: false }));
@@ -75,10 +74,7 @@ function AdminStats() {
   if (stats.loading) {
     return (
       <div className={styles.statsContainer}>
-        <div className={styles.loading}>
-          <div className={styles.spinner}></div>
-          <p>טוען סטטיסטיקות...</p>
-        </div>
+        <LoadingSpinner size="large" message="טוען סטטיסטיקות..." />
       </div>
     );
   }
@@ -120,17 +116,8 @@ function AdminStats() {
         <div className={styles.infoCard}>
           <h3 className={styles.infoTitle}>פעילות אחרונה</h3>
           <div className={styles.activityList}>
-            <div className={styles.activityItem}>
-              <span className={styles.activityEmoji}>👤</span>
-              <span>משתמש חדש נרשם - לפני 5 דקות</span>
-            </div>
-            <div className={styles.activityItem}>
-              <span className={styles.activityEmoji}>🏢</span>
-              <span>עסק חדש אושר - לפני 15 דקות</span>
-            </div>
-            <div className={styles.activityItem}>
-              <span className={styles.activityEmoji}>📅</span>
-              <span>תור חדש נקבע - לפני 23 דקות</span>
+            <div className={styles.emptyState}>
+              <p>נתוני פעילות יוצגו כאן לאחר הטמעת API מנהל</p>
             </div>
           </div>
         </div>

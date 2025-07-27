@@ -130,4 +130,87 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// ============================================================
+// Business Registration (רישום עסק חדש)
+// ============================================================
+router.post("/register-business", async (req, res) => {
+  const {
+    first_name,
+    last_name,
+    email,
+    phone,
+    password,
+    businessName,
+    category,
+    description,
+    businessPhone,
+    businessEmail,
+    address,
+    openingHours
+  } = req.body;
+
+  if (!first_name || !last_name || !email || !password || !businessName || !category || !description) {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+
+  // Password validation (3-8 characters, alphanumeric with at least one letter and one number)
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{3,8}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({ error: "Password must be 3-8 characters long and contain at least one letter and one number." });
+  }
+
+  try {
+    // Start transaction
+    await db.query('START TRANSACTION');
+
+    // 1. Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 2. Insert business owner to users table
+    const userSql = `
+      INSERT INTO users (first_name, last_name, email, phone, password_hash, role)
+      VALUES (?, ?, ?, ?, ?, 'business')
+    `;
+    const userParams = [first_name, last_name, email, phone, hashedPassword];
+    const [userResult] = await db.query(userSql, userParams);
+    const userId = userResult.insertId;
+
+    // 3. Insert business to businesses table
+    const businessSql = `
+      INSERT INTO businesses (name, category, description, location, photos, schedule, owner_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    const businessParams = [
+      businessName,
+      category,
+      description,
+      address || '',
+      '[]', // empty photos array
+      openingHours ? `{"שעות פעילות": "${openingHours}"}` : '{}', // schedule as JSON
+      userId
+    ];
+    const [businessResult] = await db.query(businessSql, businessParams);
+    const businessId = businessResult.insertId;
+
+    // Commit transaction
+    await db.query('COMMIT');
+
+    // 4. Return success
+    res.status(201).json({
+      message: "Business registered successfully",
+      userId: userId,
+      businessId: businessId,
+    });
+  } catch (err) {
+    // Rollback transaction on error
+    await db.query('ROLLBACK');
+    
+    console.error("Error during business registration:", err);
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ error: "Email already exists." });
+    }
+    res.status(500).json({ error: "Failed to register business." });
+  }
+});
+
 module.exports = router;

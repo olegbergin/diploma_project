@@ -1,59 +1,9 @@
 import React from 'react';
+import LoadingSpinner from '../../shared/LoadingSpinner/LoadingSpinner';
 import styles from './RecentActivity.module.css';
 
 export default function RecentActivity({ data, loading }) {
-  const activities = data?.recentActivities || [
-    {
-      id: 1,
-      type: 'booking',
-      title: 'תור חדש נקבע',
-      description: 'תור בסלון יופי "אלגנס" ליום ראשון בשעה 14:00',
-      time: 'לפני שעתיים',
-      icon: '📅',
-      status: 'confirmed',
-      business: 'סלון יופי אלגנס'
-    },
-    {
-      id: 2,
-      type: 'favorite',
-      title: 'נוסף למועדפים',
-      description: 'מספרת "סטייל & חן" נוספה לרשימת המועדפים',
-      time: 'אתמול',
-      icon: '⭐',
-      status: 'active',
-      business: 'מספרת סטייל & חן'
-    },
-    {
-      id: 3,
-      type: 'review',
-      title: 'ביקורת נשלחה',
-      description: 'דירוג 5 כוכבים למסג\'ה במכון "רוגע"',
-      time: 'לפני 2 ימים',
-      icon: '🌟',
-      status: 'published',
-      business: 'מכון רוגע'
-    },
-    {
-      id: 4,
-      type: 'cancelled',
-      title: 'תור בוטל',
-      description: 'תור במספרה "קליפ" בוטל לבקשתך',
-      time: 'לפני 3 ימים',
-      icon: '❌',
-      status: 'cancelled',
-      business: 'מספרה קליפ'
-    },
-    {
-      id: 5,
-      type: 'completed',
-      title: 'תור הושלם',
-      description: 'ביקור בקוסמטיקאית "גלוריה" הושלם בהצלחה',
-      time: 'לפני שבוע',
-      icon: '✅',
-      status: 'completed',
-      business: 'קוסמטיקאית גלוריה'
-    }
-  ];
+  const activities = data?.recentActivities || [];
 
   const getActivityColor = (type) => {
     switch (type) {
@@ -91,12 +41,8 @@ export default function RecentActivity({ data, loading }) {
         <div className={styles.activityHeader}>
           <h2 className={styles.sectionTitle}>פעילות אחרונה</h2>
         </div>
-        <div className={styles.loadingList}>
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className={styles.loadingItem}>
-              <div className={styles.loadingSkeleton}></div>
-            </div>
-          ))}
+        <div className={styles.loadingContainer}>
+          <LoadingSpinner size="medium" message="טוען פעילות אחרונה..." />
         </div>
       </div>
     );

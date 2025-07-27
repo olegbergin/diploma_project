@@ -9,18 +9,18 @@
 }
 
 .header.mobile {
-  padding: var(--spacing-sm);
+  padding: var(--space-3);
 }
 
 .header.desktop {
-  padding: var(--spacing-md) var(--spacing-xl);
+  padding: var(--space-4) var(--space-8);
 }
 
 .headerContent {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-md);
+  gap: var(--space-4);
 }
 
 /* Header Info */
@@ -33,10 +33,10 @@
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: var(--space-2);
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: var(--space-2);
 }
 
 .header.mobile .greeting {
@@ -44,7 +44,7 @@
 }
 
 .businessName {
-  color: var(--primary-color);
+  color: var(--primary-purple);
 }
 
 .date {
@@ -57,14 +57,14 @@
 .headerActions {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--space-3);
 }
 
 .actionButton {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm);
+  gap: var(--space-2);
+  padding: var(--space-3);
   background: var(--surface-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -134,8 +134,8 @@
 .businessAvatar {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-xs);
+  gap: var(--space-3);
+  padding: var(--space-2);
   border-radius: var(--radius-md);
   transition: background 0.2s ease;
 }
@@ -182,15 +182,15 @@
 .mobileStats {
   display: flex;
   justify-content: space-around;
-  padding: var(--spacing-sm) 0;
+  padding: var(--space-3) 0;
   border-top: 1px solid var(--border-light);
-  margin-top: var(--spacing-sm);
+  margin-top: var(--space-3);
 }
 
 .statItem {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: var(--space-2);
   font-size: 0.875rem;
 }
 
@@ -206,11 +206,11 @@
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .headerActions {
-    gap: var(--spacing-xs);
+    gap: var(--space-2);
   }
   
   .actionButton {
-    padding: var(--spacing-xs);
+    padding: var(--space-2);
     min-width: 40px;
     justify-content: center;
   }

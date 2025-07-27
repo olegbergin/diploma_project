@@ -1,5 +1,5 @@
 .container {
-  padding: var(--spacing-lg);
+  padding: var(--space-6);
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -9,8 +9,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-xl);
-  gap: var(--spacing-lg);
+  margin-bottom: var(--space-8);
+  gap: var(--space-6);
 }
 
 .headerTitle {
@@ -21,7 +21,7 @@
   font-size: 2rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-xs) 0;
+  margin: 0 0 var(--space-2) 0;
 }
 
 .subtitle {
@@ -33,7 +33,7 @@
 .headerActions {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--space-4);
 }
 
 /* View Mode Selector */
@@ -42,11 +42,11 @@
   background: var(--surface-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: var(--spacing-xs);
+  padding: var(--space-2);
 }
 
 .viewModeButton {
-  padding: var(--spacing-xs) var(--spacing-md);
+  padding: var(--space-2) var(--space-4);
   background: none;
   border: none;
   border-radius: var(--radius-sm);
@@ -64,7 +64,7 @@
 }
 
 .viewModeButton.active {
-  background: var(--primary-color);
+  background: var(--primary-purple);
   color: white;
   box-shadow: var(--shadow-sm);
 }
@@ -72,7 +72,7 @@
 /* Action Buttons */
 .todayButton,
 .refreshButton {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--space-3) var(--space-4);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -101,7 +101,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--space-8);
   overflow: hidden;
 }
 
@@ -109,14 +109,14 @@
 .statsContainer {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-md);
+  gap: var(--space-4);
 }
 
 .statCard {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
+  gap: var(--space-4);
+  padding: var(--space-6);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -149,7 +149,7 @@
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: var(--space-2);
   line-height: 1;
 }
 
@@ -170,33 +170,33 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-2xl);
+  padding: var(--space-10);
 }
 
 .errorIcon {
   font-size: 4rem;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--space-6);
 }
 
 .errorContainer h2 {
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-sm) 0;
+  margin: 0 0 var(--space-3) 0;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
 .errorContainer p {
   color: var(--text-secondary);
-  margin: 0 0 var(--spacing-lg) 0;
+  margin: 0 0 var(--space-6) 0;
   max-width: 400px;
   line-height: 1.6;
 }
 
 .retryButton {
-  background: var(--primary-color);
+  background: var(--primary-purple);
   color: white;
   border: none;
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-md);
   font-weight: 500;
   cursor: pointer;
@@ -204,20 +204,20 @@
 }
 
 .retryButton:hover {
-  background: var(--primary-dark);
+  background: var(--business-purple-dark);
   transform: translateY(-1px);
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .container {
-    padding: var(--spacing-md);
+    padding: var(--space-4);
   }
   
   .header {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--spacing-md);
+    gap: var(--space-4);
   }
   
   .headerActions {
@@ -230,11 +230,11 @@
   
   .statsContainer {
     grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
+    gap: var(--space-3);
   }
   
   .statCard {
-    padding: var(--spacing-md);
+    padding: var(--space-4);
   }
   
   .statIcon {
@@ -255,13 +255,13 @@
   
   .viewModeButton {
     flex: 1;
-    padding: var(--spacing-xs);
+    padding: var(--space-2);
     font-size: 0.8rem;
   }
   
   .todayButton,
   .refreshButton {
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--space-2) var(--space-3);
     font-size: 0.8rem;
   }
 }

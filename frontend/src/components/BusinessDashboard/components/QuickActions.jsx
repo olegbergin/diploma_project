@@ -21,38 +21,6 @@ export default function QuickActions({ businessId, isMobile }) {
       color: 'green',
       onClick: () => navigate(`/business/${businessId}/calendar`)
     },
-    {
-      id: 'manage-staff',
-      title: 'ניהול צוות',
-      description: 'נהל עובדים ומשמרות',
-      icon: '👥',
-      color: 'purple',
-      onClick: () => console.log('Manage staff')
-    },
-    {
-      id: 'view-reports',
-      title: 'דוחות',
-      description: 'צפה בדוחות ואנליטיקה',
-      icon: '📊',
-      color: 'orange',
-      onClick: () => console.log('View reports')
-    },
-    {
-      id: 'customer-messages',
-      title: 'הודעות לקוחות',
-      description: 'הודעות ובקשות מלקוחות',
-      icon: '💬',
-      color: 'teal',
-      onClick: () => console.log('Customer messages')
-    },
-    {
-      id: 'settings',
-      title: 'הגדרות',
-      description: 'הגדרות עסק ומערכת',
-      icon: '⚙️',
-      color: 'gray',
-      onClick: () => console.log('Settings')
-    }
   ];
 
   const handleActionClick = (action) => {

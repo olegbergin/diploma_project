@@ -41,7 +41,7 @@ export default function BusinessPublicProfile() {
       await axiosInstance.post("/appointments", payload);
       alert("התור נשמר בהצלחה!");
       setBooking(null);
-    } catch (err) {
+    } catch {
       alert("שגיאה בשמירת תור.");
     }
   };

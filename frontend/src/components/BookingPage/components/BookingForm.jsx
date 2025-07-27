@@ -15,6 +15,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { FiUser, FiPhone, FiMail, FiMessageSquare, FiAlertCircle } from 'react-icons/fi';
+import axiosInstance from '../../../api/axiosInstance';
 import styles from './BookingForm.module.css';
 
 export default function BookingForm({ 
@@ -23,36 +24,62 @@ export default function BookingForm({
   selectedDate, 
   selectedTime, 
   onSubmit, 
+  initialData = {},
   isLoading = false 
 }) {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    notes: ''
+    firstName: initialData.firstName || '',
+    lastName: initialData.lastName || '',
+    phone: initialData.phone || '',
+    email: initialData.email || '',
+    notes: initialData.notes || ''
   });
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [isLoadingUserData, setIsLoadingUserData] = useState(false);
 
-  // Load user data from localStorage if available
+  // Load user data from server if user is logged in
   useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo');
-    if (userInfo) {
-      try {
-        const user = JSON.parse(userInfo);
-        setFormData(prev => ({
-          ...prev,
-          firstName: user.firstName || '',
-          lastName: user.lastName || '',
-          phone: user.phone || '',
-          email: user.email || ''
-        }));
-      } catch (error) {
-        console.error('Failed to parse user info:', error);
+    const fetchUserData = async () => {
+      const userInfo = localStorage.getItem('userInfo');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          if (user.id || user.user_id) {
+            setIsLoadingUserData(true);
+            const userId = user.id || user.user_id;
+            
+            // Fetch fresh user data from server
+            const response = await axiosInstance.get(`/users/${userId}`);
+            const userData = response.data;
+            
+            setFormData(prev => ({
+              ...prev,
+              firstName: userData.first_name || '',
+              lastName: userData.last_name || '',
+              phone: userData.phone || '',
+              email: userData.email || ''
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to fetch user data:', error);
+          // Fallback to localStorage data
+          const user = JSON.parse(userInfo);
+          setFormData(prev => ({
+            ...prev,
+            firstName: user.firstName || user.first_name || '',
+            lastName: user.lastName || user.last_name || '',
+            phone: user.phone || '',
+            email: user.email || ''
+          }));
+        } finally {
+          setIsLoadingUserData(false);
+        }
       }
-    }
+    };
+
+    fetchUserData();
   }, []);
 
   /**
@@ -147,8 +174,8 @@ export default function BookingForm({
 
     // Prepare booking data
     const bookingData = {
-      businessId: business.business_id,
-      serviceId: service.service_id,
+      businessId: business?.business_id,
+      serviceId: service?.service_id,
       date: selectedDate,
       time: selectedTime,
       customerInfo: {
@@ -158,9 +185,9 @@ export default function BookingForm({
         email: formData.email.trim(),
         notes: formData.notes.trim()
       },
-      serviceName: service.service_name,
-      servicePrice: service.price,
-      serviceDuration: service.duration
+      serviceName: service?.service_name || '',
+      servicePrice: service?.price || 0,
+      serviceDuration: service?.duration || 0
     };
 
     onSubmit(bookingData);
@@ -201,7 +228,7 @@ export default function BookingForm({
         <div className={styles.bookingSummary}>
           <div className={styles.summaryRow}>
             <span className={styles.summaryLabel}>שירות:</span>
-            <span className={styles.summaryValue}>{service.service_name}</span>
+            <span className={styles.summaryValue}>{service?.service_name || 'לא נבחר שירות'}</span>
           </div>
           <div className={styles.summaryRow}>
             <span className={styles.summaryLabel}>תאריך:</span>
@@ -213,11 +240,11 @@ export default function BookingForm({
           </div>
           <div className={styles.summaryRow}>
             <span className={styles.summaryLabel}>משך:</span>
-            <span className={styles.summaryValue}>{service.duration} דקות</span>
+            <span className={styles.summaryValue}>{service?.duration || 0} דקות</span>
           </div>
           <div className={styles.summaryRow}>
             <span className={styles.summaryLabel}>מחיר:</span>
-            <span className={styles.summaryValue}>₪{service.price}</span>
+            <span className={styles.summaryValue}>₪{service?.price || 0}</span>
           </div>
         </div>
       </div>
@@ -229,6 +256,18 @@ export default function BookingForm({
             <FiUser className={styles.sectionIcon} />
             פרטים אישיים
           </h3>
+          
+          {isLoadingUserData && (
+            <div className={styles.loadingMessage}>
+              טוען את הפרטים שלך מהמערכת...
+            </div>
+          )}
+          
+          {!isLoadingUserData && formData.firstName && (
+            <div className={styles.infoMessage}>
+              הפרטים שלך נטענו אוטומטית מהמערכת. ניתן לעדכן אותם לפי הצורך.
+            </div>
+          )}
 
           <div className={styles.inputRow}>
             <div className={styles.inputGroup}>
@@ -244,7 +283,7 @@ export default function BookingForm({
                 onBlur={handleBlur}
                 className={`${styles.input} ${errors.firstName && touched.firstName ? styles.inputError : ''}`}
                 placeholder="הכנס שם פרטי"
-                disabled={isLoading}
+                disabled={isLoading || isLoadingUserData}
               />
               {errors.firstName && touched.firstName && (
                 <span className={styles.errorMessage}>
@@ -267,7 +306,7 @@ export default function BookingForm({
                 onBlur={handleBlur}
                 className={`${styles.input} ${errors.lastName && touched.lastName ? styles.inputError : ''}`}
                 placeholder="הכנס שם משפחה"
-                disabled={isLoading}
+                disabled={isLoading || isLoadingUserData}
               />
               {errors.lastName && touched.lastName && (
                 <span className={styles.errorMessage}>
@@ -296,7 +335,7 @@ export default function BookingForm({
                 onBlur={handleBlur}
                 className={`${styles.input} ${errors.phone && touched.phone ? styles.inputError : ''}`}
                 placeholder="050-123-4567"
-                disabled={isLoading}
+                disabled={isLoading || isLoadingUserData}
               />
               {errors.phone && touched.phone && (
                 <span className={styles.errorMessage}>
@@ -320,7 +359,7 @@ export default function BookingForm({
                 onBlur={handleBlur}
                 className={`${styles.input} ${errors.email && touched.email ? styles.inputError : ''}`}
                 placeholder="example@email.com"
-                disabled={isLoading}
+                disabled={isLoading || isLoadingUserData}
               />
               {errors.email && touched.email && (
                 <span className={styles.errorMessage}>

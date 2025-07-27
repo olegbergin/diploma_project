@@ -4,9 +4,13 @@
  * 
  * @component
  * @param {Object} props - Component props
- * @param {Object} props.bookingDetails - Booking confirmation data
- * @param {Function} props.onGoHome - Callback to navigate to home
- * @param {Function} props.onViewAppointments - Callback to view appointments
+ * @param {Object} props.business - Business information
+ * @param {Object} props.service - Service information  
+ * @param {string} props.date - Selected date
+ * @param {string} props.time - Selected time
+ * @param {Object} props.customerData - Customer information
+ * @param {Function} props.onConfirm - Callback to confirm booking
+ * @param {Function} props.onEdit - Callback to edit booking
  * @returns {JSX.Element} Booking confirmation component
  */
 
@@ -26,9 +30,14 @@ import {
 import styles from './BookingConfirmation.module.css';
 
 export default function BookingConfirmation({ 
-  bookingDetails, 
-  onGoHome, 
-  onViewAppointments 
+  business,
+  service,
+  date,
+  time,
+  customerData,
+  onConfirm,
+  onEdit,
+  isLoading
 }) {
   
   /**
@@ -66,15 +75,15 @@ export default function BookingConfirmation({
    * Generate calendar event data
    */
   const generateCalendarData = () => {
-    const startDate = new Date(`${bookingDetails.date}T${bookingDetails.time}`);
-    const endDate = new Date(startDate.getTime() + bookingDetails.serviceDuration * 60000);
+    const startDate = new Date(`${date}T${time}`);
+    const endDate = new Date(startDate.getTime() + (service?.duration || 0) * 60000);
     
     return {
-      title: `${bookingDetails.serviceName} - ${bookingDetails.businessName}`,
+      title: `${service?.service_name || service?.name} - ${business?.business_name || business?.name}`,
       start: startDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z',
       end: endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z',
-      description: `תור ל${bookingDetails.serviceName} אצל ${bookingDetails.businessName}`,
-      location: bookingDetails.businessAddress || bookingDetails.businessName
+      description: `תור ל${service?.service_name || service?.name} אצל ${business?.business_name || business?.name}`,
+      location: business?.address || business?.business_name || business?.name
     };
   };
 
@@ -87,7 +96,7 @@ export default function BookingConfirmation({
 VERSION:2.0
 PRODID:-//Your App//Your App//EN
 BEGIN:VEVENT
-UID:${bookingDetails.bookingId}@yourapp.com
+UID:${Date.now()}@yourapp.com
 DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
 DTSTART:${event.start}
 DTEND:${event.end}
@@ -100,7 +109,7 @@ END:VCALENDAR`;
     const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `appointment-${bookingDetails.bookingId}.ics`;
+    link.download = `appointment-${Date.now()}.ics`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -112,7 +121,7 @@ END:VCALENDAR`;
   const shareBooking = async () => {
     const shareData = {
       title: 'אישור תור',
-      text: `התור שלי: ${bookingDetails.serviceName} ב-${formatDate(bookingDetails.date)} בשעה ${bookingDetails.time}`,
+      text: `התור שלי: ${service?.service_name || service?.name} ב-${formatDate(date)} בשעה ${time}`,
       url: window.location.origin
     };
 
@@ -129,7 +138,7 @@ END:VCALENDAR`;
     }
   };
 
-  const endTime = calculateEndTime(bookingDetails.time, bookingDetails.serviceDuration);
+  const endTime = calculateEndTime(time, service?.duration || 0);
 
   return (
     <div className={styles.confirmationContainer}>
@@ -143,7 +152,7 @@ END:VCALENDAR`;
           קיבלת אישור לתור שלך. פרטי התור נשלחו לאימייל שלך.
         </p>
         <div className={styles.bookingNumber}>
-          <span>מספר תור: <strong>#{bookingDetails.bookingId}</strong></span>
+          <span>מספר תור: <strong>#{Date.now().toString().slice(-6)}</strong></span>
         </div>
       </div>
 
@@ -175,15 +184,15 @@ END:VCALENDAR`;
             <h3 className={styles.sectionTitle}>השירות</h3>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>שם השירות:</span>
-              <span className={styles.detailValue}>{bookingDetails.serviceName}</span>
+              <span className={styles.detailValue}>{service?.service_name || service?.name}</span>
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>משך השירות:</span>
-              <span className={styles.detailValue}>{bookingDetails.serviceDuration} דקות</span>
+              <span className={styles.detailValue}>{service?.duration || 0} דקות</span>
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>מחיר:</span>
-              <span className={styles.detailValue}>₪{bookingDetails.servicePrice}</span>
+              <span className={styles.detailValue}>₪{service?.price || 0}</span>
             </div>
           </div>
 
@@ -195,11 +204,11 @@ END:VCALENDAR`;
             </h3>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>תאריך:</span>
-              <span className={styles.detailValue}>{formatDate(bookingDetails.date)}</span>
+              <span className={styles.detailValue}>{formatDate(date)}</span>
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>שעת התחלה:</span>
-              <span className={styles.detailValue}>{formatTime(bookingDetails.time)}</span>
+              <span className={styles.detailValue}>{formatTime(time)}</span>
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>שעת סיום:</span>
@@ -215,24 +224,24 @@ END:VCALENDAR`;
             </h3>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>שם העסק:</span>
-              <span className={styles.detailValue}>{bookingDetails.businessName}</span>
+              <span className={styles.detailValue}>{business?.business_name || business?.name}</span>
             </div>
-            {bookingDetails.businessAddress && (
+            {business?.address && (
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>כתובת:</span>
-                <span className={styles.detailValue}>{bookingDetails.businessAddress}</span>
+                <span className={styles.detailValue}>{business?.address}</span>
               </div>
             )}
-            {bookingDetails.businessPhone && (
+            {business?.phone && (
               <div className={styles.detailItem}>
                 <FiPhone className={styles.detailIcon} />
-                <span className={styles.detailValue}>{bookingDetails.businessPhone}</span>
+                <span className={styles.detailValue}>{business?.phone}</span>
               </div>
             )}
-            {bookingDetails.businessEmail && (
+            {business?.email && (
               <div className={styles.detailItem}>
                 <FiMail className={styles.detailIcon} />
-                <span className={styles.detailValue}>{bookingDetails.businessEmail}</span>
+                <span className={styles.detailValue}>{business?.email}</span>
               </div>
             )}
           </div>
@@ -243,21 +252,21 @@ END:VCALENDAR`;
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>שם מלא:</span>
               <span className={styles.detailValue}>
-                {bookingDetails.customerInfo.firstName} {bookingDetails.customerInfo.lastName}
+                {customerData?.firstName} {customerData?.lastName}
               </span>
             </div>
             <div className={styles.detailItem}>
               <FiPhone className={styles.detailIcon} />
-              <span className={styles.detailValue}>{bookingDetails.customerInfo.phone}</span>
+              <span className={styles.detailValue}>{customerData?.phone}</span>
             </div>
             <div className={styles.detailItem}>
               <FiMail className={styles.detailIcon} />
-              <span className={styles.detailValue}>{bookingDetails.customerInfo.email}</span>
+              <span className={styles.detailValue}>{customerData?.email}</span>
             </div>
-            {bookingDetails.customerInfo.notes && (
+            {customerData?.notes && (
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>הערות:</span>
-                <span className={styles.detailValue}>{bookingDetails.customerInfo.notes}</span>
+                <span className={styles.detailValue}>{customerData?.notes}</span>
               </div>
             )}
           </div>
@@ -286,19 +295,21 @@ END:VCALENDAR`;
       {/* Action Buttons */}
       <div className={styles.actionButtons}>
         <button 
-          onClick={onViewAppointments}
+          onClick={onConfirm}
           className={styles.primaryButton}
+          disabled={isLoading}
         >
-          <FiList className={styles.buttonIcon} />
-          <span>צפה בכל התורים</span>
+          <FiCheckCircle className={styles.buttonIcon} />
+          <span>{isLoading ? 'שולח...' : 'אשר ושלח'}</span>
         </button>
         
         <button 
-          onClick={onGoHome}
+          onClick={onEdit}
           className={styles.secondaryButton}
+          disabled={isLoading}
         >
           <FiHome className={styles.buttonIcon} />
-          <span>חזור לעמוד הבית</span>
+          <span>עריכה</span>
         </button>
       </div>
 

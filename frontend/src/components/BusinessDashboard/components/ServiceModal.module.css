@@ -11,7 +11,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-lg);
+  padding: var(--space-6);
 }
 
 /* Modal Container */
@@ -31,7 +31,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-lg);
+  padding: var(--space-6);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -41,24 +41,25 @@
 
 .modalTitle {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
 .closeButton {
-  width: 32px;
-  height: 32px;
+  background: none;
   border: none;
-  background: var(--surface-secondary);
-  border-radius: var(--radius-md);
+  font-size: 1.5rem;
   color: var(--text-secondary);
   cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
   transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
 }
 
 .closeButton:hover {
@@ -68,32 +69,32 @@
 
 /* Modal Form */
 .modalForm {
-  padding: var(--spacing-lg);
+  padding: var(--space-6);
 }
 
 /* Sections */
 .section {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--space-8);
 }
 
 .sectionTitle {
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
-  padding-bottom: var(--spacing-xs);
+  margin: 0 0 var(--space-4) 0;
+  padding-bottom: var(--space-2);
   border-bottom: 2px solid var(--surface-secondary);
 }
 
 /* Form Groups */
 .formGroup {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--space-4);
 }
 
 .formRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
+  gap: var(--space-4);
 }
 
 /* Labels */
@@ -102,7 +103,7 @@
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--text-primary);
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: var(--space-2);
 }
 
 .durationDisplay {
@@ -116,7 +117,7 @@
 .textarea,
 .select {
   width: 100%;
-  padding: var(--spacing-sm);
+  padding: var(--space-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   font-size: 0.9rem;
@@ -130,7 +131,7 @@
 .textarea:focus,
 .select:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--primary-purple);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -150,7 +151,7 @@
 .categoryInput {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: var(--space-2);
 }
 
 .categoryCustomInput {
@@ -162,14 +163,14 @@
   font-size: 0.8rem;
   color: var(--text-muted);
   text-align: left;
-  margin-top: var(--spacing-xs);
+  margin-top: var(--space-2);
 }
 
 /* Checkbox */
 .checkboxLabel {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-sm);
+  gap: var(--space-3);
   cursor: pointer;
   font-size: 0.9rem;
 }
@@ -178,7 +179,6 @@
   width: 18px;
   height: 18px;
   margin: 0;
-  cursor: pointer;
 }
 
 .checkboxText {
@@ -189,7 +189,7 @@
 .checkboxDescription {
   font-size: 0.8rem;
   color: var(--text-secondary);
-  margin-top: var(--spacing-xs);
+  margin-top: var(--space-2);
   line-height: 1.4;
 }
 
@@ -198,14 +198,14 @@
   background: var(--surface-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
+  padding: var(--space-4);
 }
 
 .previewHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: var(--space-2);
 }
 
 .previewName {
@@ -217,9 +217,10 @@
 }
 
 .previewPrice {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  color: var(--success-color);
+  color: var(--primary-purple);
+  margin: 0;
 }
 
 .previewCategory {
@@ -229,21 +230,21 @@
   padding: 2px 8px;
   border-radius: var(--radius-sm);
   display: inline-block;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--space-3);
 }
 
 .previewDescription {
   font-size: 0.875rem;
   color: var(--text-secondary);
   line-height: 1.4;
-  margin: 0 0 var(--spacing-md) 0;
+  margin: 0 0 var(--space-4) 0;
 }
 
 .previewFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-sm);
+  gap: var(--space-3);
 }
 
 .previewDuration {
@@ -253,18 +254,18 @@
 
 .previewStatus {
   font-size: 0.8rem;
-  font-weight: 500;
-  padding: 2px 8px;
+  padding: 4px 8px;
   border-radius: var(--radius-sm);
+  font-weight: 500;
 }
 
 .previewStatus.active {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(34, 197, 94, 0.1);
   color: var(--success-color);
 }
 
 .previewStatus.inactive {
-  background: rgba(156, 163, 175, 0.2);
+  background: rgba(156, 163, 175, 0.1);
   color: var(--text-muted);
 }
 
@@ -273,16 +274,16 @@
   display: block;
   font-size: 0.8rem;
   color: var(--error-color);
-  margin-top: var(--spacing-xs);
+  margin-top: var(--space-2);
 }
 
 .submitError {
   background: rgba(239, 68, 68, 0.1);
   color: var(--error-color);
-  padding: var(--spacing-sm);
+  padding: var(--space-3);
   border-radius: var(--radius-md);
   font-size: 0.9rem;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--space-4);
 }
 
 /* Modal Actions */
@@ -290,7 +291,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-lg);
+  padding: var(--space-6);
   border-top: 1px solid var(--border);
   background: var(--surface-secondary);
   position: sticky;
@@ -299,12 +300,12 @@
 
 .leftActions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--space-3);
 }
 
 .rightActions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--space-3);
 }
 
 /* Buttons */
@@ -312,7 +313,7 @@
   background: var(--error-color);
   color: white;
   border: none;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   font-size: 0.9rem;
   font-weight: 500;
@@ -329,7 +330,7 @@
   background: var(--surface);
   color: var(--text-secondary);
   border: 1px solid var(--border);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-md);
   font-size: 0.9rem;
   font-weight: 500;
@@ -339,7 +340,7 @@
 
 .cancelButton:hover {
   background: var(--surface-secondary);
-  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .cancelButton:disabled {
@@ -348,10 +349,10 @@
 }
 
 .saveButton {
-  background: var(--primary-color);
+  background: var(--primary-purple);
   color: white;
   border: none;
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-md);
   font-size: 0.9rem;
   font-weight: 500;
@@ -360,7 +361,7 @@
 }
 
 .saveButton:hover {
-  background: var(--primary-dark);
+  background: var(--business-purple-dark);
   transform: translateY(-1px);
 }
 
@@ -373,7 +374,7 @@
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .backdrop {
-    padding: var(--spacing-md);
+    padding: var(--space-4);
   }
   
   .modal {
@@ -382,17 +383,17 @@
   
   .modalHeader,
   .modalForm {
-    padding: var(--spacing-md);
+    padding: var(--space-4);
   }
   
   .formRow {
     grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
+    gap: var(--space-3);
   }
   
   .modalActions {
     flex-direction: column;
-    gap: var(--spacing-sm);
+    gap: var(--space-3);
     align-items: stretch;
   }
   
@@ -415,6 +416,6 @@
   }
   
   .categoryInput {
-    gap: var(--spacing-sm);
+    gap: var(--space-3);
   }
 }

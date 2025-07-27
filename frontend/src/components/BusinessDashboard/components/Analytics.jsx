@@ -97,29 +97,6 @@ export default function Analytics({ data, isMobile }) {
       </div>
 
       {/* Insights */}
-      <div className={styles.insights}>
-        <h4 className={styles.insightsTitle}>תובנות מרכזיות</h4>
-        <div className={styles.insightsList}>
-          <div className={styles.insight}>
-            <span className={styles.insightIcon}>📈</span>
-            <span className={styles.insightText}>
-              הכנסות עלו ב-16% השבוע
-            </span>
-          </div>
-          <div className={styles.insight}>
-            <span className={styles.insightIcon}>⭐</span>
-            <span className={styles.insightText}>
-              חלה לשבת השירות הפופולרי ביותר
-            </span>
-          </div>
-          <div className={styles.insight}>
-            <span className={styles.insightIcon}>👥</span>
-            <span className={styles.insightText}>
-              14 לקוחות חדשים השבוע
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

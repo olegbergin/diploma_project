@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import axios from '../../../config/axios';
 
 export function useServices(businessId) {
   const [services, setServices] = useState([]);
@@ -6,7 +7,51 @@ export function useServices(businessId) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Generate mock services for development
+  // Load services from API
+  const loadServices = useCallback(async () => {
+    if (!businessId) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await axios.get(`/businesses/${businessId}/services`);
+      const apiServices = response.data;
+      
+      // Transform API data to match component expectations
+      const transformedServices = apiServices.map(service => ({
+        id: service.service_id,
+        businessId: service.business_id,
+        name: service.name,
+        description: service.description,
+        category: 'Services', // Default category
+        price: parseFloat(service.price),
+        duration: service.duration_minutes,
+        isActive: true,
+        imageUrl: '',
+        bookingsCount: 0,
+        createdAt: service.created_at,
+        updatedAt: service.created_at
+      }));
+      
+      setServices(transformedServices);
+      
+      // Extract unique categories
+      const uniqueCategories = [...new Set(transformedServices.map(s => s.category))];
+      setCategories(uniqueCategories);
+      
+    } catch (err) {
+      setError('Failed to load services');
+      console.error('Error loading services:', err);
+      // Fallback to empty services array
+      setServices([]);
+      setCategories([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [businessId]);
+
+  // Generate mock services for development (fallback)
   const generateMockServices = useCallback(() => {
     const mockCategories = ['מאפיה', 'עוגות', 'לחמים מיוחדים', 'חגים'];
     
@@ -100,53 +145,27 @@ export function useServices(businessId) {
     return { services: mockServices, categories: mockCategories };
   }, [businessId]);
 
-  // Load services
-  const loadServices = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 600));
-
-      // In production, this would be:
-      // const response = await fetch(`/api/businesses/${businessId}/services`);
-      // if (!response.ok) throw new Error('Failed to load services');
-      // const data = await response.json();
-      // setServices(data.services);
-      // setCategories(data.categories);
-
-      // For now, use mock data
-      const { services: mockServices, categories: mockCategories } = generateMockServices();
-      setServices(mockServices);
-      setCategories(mockCategories);
-
-    } catch (err) {
-      setError('שגיאה בטעינת השירותים. אנא נסה שוב.');
-      console.error('Failed to load services:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [businessId, generateMockServices]);
 
   // Create service
   const createService = useCallback(async (serviceData) => {
     try {
-      // In production:
-      // const response = await fetch(`/api/businesses/${businessId}/services`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(serviceData)
-      // });
-      // if (!response.ok) throw new Error('Failed to create service');
-      // const newService = await response.json();
+      const response = await axios.post(`/businesses/${businessId}/services`, {
+        name: serviceData.name,
+        description: serviceData.description,
+        price: serviceData.price,
+        duration_minutes: serviceData.duration
+      });
 
-      // Mock implementation
       const newService = {
-        id: `service_new_${Date.now()}`,
+        id: response.data.service_id,
         businessId,
-        ...serviceData,
+        name: serviceData.name,
+        description: serviceData.description,
+        category: serviceData.category || 'Services',
+        price: serviceData.price,
+        duration: serviceData.duration,
         isActive: true,
+        imageUrl: '',
         bookingsCount: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -169,20 +188,29 @@ export function useServices(businessId) {
   // Update service
   const updateService = useCallback(async (serviceId, updates) => {
     try {
-      // In production:
-      // const response = await fetch(`/api/services/${serviceId}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(updates)
-      // });
-      // if (!response.ok) throw new Error('Failed to update service');
-      // const updatedService = await response.json();
+      const response = await axios.put(`/businesses/${businessId}/services/${serviceId}`, {
+        name: updates.name,
+        description: updates.description,
+        price: updates.price,
+        duration_minutes: updates.duration
+      });
 
-      // Mock implementation
+      const updatedService = {
+        id: response.data.service_id,
+        businessId,
+        name: updates.name,
+        description: updates.description,
+        category: updates.category || 'Services',
+        price: updates.price,
+        duration: updates.duration,
+        isActive: updates.isActive !== undefined ? updates.isActive : true,
+        imageUrl: updates.imageUrl || '',
+        bookingsCount: 0,
+        updatedAt: new Date().toISOString()
+      };
+
       setServices(prev => prev.map(service => 
-        service.id === serviceId 
-          ? { ...service, ...updates, updatedAt: new Date().toISOString() }
-          : service
+        service.id === serviceId ? updatedService : service
       ));
 
       // Add new category if it doesn't exist
@@ -194,25 +222,23 @@ export function useServices(businessId) {
       console.error('Failed to update service:', err);
       throw new Error('שגיאה בעדכון השירות');
     }
-  }, [categories]);
+  }, [businessId, categories]);
 
   // Delete service
   const deleteService = useCallback(async (serviceId) => {
     try {
-      // In production:
-      // const response = await fetch(`/api/services/${serviceId}`, {
-      //   method: 'DELETE'
-      // });
-      // if (!response.ok) throw new Error('Failed to delete service');
+      await axios.delete(`/businesses/${businessId}/services/${serviceId}`);
 
-      // Mock implementation
       setServices(prev => prev.filter(service => service.id !== serviceId));
 
     } catch (err) {
       console.error('Failed to delete service:', err);
+      if (err.response?.status === 400) {
+        throw new Error('לא ניתן למחוק שירות עם תורים קיימים');
+      }
       throw new Error('שגיאה במחיקת השירות');
     }
-  }, []);
+  }, [businessId]);
 
   // Refresh services
   const refreshServices = useCallback(() => {

@@ -46,7 +46,7 @@ export default function RequestsTab({ businessId, onAction }) {
         prev.filter((req) => req.appointment_id !== appointmentId)
       );
       if (onAction) onAction();
-    } catch (error) {
+    } catch {
       alert("שגיאה בעדכון הבקשה. נסו שוב.");
     }
   };

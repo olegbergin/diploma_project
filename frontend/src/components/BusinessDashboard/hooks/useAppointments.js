@@ -63,7 +63,7 @@ export function useAppointments(businessId) {
       const currentMonth = new Date().toISOString().slice(0, 7);
       
       // Fetch appointments from API
-      const response = await axios.get(`/api/appointments`, {
+      const response = await axios.get(`/appointments`, {
         params: {
           businessId: businessId,
           month: currentMonth

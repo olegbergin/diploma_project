@@ -34,7 +34,7 @@ function debounce(func, delay) {
 function SearchPage({ user }) {
   const [allBusinesses, setAllBusinesses] = useState([]);
   const [filteredBusinesses, setFilteredBusinesses] = useState([]);
-  const { error, isLoading, handleError, clearError, executeWithErrorHandling, executeWithRetry } = useErrorHandler();
+  const { error, isLoading, clearError, executeWithRetry } = useErrorHandler();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [orderBy, setOrderBy] = useState("name");
@@ -127,7 +127,7 @@ function SearchPage({ user }) {
       try {
         const response = await axiosInstance.get("/businesses/categories");
         setCategories(response.data || []);
-      } catch (err) {
+      } catch {
         setCategories([]);
       }
     };
@@ -173,7 +173,6 @@ function SearchPage({ user }) {
 
   const handleCreateBusiness = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
 
     // Get current user from localStorage
     const currentUser = JSON.parse(localStorage.getItem("userInfo"));
@@ -196,10 +195,8 @@ function SearchPage({ user }) {
         schedule: "",
       });
       setShowCreateForm(false);
-    } catch (error) {
-      setError("Failed to create business");
-    } finally {
-      setIsLoading(false);
+    } catch {
+      alert("Failed to create business");
     }
   };
 

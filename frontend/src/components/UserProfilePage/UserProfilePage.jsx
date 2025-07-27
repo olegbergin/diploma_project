@@ -18,7 +18,7 @@ import AppointmentsPanel from "./UserDashboard/AppointmentsPanel";
 import FavoritesPanel from "./UserDashboard/FavoritesPanel";
 import PersonalInfoPanel from "./UserDashboard/PersonalInfoPanel";
 
-export default function UserProfilePage({ user, setUser, onLogout }) {
+export default function UserProfilePage({ user, setUser }) {
   return (
     <div className={styles.dashboardContainer}>
       {/* Main Content - Full width layout */}

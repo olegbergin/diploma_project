@@ -72,31 +72,13 @@ export default function QuickActions({ onAction }) {
         ))}
       </div>
       
-      {/* Recent quick actions */}
+      {/* Recent activities placeholder */}
       <div className={styles.recentActions}>
-        <h3 className={styles.recentTitle}>פעולות אחרונות</h3>
-        <div className={styles.recentList}>
-          <div className={styles.recentItem}>
-            <span className={styles.recentIcon}>🔍</span>
-            <div className={styles.recentContent}>
-              <span className={styles.recentAction}>חיפוש מספרות</span>
-              <span className={styles.recentTime}>לפני 2 שעות</span>
-            </div>
-          </div>
-          <div className={styles.recentItem}>
-            <span className={styles.recentIcon}>📅</span>
-            <div className={styles.recentContent}>
-              <span className={styles.recentAction}>הזמנת תור בסלון יופי</span>
-              <span className={styles.recentTime}>אתמול</span>
-            </div>
-          </div>
-          <div className={styles.recentItem}>
-            <span className={styles.recentIcon}>⭐</span>
-            <div className={styles.recentContent}>
-              <span className={styles.recentAction}>הוספה למועדפים</span>
-              <span className={styles.recentTime">לפני 3 ימים</span>
-            </div>
-          </div>
+        <h3 className={styles.recentTitle}>פעילות אחרונה</h3>
+        <div className={styles.emptyState}>
+          <p className={styles.emptyMessage}>
+            התחל לבצע פעולות כדי לראות כאן את הפעילות האחרונה
+          </p>
         </div>
       </div>
     </div>

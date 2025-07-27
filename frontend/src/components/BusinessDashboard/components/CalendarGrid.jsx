@@ -99,8 +99,6 @@ export default function CalendarGrid({
 
   // Day view
   if (viewMode === 'day') {
-    const dayAppointments = getAppointmentsForDate(selectedDate);
-    
     return (
       <div className={styles.dayView}>
         {/* Day Header */}
