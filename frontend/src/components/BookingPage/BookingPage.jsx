@@ -8,7 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { FiArrowRight, FiCheck } from 'react-icons/fi';
+import { FiArrowRight, FiCheck, FiCalendar, FiMapPin } from 'react-icons/fi';
 import axiosInstance from '../../api/axiosInstance';
 import ServiceSummary from './components/ServiceSummary';
 import CalendarPicker from './components/CalendarPicker';
@@ -22,7 +22,8 @@ const BOOKING_STEPS = {
   CALENDAR: 'calendar',
   TIME: 'time',
   FORM: 'form',
-  CONFIRMATION: 'confirmation'
+  CONFIRMATION: 'confirmation',
+  SUCCESS: 'success'
 };
 
 export default function BookingPage() {
@@ -137,27 +138,37 @@ export default function BookingPage() {
         serviceId: parseInt(serviceId),
         date: selectedDate,
         time: selectedTime,
-        ...customerData
+        firstName: customerData.customerInfo?.firstName || customerData.firstName,
+        lastName: customerData.customerInfo?.lastName || customerData.lastName,
+        phone: customerData.customerInfo?.phone || customerData.phone,
+        email: customerData.customerInfo?.email || customerData.email,
+        notes: customerData.customerInfo?.notes || customerData.notes || ''
       };
 
       const response = await axiosInstance.post('/appointments', bookingData);
       
-      // Success - redirect to user dashboard with success message
-      const currentUser = JSON.parse(localStorage.getItem("userInfo"));
-      if (currentUser) {
-        navigate(`/user/${currentUser.id}/dashboard`, {
-          state: { 
-            message: 'הזמנה נוצרה בהצלחה!', 
-            appointmentId: response.data.appointmentId 
-          }
-        });
-      } else {
-        navigate('/home', {
-          state: { 
-            message: 'הזמנה נוצרה בהצלחה!' 
-          }
-        });
-      }
+      // Success - show success step
+      setCurrentStep(BOOKING_STEPS.SUCCESS);
+      
+      // Auto-redirect after 5 seconds
+      setTimeout(() => {
+        const currentUser = JSON.parse(localStorage.getItem("userInfo"));
+        if (currentUser) {
+          navigate(`/user/${currentUser.id}/dashboard`, {
+            state: { 
+              message: 'הזמנה נוצרה בהצלחה!', 
+              appointmentId: response.data.appointmentId 
+            }
+          });
+        } else {
+          navigate('/home', {
+            state: { 
+              message: 'הזמנה נוצרה בהצלחה!' 
+            }
+          });
+        }
+      }, 5000);
+      
     } catch (err) {
       console.error('Failed to create appointment:', err);
       setError('שגיאה ביצירת התור. אנא נסה שוב.');
@@ -303,6 +314,48 @@ export default function BookingPage() {
             onEdit={() => setCurrentStep(BOOKING_STEPS.FORM)}
             isLoading={isLoading}
           />
+        )}
+
+        {currentStep === BOOKING_STEPS.SUCCESS && (
+          <div className={styles.successStep}>
+            <div className={styles.successIcon}>
+              <FiCheck />
+            </div>
+            <h1 className={styles.successTitle}>התור נקבע בהצלחה!</h1>
+            <p className={styles.successSubtitle}>
+              קיבלת אישור לתור שלך. פרטי התור נשלחו לאימייל שלך.
+            </p>
+            <div className={styles.bookingNumber}>
+              <span>מספר תור: <strong>#{Date.now().toString().slice(-6)}</strong></span>
+            </div>
+            <div className={styles.successDetails}>
+              <div className={styles.successDetailItem}>
+                <strong>{service?.service_name || service?.name}</strong>
+              </div>
+              <div className={styles.successDetailItem}>
+                <FiCalendar /> {new Date(selectedDate).toLocaleDateString('he-IL')} בשעה {selectedTime}
+              </div>
+              <div className={styles.successDetailItem}>
+                <FiMapPin /> {business?.business_name || business?.name}
+              </div>
+            </div>
+            <p className={styles.redirectMessage}>
+              מעביר אותך לדשבורד תוך 5 שניות...
+            </p>
+            <button 
+              onClick={() => {
+                const currentUser = JSON.parse(localStorage.getItem("userInfo"));
+                if (currentUser) {
+                  navigate(`/user/${currentUser.id}/dashboard`);
+                } else {
+                  navigate('/home');
+                }
+              }}
+              className={styles.goToDashboardButton}
+            >
+              עבור לדשבורד עכשיו
+            </button>
+          </div>
         )}
       </div>
     </div>

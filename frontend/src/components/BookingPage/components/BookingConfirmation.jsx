@@ -142,18 +142,15 @@ END:VCALENDAR`;
 
   return (
     <div className={styles.confirmationContainer}>
-      {/* Success Header */}
+      {/* Confirmation Header */}
       <div className={styles.successHeader}>
         <div className={styles.successIcon}>
           <FiCheckCircle />
         </div>
-        <h1 className={styles.successTitle}>התור נקבע בהצלחה!</h1>
+        <h1 className={styles.successTitle}>אישור פרטי התור</h1>
         <p className={styles.successSubtitle}>
-          קיבלת אישור לתור שלך. פרטי התור נשלחו לאימייל שלך.
+          אנא בדקו את פרטי התור ואשרו לסיום ההזמנה
         </p>
-        <div className={styles.bookingNumber}>
-          <span>מספר תור: <strong>#{Date.now().toString().slice(-6)}</strong></span>
-        </div>
       </div>
 
       {/* Booking Details Card */}
@@ -252,21 +249,21 @@ END:VCALENDAR`;
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>שם מלא:</span>
               <span className={styles.detailValue}>
-                {customerData?.firstName} {customerData?.lastName}
+                {customerData?.customerInfo?.firstName || customerData?.firstName} {customerData?.customerInfo?.lastName || customerData?.lastName}
               </span>
             </div>
             <div className={styles.detailItem}>
               <FiPhone className={styles.detailIcon} />
-              <span className={styles.detailValue}>{customerData?.phone}</span>
+              <span className={styles.detailValue}>{customerData?.customerInfo?.phone || customerData?.phone}</span>
             </div>
             <div className={styles.detailItem}>
               <FiMail className={styles.detailIcon} />
-              <span className={styles.detailValue}>{customerData?.email}</span>
+              <span className={styles.detailValue}>{customerData?.customerInfo?.email || customerData?.email}</span>
             </div>
-            {customerData?.notes && (
+            {(customerData?.customerInfo?.notes || customerData?.notes) && (
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>הערות:</span>
-                <span className={styles.detailValue}>{customerData?.notes}</span>
+                <span className={styles.detailValue}>{customerData?.customerInfo?.notes || customerData?.notes}</span>
               </div>
             )}
           </div>

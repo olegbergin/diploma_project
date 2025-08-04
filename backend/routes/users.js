@@ -212,10 +212,10 @@ router.get("/:id/dashboard", async (req, res) => {
     const [appointmentStats] = await db.query(`
       SELECT 
         COUNT(*) as total_bookings,
-        COUNT(CASE WHEN status = 'approved' AND appointment_datetime >= NOW() THEN 1 END) as upcoming_bookings,
-        COUNT(CASE WHEN status = 'approved' AND appointment_datetime < NOW() THEN 1 END) as past_bookings,
-        COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_bookings,
-        COUNT(CASE WHEN appointment_datetime >= CURDATE() AND appointment_datetime < DATE_ADD(CURDATE(), INTERVAL 14 DAY) THEN 1 END) as bookings_next_two_weeks
+        COUNT(CASE WHEN status = 'scheduled' AND appointment_datetime >= NOW() THEN 1 END) as upcoming_bookings,
+        COUNT(CASE WHEN status = 'scheduled' AND appointment_datetime < NOW() THEN 1 END) as past_bookings,
+        COUNT(CASE WHEN status = 'cancelled_by_user' OR status = 'cancelled_by_business' THEN 1 END) as cancelled_bookings,
+        COUNT(CASE WHEN status = 'scheduled' AND appointment_datetime >= CURDATE() AND appointment_datetime < DATE_ADD(CURDATE(), INTERVAL 14 DAY) THEN 1 END) as bookings_next_two_weeks
       FROM appointments 
       WHERE customer_id = ?
     `, [userId]);
@@ -231,9 +231,9 @@ router.get("/:id/dashboard", async (req, res) => {
     // For now, we'll use a placeholder calculation
     const [ratingStats] = await db.query(`
       SELECT 
-        COALESCE(AVG(CASE WHEN a.status = 'approved' THEN 4.5 END), 0) as average_rating
+        COALESCE(AVG(CASE WHEN a.status = 'scheduled' THEN 4.5 END), 0) as average_rating
       FROM appointments a
-      WHERE a.customer_id = ? AND a.status = 'approved'
+      WHERE a.customer_id = ? AND a.status = 'scheduled'
     `, [userId]);
 
     // Get recent activities
@@ -261,13 +261,12 @@ router.get("/:id/dashboard", async (req, res) => {
         b.name,
         b.category,
         b.description,
-        b.address,
-        b.phone,
-        b.image_url,
-        b.opening_hours,
+        b.location,
+        b.photos,
+        b.schedule,
         f.created_at as favorited_date,
-        (SELECT COUNT(*) FROM appointments WHERE customer_id = ? AND business_id = b.business_id AND status = 'approved') as visit_count,
-        (SELECT MAX(appointment_datetime) FROM appointments WHERE customer_id = ? AND business_id = b.business_id AND status = 'approved') as last_visit
+        (SELECT COUNT(*) FROM appointments WHERE customer_id = ? AND business_id = b.business_id AND status = 'scheduled') as visit_count,
+        (SELECT MAX(appointment_datetime) FROM appointments WHERE customer_id = ? AND business_id = b.business_id AND status = 'scheduled') as last_visit
       FROM user_favorites f
       JOIN businesses b ON f.business_id = b.business_id
       WHERE f.user_id = ?
@@ -282,9 +281,8 @@ router.get("/:id/dashboard", async (req, res) => {
         a.status,
         a.notes,
         b.name as business_name,
-        b.address as business_address,
-        b.phone as business_phone,
-        b.image_url as business_image,
+        b.location as business_address,
+        b.photos as business_image,
         s.name as service_name,
         s.price,
         s.duration_minutes
@@ -292,7 +290,7 @@ router.get("/:id/dashboard", async (req, res) => {
       LEFT JOIN businesses b ON a.business_id = b.business_id
       LEFT JOIN services s ON a.service_id = s.service_id
       WHERE a.customer_id = ? 
-      AND a.status = 'approved' 
+      AND a.status = 'scheduled' 
       AND a.appointment_datetime >= NOW()
       ORDER BY a.appointment_datetime ASC
       LIMIT 5
@@ -305,8 +303,8 @@ router.get("/:id/dashboard", async (req, res) => {
         a.appointment_datetime,
         a.status,
         b.name as business_name,
-        b.address as business_address,
-        b.image_url as business_image,
+        b.location as business_address,
+        b.photos as business_image,
         s.name as service_name,
         s.price,
         s.duration_minutes
@@ -314,7 +312,7 @@ router.get("/:id/dashboard", async (req, res) => {
       LEFT JOIN businesses b ON a.business_id = b.business_id
       LEFT JOIN services s ON a.service_id = s.service_id
       WHERE a.customer_id = ? 
-      AND a.status = 'approved' 
+      AND a.status = 'scheduled' 
       AND a.appointment_datetime < NOW()
       ORDER BY a.appointment_datetime DESC
       LIMIT 10
@@ -347,9 +345,9 @@ router.get("/:id/dashboard", async (req, res) => {
         id: fav.business_id,
         name: fav.name,
         category: fav.category,
-        address: fav.address,
-        phone: fav.phone,
-        image: fav.image_url,
+        address: fav.location,
+        phone: null, // Not available in current schema
+        image: fav.photos ? (JSON.parse(fav.photos)[0] || null) : null,
         visitCount: fav.visit_count || 0,
         lastVisit: fav.last_visit,
         favoritedDate: fav.favorited_date
@@ -362,9 +360,9 @@ router.get("/:id/dashboard", async (req, res) => {
         price: apt.price,
         duration: apt.duration_minutes,
         status: apt.status,
-        businessImage: apt.business_image,
+        businessImage: apt.business_image ? (JSON.parse(apt.business_image)[0] || null) : null,
         businessAddress: apt.business_address,
-        businessPhone: apt.business_phone
+        businessPhone: null // Not available in current schema
       })),
       pastAppointments: pastAppointments.map(apt => ({
         id: apt.appointment_id,
@@ -374,7 +372,7 @@ router.get("/:id/dashboard", async (req, res) => {
         price: apt.price,
         duration: apt.duration_minutes,
         status: apt.status,
-        businessImage: apt.business_image
+        businessImage: apt.business_image ? (JSON.parse(apt.business_image)[0] || null) : null
       }))
     };
 

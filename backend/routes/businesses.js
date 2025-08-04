@@ -179,9 +179,9 @@ router.get("/:id/dashboard", async (req, res) => {
     const [appointmentStats] = await db.query(`
       SELECT 
         COUNT(*) as total_appointments,
-        COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved_appointments,
+        COUNT(CASE WHEN status = 'confirmed' THEN 1 END) as approved_appointments,
         COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_appointments,
-        COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_appointments,
+        COUNT(CASE WHEN status = 'cancelled_by_user' OR status = 'cancelled_by_business' THEN 1 END) as cancelled_appointments,
         COUNT(CASE WHEN DATE_FORMAT(appointment_datetime, '%Y-%m') = ? THEN 1 END) as monthly_appointments,
         COUNT(CASE WHEN appointment_datetime >= CURDATE() AND appointment_datetime < DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 1 END) as weekly_appointments
       FROM appointments 
@@ -191,9 +191,9 @@ router.get("/:id/dashboard", async (req, res) => {
     // Get revenue statistics (assuming appointments have a price from services)
     const [revenueStats] = await db.query(`
       SELECT 
-        COALESCE(SUM(CASE WHEN a.status = 'approved' THEN s.price END), 0) as total_revenue,
-        COALESCE(SUM(CASE WHEN a.status = 'approved' AND DATE_FORMAT(a.appointment_datetime, '%Y-%m') = ? THEN s.price END), 0) as monthly_revenue,
-        COALESCE(AVG(CASE WHEN a.status = 'approved' THEN s.price END), 0) as average_service_price
+        COALESCE(SUM(CASE WHEN a.status = 'completed' THEN s.price END), 0) as total_revenue,
+        COALESCE(SUM(CASE WHEN a.status = 'completed' AND DATE_FORMAT(a.appointment_datetime, '%Y-%m') = ? THEN s.price END), 0) as monthly_revenue,
+        COALESCE(AVG(CASE WHEN a.status = 'completed' THEN s.price END), 0) as average_service_price
       FROM appointments a
       LEFT JOIN services s ON a.service_id = s.service_id
       WHERE a.business_id = ?
@@ -225,7 +225,7 @@ router.get("/:id/dashboard", async (req, res) => {
       SELECT 
         DATE_FORMAT(appointment_datetime, '%Y-%m') as month,
         COUNT(*) as appointment_count,
-        COALESCE(SUM(CASE WHEN a.status = 'approved' THEN s.price END), 0) as revenue
+        COALESCE(SUM(CASE WHEN a.status = 'completed' THEN s.price END), 0) as revenue
       FROM appointments a
       LEFT JOIN services s ON a.service_id = s.service_id
       WHERE a.business_id = ? 
@@ -240,7 +240,7 @@ router.get("/:id/dashboard", async (req, res) => {
         s.name as service_name,
         s.service_id,
         COUNT(a.appointment_id) as booking_count,
-        COALESCE(SUM(CASE WHEN a.status = 'approved' THEN s.price END), 0) as service_revenue
+        COALESCE(SUM(CASE WHEN a.status = 'completed' THEN s.price END), 0) as service_revenue
       FROM services s
       LEFT JOIN appointments a ON s.service_id = a.service_id
       WHERE s.business_id = ?

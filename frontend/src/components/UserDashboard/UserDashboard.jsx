@@ -1,188 +1,233 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './UserDashboard.module.css';
-import DashboardHeader from './components/DashboardHeader';
-import Navigation from './components/Navigation';
-import QuickActions from './components/QuickActions';
-import KPICards from './components/KPICards';
-import RecentActivity from './components/RecentActivity';
-import BookingsView from './views/BookingsView';
-import FavoritesView from './views/FavoritesView';
-import ProfileView from './views/ProfileView';
-import PullToRefresh from '../BusinessProfile/components/PullToRefresh';
-import { useSwipeGestures } from '../BusinessProfile/hooks/useSwipeGestures';
-import { useDashboardData } from './hooks/useDashboardData';
+import axiosInstance from '../../api/axiosInstance';
 
 export default function UserDashboard({ user }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  
-  // State management
-  const [activeView, setActiveView] = useState('dashboard');
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [isNavOpen, setIsNavOpen] = useState(false);
-  
-  // Custom hooks
-  const { dashboardData, loading, refreshData } = useDashboardData(user?.id);
-  
-  // Views configuration
-  const views = ['dashboard', 'bookings', 'favorites', 'profile'];
-  
-  // Swipe gestures for mobile
-  const handleSwipeLeft = () => {
-    if (isMobile && activeView === 'dashboard') {
-      const currentIndex = views.indexOf(activeView);
-      const nextIndex = (currentIndex + 1) % views.length;
-      setActiveView(views[nextIndex]);
-    }
-  };
-  
-  const handleSwipeRight = () => {
-    if (isMobile && activeView !== 'dashboard') {
-      const currentIndex = views.indexOf(activeView);
-      const prevIndex = currentIndex === 0 ? views.length - 1 : currentIndex - 1;
-      setActiveView(views[prevIndex]);
-    }
-  };
-  
-  const swipeRef = useSwipeGestures({
-    onSwipeLeft: handleSwipeLeft,
-    onSwipeRight: handleSwipeRight,
-    threshold: 50
-  });
-  
-  // Handle responsive behavior
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showAllAppointments, setShowAllAppointments] = useState(false);
+
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      if (!mobile) {
-        setIsNavOpen(false);
+    const fetchDashboardData = async () => {
+      if (!user?.user_id) return;
+      
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get(`/users/${user.user_id}/dashboard`);
+        setDashboardData(response.data);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setError('שגיאה בטעינת נתוני הדשבורד');
+      } finally {
+        setLoading(false);
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
-  // Handle URL-based view switching
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const view = searchParams.get('view');
-    if (view && views.includes(view)) {
-      setActiveView(view);
-    }
-  }, [location]);
-  
-  // Navigation handler
-  const handleViewChange = (view) => {
-    setActiveView(view);
-    setIsNavOpen(false);
-    
-    // Update URL without page reload
-    const newUrl = view === 'dashboard' 
-      ? `/user/${user.id}/dashboard`
-      : `/user/${user.id}/dashboard?view=${view}`;
-    window.history.pushState({}, '', newUrl);
-  };
-  
-  // Pull to refresh handler
-  const handleRefresh = async () => {
-    try {
-      await refreshData();
-    } catch (error) {
-      console.error('Failed to refresh data:', error);
-    }
-  };
-  
-  // Quick action handlers
-  const handleQuickAction = (action) => {
-    switch (action) {
-      case 'search':
-        navigate('/search');
-        break;
-      case 'book':
-        navigate('/search?intent=book');
-        break;
-      case 'favorites':
-        setActiveView('favorites');
-        break;
-      case 'profile':
-        setActiveView('profile');
-        break;
-      default:
-        break;
-    }
-  };
-  
-  // Render view content
-  const renderViewContent = () => {
-    switch (activeView) {
-      case 'bookings':
-        return <BookingsView user={user} />;
-      case 'favorites':
-        return <FavoritesView user={user} />;
-      case 'profile':
-        return <ProfileView user={user} />;
-      default:
-        return (
-          <div className={styles.dashboardContent}>
-            <KPICards data={dashboardData} loading={loading} />
-            <QuickActions onAction={handleQuickAction} />
-            <RecentActivity data={dashboardData} loading={loading} />
-          </div>
-        );
-    }
-  };
-  
-  if (!user) {
+    fetchDashboardData();
+  }, [user?.user_id]);
+
+  if (loading) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.loadingSpinner}></div>
-        <p className={styles.loadingText}>טוען נתוני משתמש...</p>
+        <p>טוען נתונים...</p>
       </div>
     );
   }
-  
-  const content = (
-    <div className={`${styles.dashboardLayout} ${isMobile ? styles.mobileLayout : ''}`}>
-      <DashboardHeader 
-        user={user}
-        isMobile={isMobile}
-        isNavOpen={isNavOpen}
-        onNavToggle={() => setIsNavOpen(!isNavOpen)}
-        activeView={activeView}
-      />
-      
-      <Navigation
-        activeView={activeView}
-        onViewChange={handleViewChange}
-        isMobile={isMobile}
-        isOpen={isNavOpen}
-        onClose={() => setIsNavOpen(false)}
-      />
-      
-      {/* Mobile overlay */}
-      {isMobile && isNavOpen && (
-        <div 
-          className={styles.overlay}
-          onClick={() => setIsNavOpen(false)}
-        />
+
+  if (error) {
+    return (
+      <div className={styles.errorContainer}>
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className={styles.errorContainer}>
+        <p>לא נמצאו נתונים</p>
+      </div>
+    );
+  }
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('he-IL', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getStatusBadge = (status, date) => {
+    const statusMap = {
+      'pending': { text: 'ממתין לאישור', class: 'statusPending' },
+      'confirmed': { text: 'אושר', class: 'statusConfirmed' },
+      'completed': { text: 'הושלם', class: 'statusCompleted' },
+      'cancelled_by_user': { text: 'בוטל על ידיך', class: 'statusCancelled' },
+      'cancelled_by_business': { text: 'בוטל ע"י העסק', class: 'statusCancelled' },
+      'not_arrived': { text: 'לא הגעת', class: 'statusNotArrived' }
+    };
+
+    const statusInfo = statusMap[status] || { text: status, class: 'statusDefault' };
+    return <span className={`${styles.statusBadge} ${styles[statusInfo.class]}`}>{statusInfo.text}</span>;
+  };
+
+  const getAllAppointments = () => {
+    if (!dashboardData) return [];
+    return [...dashboardData.upcomingAppointments, ...dashboardData.pastAppointments]
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+  };
+
+  return (
+    <div className={styles.dashboard}>
+      <div className={styles.header}>
+        <h1>שלום, {dashboardData.user.first_name}</h1>
+        <p>סיכום הפעילות שלך</p>
+      </div>
+
+      <div className={styles.statsGrid}>
+        <div className={styles.statTile}>
+          <div className={styles.statNumber}>{dashboardData.totalBookings}</div>
+          <div className={styles.statLabel}>סה"כ תורים</div>
+        </div>
+        
+        <div className={styles.statTile}>
+          <div className={styles.statNumber}>{dashboardData.upcomingBookings}</div>
+          <div className={styles.statLabel}>תורים קרובים</div>
+        </div>
+        
+        <div className={styles.statTile}>
+          <div className={styles.statNumber}>{dashboardData.favoriteBusinesses}</div>
+          <div className={styles.statLabel}>עסקים מועדפים</div>
+        </div>
+        
+        <div className={styles.statTile}>
+          <div className={styles.statNumber}>{dashboardData.pastBookings}</div>
+          <div className={styles.statLabel}>תורים שהיו</div>
+        </div>
+      </div>
+
+      {dashboardData.upcomingAppointments.length > 0 && (
+        <div className={styles.section}>
+          <h2>התורים הקרובים שלי</h2>
+          <div className={styles.appointmentsGrid}>
+            {dashboardData.upcomingAppointments.map(appointment => (
+              <div key={appointment.id} className={styles.appointmentTile}>
+                <div className={styles.appointmentDate}>
+                  {formatDate(appointment.date)}
+                </div>
+                <div className={styles.appointmentBusiness}>
+                  {appointment.businessName}
+                </div>
+                <div className={styles.appointmentService}>
+                  {appointment.serviceName}
+                </div>
+                {appointment.price && (
+                  <div className={styles.appointmentPrice}>
+                    ₪{appointment.price}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       )}
-      
-      <main 
-        className={styles.mainContent}
-        ref={isMobile ? swipeRef : null}
-      >
-        {renderViewContent()}
-      </main>
+
+      {dashboardData.favorites.length > 0 && (
+        <div className={styles.section}>
+          <h2>העסקים המועדפים שלי</h2>
+          <div className={styles.favoritesGrid}>
+            {dashboardData.favorites.map(business => (
+              <div key={business.id} className={styles.favoriteTile}>
+                <div className={styles.businessName}>{business.name}</div>
+                <div className={styles.businessCategory}>{business.category}</div>
+                <div className={styles.businessAddress}>{business.address}</div>
+                {business.visitCount > 0 && (
+                  <div className={styles.visitCount}>
+                    {business.visitCount} ביקורים
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {dashboardData.recentActivities.length > 0 && (
+        <div className={styles.section}>
+          <h2>פעילות אחרונה</h2>
+          <div className={styles.activitiesGrid}>
+            {dashboardData.recentActivities.map(activity => (
+              <div key={activity.id} className={styles.activityTile}>
+                <div className={styles.activityIcon}>{activity.icon}</div>
+                <div className={styles.activityContent}>
+                  <div className={styles.activityTitle}>{activity.title}</div>
+                  <div className={styles.activityDescription}>{activity.description}</div>
+                  <div className={styles.activityTime}>{activity.time}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* All Appointments Section */}
+      <div className={styles.section}>
+        <h2>כל התורים שלי</h2>
+        {showAllAppointments ? (
+          <div>
+            {getAllAppointments().length > 0 ? (
+              <div className={styles.allAppointmentsGrid}>
+                {getAllAppointments().map(appointment => (
+                  <div key={appointment.id} className={styles.appointmentTile}>
+                    <div className={styles.appointmentDate}>
+                      {formatDate(appointment.date)}
+                    </div>
+                    <div className={styles.appointmentBusiness}>
+                      {appointment.businessName}
+                    </div>
+                    <div className={styles.appointmentService}>
+                      {appointment.serviceName}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                      {appointment.price && (
+                        <div className={styles.appointmentPrice}>
+                          ₪{appointment.price}
+                        </div>
+                      )}
+                      {getStatusBadge(appointment.status, appointment.date)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                <div className={styles.emptyStateIcon}>📅</div>
+                <h3>אין תורים</h3>
+                <p>עדיין לא קבעת תורים במערכת</p>
+              </div>
+            )}
+            <button 
+              className={styles.viewAllButton}
+              onClick={() => setShowAllAppointments(false)}
+            >
+              הסתר רשימה
+            </button>
+          </div>
+        ) : (
+          <button 
+            className={styles.viewAllButton}
+            onClick={() => setShowAllAppointments(true)}
+          >
+            הצג את כל התורים ({getAllAppointments().length})
+          </button>
+        )}
+      </div>
     </div>
   );
-  
-  // Wrap with pull-to-refresh on mobile
-  return isMobile ? (
-    <PullToRefresh onRefresh={handleRefresh}>
-      {content}
-    </PullToRefresh>
-  ) : content;
 }

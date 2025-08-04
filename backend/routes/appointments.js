@@ -144,7 +144,7 @@ router.post("/", async (req, res) => {
     // Create appointment
     const [result] = await db.query(
       `INSERT INTO appointments (customer_id, business_id, service_id, appointment_datetime, status, notes, created_at) 
-       VALUES (?, ?, ?, ?, 'scheduled', ?, NOW())`,
+       VALUES (?, ?, ?, ?, 'pending', ?, NOW())`,
       [customerId, parseInt(businessId), parseInt(serviceId), datetime, notes || null]
     );
     

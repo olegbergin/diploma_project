@@ -1,5 +1,119 @@
 /* BookingPage.module.css */
 
+/* Success Step Styles */
+.successStep {
+  text-align: center;
+  padding: 3rem 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.successStep .successIcon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2rem;
+  animation: successPulse 2s ease-in-out infinite;
+}
+
+.successStep .successIcon svg {
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+
+@keyframes successPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+  }
+}
+
+.successStep .successTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #059669;
+  margin-bottom: 1rem;
+}
+
+.successStep .successSubtitle {
+  font-size: 1.1rem;
+  color: #6b7280;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.bookingNumber {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  color: #0369a1;
+}
+
+.successDetails {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.successDetailItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  font-size: 1rem;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.successDetailItem:last-child {
+  border-bottom: none;
+}
+
+.successDetailItem svg {
+  color: #6b7280;
+  width: 20px;
+  height: 20px;
+}
+
+.redirectMessage {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+.goToDashboardButton {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 44px;
+}
+
+.goToDashboardButton:hover {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
 .bookingContainer {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);

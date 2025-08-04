@@ -14,9 +14,8 @@ import AuthPage from "./components/AuthPage/AuthPage";
 import BusinessRegistration from "./components/BusinessRegistration/BusinessRegistration";
 import HomePage from "./components/HomePage/HomePage";
 import BusinessProfile from "./components/BusinessProfile/BusinessProfile";
-import SimplifiedBusinessDashboard from "./components/BusinessDashboard/SimplifiedBusinessDashboard";
+import NewBusinessDashboard from "./components/BusinessDashboard/NewBusinessDashboard";
 import UserDashboard from "./components/UserDashboard/UserDashboard";
-import UserProfilePage from "./components/UserProfilePage/UserProfilePage";
 import SearchPage from "./components/SearchPage/SearchPage";
 import BookingPage from "./components/BookingPage/BookingPage";
 import AdminPanel from "./components/AdminPanel/AdminPanel";
@@ -156,7 +155,7 @@ function App() {
               )
             }
           />
-          {/* User dashboard (new modern dashboard) */}
+          {/* User dashboard */}
           <Route
             path="/user/:id/dashboard"
             element={
@@ -178,27 +177,12 @@ function App() {
               )
             }
           />
-          {/* Legacy user profile page (backup for compatibility) */}
-          <Route
-            path="/user/:id/profile"
-            element={
-              currentUser && currentUser.role === "customer" ? (
-                <UserProfilePage
-                  user={currentUser}
-                  setUser={setCurrentUser}
-                  onLogout={handleLogout}
-                />
-              ) : (
-                <Navigate replace to="/login" />
-              )
-            }
-          />
           {/* Business dashboard (new modern dashboard) */}
           <Route
             path="/business/:id/dashboard"
             element={
               currentUser && currentUser.role === "business" ? (
-                <SimplifiedBusinessDashboard user={currentUser} />
+                <NewBusinessDashboard user={currentUser} />
               ) : (
                 <Navigate replace to="/login" />
               )
