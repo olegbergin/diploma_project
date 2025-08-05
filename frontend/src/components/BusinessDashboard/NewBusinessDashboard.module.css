@@ -21,6 +21,19 @@
   margin-bottom: 2rem;
 }
 
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
 .header h1 {
   font-size: 2rem;
   color: var(--text-primary, #2c3e50);
@@ -32,6 +45,54 @@
   color: var(--text-secondary, #7f8c8d);
   font-size: 1rem;
   margin: 0;
+}
+
+.manageButton {
+  background: linear-gradient(135deg, var(--primary-purple, #9d84f3), var(--primary-purple-light, #b8a5f5));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(157, 132, 243, 0.3);
+}
+
+.manageButton:hover {
+  background: linear-gradient(135deg, var(--primary-purple-dark, #8a6ff0), var(--primary-purple, #9d84f3));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(157, 132, 243, 0.4);
+}
+
+.createServiceButton {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(46, 204, 113, 0.3);
+}
+
+.createServiceButton:hover {
+  background: linear-gradient(135deg, #219a52, #27ae60);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.4);
 }
 
 .loadingContainer, .errorContainer {
@@ -421,6 +482,18 @@
     text-align: center;
   }
 
+  .headerContent {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .headerActions {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
   .header h1 {
     font-size: 1.75rem;
     margin-bottom: 0.25rem;
@@ -428,6 +501,14 @@
 
   .header p {
     font-size: 0.9rem;
+  }
+
+  .manageButton,
+  .createServiceButton {
+    font-size: 0.85rem;
+    padding: 0.6rem 1rem;
+    width: 100%;
+    justify-content: center;
   }
 
   .statsGrid {

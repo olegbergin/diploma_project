@@ -188,6 +188,17 @@ function App() {
               )
             }
           />
+          {/* Business profile management interface */}
+          <Route
+            path="/business-profile/:id"
+            element={
+              currentUser && currentUser.role === "business" ? (
+                <BusinessProfile />
+              ) : (
+                <Navigate replace to="/login" />
+              )
+            }
+          />
           {/* Business profile (legacy - redirect to dashboard) */}
           <Route
             path="/business/:id"

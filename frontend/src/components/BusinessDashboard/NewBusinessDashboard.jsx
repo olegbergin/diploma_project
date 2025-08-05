@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './NewBusinessDashboard.module.css';
 import axiosInstance from '../../api/axiosInstance';
+import ServiceModal from './ServiceModal';
 
 export default function NewBusinessDashboard({ user }) {
   const [dashboardData, setDashboardData] = useState(null);
@@ -8,6 +10,8 @@ export default function NewBusinessDashboard({ user }) {
   const [error, setError] = useState(null);
   const [showAllAppointments, setShowAllAppointments] = useState(false);
   const [showPendingOnly, setShowPendingOnly] = useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -105,11 +109,40 @@ export default function NewBusinessDashboard({ user }) {
     }
   };
 
+  const handleServiceCreated = async (newService) => {
+    // Refresh dashboard data to show updated service count
+    const businessId = user?.businessId || user?.id;
+    try {
+      const response = await axiosInstance.get(`/businesses/${businessId}/dashboard`);
+      setDashboardData(response.data);
+    } catch (error) {
+      console.error('Error refreshing dashboard data:', error);
+    }
+  };
+
   return (
     <div className={styles.dashboard}>
       <div className={styles.header}>
-        <h1>שלום, {dashboardData.business.name}</h1>
-        <p>סיכום פעילות העסק שלך</p>
+        <div className={styles.headerContent}>
+          <div>
+            <h1>שלום, {dashboardData.business.name}</h1>
+            <p>סיכום פעילות העסק שלך</p>
+          </div>
+          <div className={styles.headerActions}>
+            <button 
+              className={styles.createServiceButton}
+              onClick={() => setIsServiceModalOpen(true)}
+            >
+              ➕ שירות חדש
+            </button>
+            <button 
+              className={styles.manageButton}
+              onClick={() => navigate(`/business-profile/${user?.businessId || user?.id}`)}
+            >
+              ⚙️ ניהול עסק
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className={styles.statsGrid}>
@@ -297,6 +330,13 @@ export default function NewBusinessDashboard({ user }) {
           </div>
         </div>
       )}
+
+      <ServiceModal
+        isOpen={isServiceModalOpen}
+        onClose={() => setIsServiceModalOpen(false)}
+        onServiceCreated={handleServiceCreated}
+        businessId={user?.businessId || user?.id}
+      />
     </div>
   );
 }
