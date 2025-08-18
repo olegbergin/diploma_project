@@ -1,24 +1,33 @@
-// src/components/Header/Header.jsx
+// src/components/layout/Header/Header.jsx
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiHome, FiLogOut, FiSearch } from 'react-icons/fi'; // Import the icons we need
+import { FiHome, FiLogOut, FiSearch } from 'react-icons/fi';
 import styles from './header.module.css';
 
 /**
- * The main application header.
- * It displays navigation controls based on the user's authentication status.
- * @param {object} props
- * @param {object} props.user - The current user object. Should contain firstName, lastName.
- * @param {function} props.onLogout - The function to call when the logout button is clicked.
+ * Main application header.
+ * Shows role-aware "home" link and search.
+ * Profile initials circle was removed per request.
  */
 function Header({ user, onLogout }) {
+  // יעד "דף בית" לפי תפקיד
+  const roleHomePath = (() => {
+    if (!user) return '/login';
+    const userId = user.user_id ?? user.id;
+    const businessId = user.businessId ?? userId;
 
-  // If there is no user, show a simplified header with just search
+   if (user.role === "customer") return `/user/${userId}/dashboard`;
+   if (user.role === "business") return `/business/${businessId}/dashboard`;
+   if (user.role === "admin") return "/admin";
+
+    return '/login';
+  })();
+
+  // ללא משתמש: כותרת פשוטה
   if (!user) {
     return (
       <header className={styles.header}>
-        {/* Simple navigation for non-authenticated users */}
         <div className={styles.navLinks}>
           <Link to="/login" className={styles.homeLink} aria-label="Login">
             <FiHome />
@@ -31,30 +40,12 @@ function Header({ user, onLogout }) {
     );
   }
 
-  // Get the user's initials for the profile icon fallback.
-  // The '?' is optional chaining: it prevents errors if firstName or lastName are missing.
-  const userInitials = `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`;
-
+  // עם משתמש: בלי עיגול/אווטאר, רק בית+חיפוש+התנתקות
   return (
     <header className={styles.header}>
-      {/* Left Side: Profile Link */}
-      <Link 
-        to={
-          user?.role === "customer" ? "/profile" : 
-          user?.role === "business" ? `/business/${user.businessId || user.id}` : 
-          user?.role === "admin" ? "/admin" :
-          "/profile"
-        } 
-        className={styles.profileLink} 
-        aria-label="Go to your profile"
-      >
-        {/* We can add logic here later to show a real avatar image if one exists */}
-        <span className={styles.profileInitials}>{userInitials}</span>
-      </Link>
-
-      {/* Middle: Navigation Links */}
+      {/* מרכז: קישורים */}
       <div className={styles.navLinks}>
-        <Link to="/home" className={styles.homeLink} aria-label="Go to home page">
+        <Link to={roleHomePath} className={styles.homeLink} aria-label="Go to your home">
           <FiHome />
         </Link>
         <Link to="/search" className={styles.searchLink} aria-label="Search businesses">
@@ -62,7 +53,7 @@ function Header({ user, onLogout }) {
         </Link>
       </div>
 
-      {/* Right Side: Logout Button */}
+      {/* ימין: התנתקות */}
       <button onClick={onLogout} className={styles.logoutButton} aria-label="Logout">
         <FiLogOut />
       </button>

@@ -1,7 +1,7 @@
 /**
  * Main Application Component
  * Handles authentication, routing, and global state management
- * 
+ *
  * @component
  * @returns {JSX.Element} Main application with routing and layout
  */
@@ -15,10 +15,11 @@ import BusinessRegistration from "./components/BusinessRegistration/BusinessRegi
 import HomePage from "./components/HomePage/HomePage";
 import BusinessProfile from "./components/BusinessProfile/BusinessProfile";
 import NewBusinessDashboard from "./components/BusinessDashboard/NewBusinessDashboard";
-import UserDashboard from "./components/UserDashboard/UserDashboard";
+import UserDashboard from "./components/UserProfile/UserDashboard/UserDashboard";
 import SearchPage from "./components/SearchPage/SearchPage";
 import BookingPage from "./components/BookingPage/BookingPage";
 import AdminPanel from "./components/AdminPanel/AdminPanel";
+import EditProfile from "./components/UserProfile/EditProfile/EditProfile";
 import "./App.css";
 
 function App() {
@@ -26,7 +27,6 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
-
 
   /**
    * Initialize authentication state from localStorage on app startup
@@ -46,12 +46,28 @@ function App() {
 
   /**
    * Handles successful user login
-   * @param {Object} userData - User data returned from authentication
+   * מפנה לפי תפקיד:
+   * - customer -> /user/:id/dashboard
+   * - business -> /business/:id/dashboard
+   * - admin    -> /admin
+   * אחרת       -> /home
    */
   const handleLoginSuccess = (userData) => {
     setCurrentUser(userData);
     localStorage.setItem("userInfo", JSON.stringify(userData));
-    navigate("/home"); // Navigate to home page after login
+
+    const userId = userData?.user_id ?? userData?.id;
+    const businessId = userData?.businessId ?? userId;
+
+    if (userData?.role === "customer") {
+      navigate(`/user/${userId}/dashboard`, { replace: true });
+    } else if (userData?.role === "business") {
+      navigate(`/business/${businessId}/dashboard`, { replace: true });
+    } else if (userData?.role === "admin") {
+      navigate("/admin", { replace: true });
+    } else {
+      navigate("/home", { replace: true });
+    }
   };
 
   /**
@@ -66,36 +82,49 @@ function App() {
 
   if (!authChecked) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#f8f4ff'
-      }}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '1rem'
-        }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            border: '3px solid rgba(201, 178, 245, 0.3)',
-            borderTop: '3px solid var(--primary-purple)',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <p style={{
-            color: 'var(--text-secondary)',
-            fontSize: '1rem',
-            margin: 0
-          }}>טוען...</p>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          backgroundColor: "#f8f4ff",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "1rem",
+          }}
+        >
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              border: "3px solid rgba(201, 178, 245, 0.3)",
+              borderTop: "3px solid var(--primary-purple)",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+            }}
+          ></div>
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "1rem",
+              margin: 0,
+            }}
+          >
+            טוען...
+          </p>
         </div>
       </div>
     );
   }
+
+  const userId = currentUser?.user_id ?? currentUser?.id;
+  const businessId = currentUser?.businessId ?? userId;
 
   return (
     <div className="AppContainer">
@@ -107,44 +136,53 @@ function App() {
             path="/login"
             element={<AuthPage onLoginSuccess={handleLoginSuccess} />}
           />
+
           {/* Redirect signup to login (now handled by AuthPage) */}
           <Route path="/signup" element={<Navigate replace to="/login" />} />
+
           {/* Business Registration */}
           <Route
             path="/register-business"
-            element={<BusinessRegistration onRegistrationSuccess={() => {
-              // Delay navigation to allow user to see success message
-              setTimeout(() => navigate('/login'), 3000);
-            }} />}
+            element={
+              <BusinessRegistration
+                onRegistrationSuccess={() => {
+                  // Delay navigation to allow user to see success message
+                  setTimeout(() => navigate("/login"), 3000);
+                }}
+              />
+            }
           />
+
           {/* Booking page - accessible to logged in users */}
           <Route
             path="/booking/:businessId/:serviceId"
             element={
-              currentUser ? (
-                <BookingPage />
-              ) : (
-                <Navigate replace to="/login" />
-              )
+              currentUser ? <BookingPage /> : <Navigate replace to="/login" />
             }
           />
+
           {/* Search page - accessible to all users */}
-          <Route
-            path="/search"
-            element={<SearchPage user={currentUser} />}
-          />
-          {/* Redirect home */}
+          <Route path="/search" element={<SearchPage user={currentUser} />} />
+
+          {/* Root redirect - מפנה לפי תפקיד כשהמחובר */}
           <Route
             path="/"
             element={
               currentUser ? (
-                <Navigate replace to="/home" />
+                currentUser.role === "customer" ? (
+                  <Navigate replace to={`/user/${userId}/dashboard`} />
+                ) : currentUser.role === "business" ? (
+                  <Navigate replace to={`/business/${businessId}/dashboard`} />
+                ) : (
+                  <Navigate replace to="/admin" />
+                )
               ) : (
                 <Navigate replace to="/login" />
               )
             }
           />
-          {/* Home page - accessible to all logged in users */}
+
+          {/* Home page - עדיין קיים, אבל לרוב לא יוזנק כי השורש מפנה לדשבורד */}
           <Route
             path="/home/*"
             element={
@@ -155,6 +193,7 @@ function App() {
               )
             }
           />
+
           {/* User dashboard */}
           <Route
             path="/user/:id/dashboard"
@@ -166,17 +205,30 @@ function App() {
               )
             }
           />
+
           {/* User profile (legacy - redirect to dashboard) */}
           <Route
             path="/profile/*"
             element={
               currentUser && currentUser.role === "customer" ? (
-                <Navigate replace to={`/user/${currentUser.id}/dashboard`} />
+                <Navigate replace to={`/user/${userId}/dashboard`} />
               ) : (
                 <Navigate replace to="/login" />
               )
             }
           />
+          {/* User profile edit */}
+          <Route
+            path="/user/:id/edit-profile"
+            element={
+              currentUser && currentUser.role === "customer" ? (
+                <EditProfile user={currentUser} />
+              ) : (
+                <Navigate replace to="/login" />
+              )
+            }
+          />
+
           {/* Business dashboard (new modern dashboard) */}
           <Route
             path="/business/:id/dashboard"
@@ -188,6 +240,7 @@ function App() {
               )
             }
           />
+
           {/* Business profile management interface */}
           <Route
             path="/business-profile/:id"
@@ -199,17 +252,19 @@ function App() {
               )
             }
           />
+
           {/* Business profile (legacy - redirect to dashboard) */}
           <Route
             path="/business/:id"
             element={
               currentUser && currentUser.role === "business" ? (
-                <Navigate replace to={`/business/${currentUser.businessId || currentUser.id}/dashboard`} />
+                <Navigate replace to={`/business/${businessId}/dashboard`} />
               ) : (
                 <Navigate replace to="/login" />
               )
             }
           />
+
           {/* Admin panel (for administrators) */}
           <Route
             path="/admin/*"
@@ -221,6 +276,7 @@ function App() {
               )
             }
           />
+
           {/* 404 */}
           <Route path="*" element={<div>404 - Page Not Found</div>} />
         </Routes>

@@ -1,41 +1,64 @@
 /**
  * Booking Page Component
  * Main page for booking appointments with step-by-step process
- * 
- * @component
- * @returns {JSX.Element} Booking page with service selection, calendar, and form
  */
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { FiArrowRight, FiCheck, FiCalendar, FiMapPin } from 'react-icons/fi';
-import axiosInstance from '../../api/axiosInstance';
-import ServiceSummary from './components/ServiceSummary';
-import CalendarPicker from './components/CalendarPicker';
-import TimeSlotPicker from './components/TimeSlotPicker';
-import BookingForm from './components/BookingForm';
-import BookingConfirmation from './components/BookingConfirmation';
-import styles from './BookingPage.module.css';
+import React, { useState, useEffect } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { FiArrowRight, FiCheck, FiCalendar, FiMapPin } from "react-icons/fi";
+import axiosInstance from "../../api/axiosInstance";
+import ServiceSummary from "./components/ServiceSummary";
+import CalendarPicker from "./components/CalendarPicker";
+import TimeSlotPicker from "./components/TimeSlotPicker";
+import BookingForm from "./components/BookingForm";
+import BookingConfirmation from "./components/BookingConfirmation";
+import styles from "./BookingPage.module.css";
 
 const BOOKING_STEPS = {
-  SUMMARY: 'summary',
-  CALENDAR: 'calendar',
-  TIME: 'time',
-  FORM: 'form',
-  CONFIRMATION: 'confirmation',
-  SUCCESS: 'success'
+  SUMMARY: "summary",
+  CALENDAR: "calendar",
+  TIME: "time",
+  FORM: "form",
+  CONFIRMATION: "confirmation",
+  SUCCESS: "success",
 };
+
+function toYYYYMMDD(input) {
+  if (!input) return "";
+  if (typeof input === "string") {
+    // "YYYY-MM-DD" או ISO
+    if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
+    const d = new Date(input);
+    if (isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 10);
+  }
+  // Date
+  const d = input instanceof Date ? input : new Date(input);
+  if (isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10);
+}
+
+function toHHMM(input) {
+  if (!input) return "";
+  if (typeof input === "string") {
+    const m = input.match(/^(\d{1,2}):(\d{2})/);
+    if (m) {
+      const hh = String(parseInt(m[1], 10)).padStart(2, "0");
+      const mm = m[2];
+      return `${hh}:${mm}`;
+    }
+  }
+  return "";
+}
 
 export default function BookingPage() {
   const { businessId, serviceId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // State from navigation or fetch from API
   const [business, setBusiness] = useState(location.state?.business || null);
   const [service, setService] = useState(location.state?.service || null);
-  
-  // Booking process state
+
   const [currentStep, setCurrentStep] = useState(BOOKING_STEPS.SUMMARY);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -44,33 +67,31 @@ export default function BookingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  /**
-   * Fetch business and service data if not provided via navigation
-   */
+  // Fetch business & service if not provided
   useEffect(() => {
     const fetchData = async () => {
       if (!business || !service) {
         setIsLoading(true);
         try {
-          // Fetch business data
           if (!business) {
-            const businessResponse = await axiosInstance.get(`/businesses/${businessId}`);
+            const businessResponse = await axiosInstance.get(
+              `/businesses/${businessId}`
+            );
             setBusiness(businessResponse.data);
           }
-          
-          // Fetch service data  
           if (!service) {
-            const servicesResponse = await axiosInstance.get(`/businesses/${businessId}/services`);
-            const foundService = servicesResponse.data.find(s => s.service_id === parseInt(serviceId));
-            if (foundService) {
-              setService(foundService);
-            } else {
-              setError('Service not found');
-            }
+            const servicesResponse = await axiosInstance.get(
+              `/businesses/${businessId}/services`
+            );
+            const foundService = servicesResponse.data.find(
+              (s) => s.service_id === parseInt(serviceId)
+            );
+            if (foundService) setService(foundService);
+            else setError("Service not found");
           }
         } catch (err) {
-          console.error('Failed to fetch booking data:', err);
-          setError('Failed to load booking information');
+          console.error("Failed to fetch booking data:", err);
+          setError("Failed to load booking information");
         } finally {
           setIsLoading(false);
         }
@@ -82,104 +103,108 @@ export default function BookingPage() {
     }
   }, [businessId, serviceId, business, service]);
 
-  /**
-   * Fetch available time slots for selected date
-   */
+  // Fetch available time slots for selected date
   const fetchAvailableSlots = async (date) => {
     setIsLoading(true);
     try {
       const response = await axiosInstance.get(
-        `/businesses/${businessId}/availability?date=${date}&serviceId=${serviceId}`
+        `/businesses/${businessId}/availability`,
+        { params: { date: toYYYYMMDD(date), serviceId: serviceId } }
       );
       setAvailableSlots(response.data.availableSlots || []);
     } catch (err) {
-      console.error('Failed to fetch availability:', err);
-      // Fallback to default slots
-      setAvailableSlots(['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']);
+      console.error("Failed to fetch availability:", err);
+      setAvailableSlots(["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  /**
-   * Handle date selection
-   */
   const handleDateSelect = (date) => {
     setSelectedDate(date);
-    setSelectedTime(null); // Reset time when date changes
+    setSelectedTime(null);
     fetchAvailableSlots(date);
     setCurrentStep(BOOKING_STEPS.TIME);
   };
 
-  /**
-   * Handle time slot selection
-   */
   const handleTimeSelect = (time) => {
     setSelectedTime(time);
     setCurrentStep(BOOKING_STEPS.FORM);
   };
 
-  /**
-   * Handle customer form submission
-   */
   const handleFormSubmit = (formData) => {
     setCustomerData(formData);
     setCurrentStep(BOOKING_STEPS.CONFIRMATION);
   };
 
-  /**
-   * Handle final booking confirmation
-   */
+  // Submit final booking
   const handleConfirmBooking = async () => {
     setIsLoading(true);
+    setError(null);
     try {
+      // נורמליזציה לדיוק לפי מה שהשרת מצפה
+      const dateStr = toYYYYMMDD(selectedDate);
+      const timeStr = toHHMM(selectedTime);
+
       const bookingData = {
         businessId: parseInt(businessId),
         serviceId: parseInt(serviceId),
-        date: selectedDate,
-        time: selectedTime,
-        firstName: customerData.customerInfo?.firstName || customerData.firstName,
+        date: dateStr, // "YYYY-MM-DD"
+        time: timeStr, // "HH:MM"
+        firstName:
+          customerData.customerInfo?.firstName || customerData.firstName,
         lastName: customerData.customerInfo?.lastName || customerData.lastName,
         phone: customerData.customerInfo?.phone || customerData.phone,
-        email: customerData.customerInfo?.email || customerData.email,
-        notes: customerData.customerInfo?.notes || customerData.notes || ''
+        email: customerData.customerInfo?.email || customerData.email || "",
+        notes: customerData.customerInfo?.notes || customerData.notes || "",
       };
 
-      const response = await axiosInstance.post('/appointments', bookingData);
-      
-      // Success - show success step
+      // ולידציה בסיסית לפני שליחה
+      if (!bookingData.date || !bookingData.time) {
+        throw new Error("תאריך/שעה לא תקינים");
+      }
+
+      // חשוב: אם ה-baseURL שלך כבר כולל /api, אפשר להשאיר '/appointments' בלבד
+      const response = await axiosInstance.post(
+        "/appointments",
+        bookingData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
       setCurrentStep(BOOKING_STEPS.SUCCESS);
-      
+
       // Auto-redirect after 5 seconds
       setTimeout(() => {
         const currentUser = JSON.parse(localStorage.getItem("userInfo"));
         if (currentUser) {
           navigate(`/user/${currentUser.id}/dashboard`, {
-            state: { 
-              message: 'הזמנה נוצרה בהצלחה!', 
-              appointmentId: response.data.appointmentId 
-            }
+            state: {
+              message: "הזמנה נוצרה בהצלחה!",
+              appointmentId: response.data.appointmentId,
+            },
           });
         } else {
-          navigate('/home', {
-            state: { 
-              message: 'הזמנה נוצרה בהצלחה!' 
-            }
-          });
+          navigate("/home", { state: { message: "הזמנה נוצרה בהצלחה!" } });
         }
       }, 5000);
-      
     } catch (err) {
-      console.error('Failed to create appointment:', err);
-      setError('שגיאה ביצירת התור. אנא נסה שוב.');
+      console.error("Failed to create appointment:", err);
+      // ניסיון להוציא הודעות שגיאה מובְנות מהשרת (400/409)
+      const serverMsg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        (err?.response?.data?.errors
+          ? Object.values(err.response.data.errors).join(" • ")
+          : "");
+
+      setError(serverMsg || "שגיאה ביצירת התור. אנא נסי שוב.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  /**
-   * Navigate to previous step
-   */
   const handlePreviousStep = () => {
     switch (currentStep) {
       case BOOKING_STEPS.TIME:
@@ -192,11 +217,10 @@ export default function BookingPage() {
         setCurrentStep(BOOKING_STEPS.FORM);
         break;
       default:
-        navigate(-1); // Go back to previous page
+        navigate(-1);
     }
   };
 
-  // Progress calculation
   const stepOrder = Object.values(BOOKING_STEPS);
   const currentStepIndex = stepOrder.indexOf(currentStep);
   const progress = ((currentStepIndex + 1) / stepOrder.length) * 100;
@@ -233,7 +257,6 @@ export default function BookingPage() {
 
   return (
     <div className={styles.bookingContainer} dir="rtl">
-      {/* Header with progress */}
       <div className={styles.header}>
         <button onClick={handlePreviousStep} className={styles.backButton}>
           <FiArrowRight />
@@ -241,28 +264,26 @@ export default function BookingPage() {
         </button>
         <h1 className={styles.title}>הזמנת תור</h1>
         <div className={styles.progressBar}>
-          <div 
-            className={styles.progressFill} 
+          <div
+            className={styles.progressFill}
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      {/* Service Summary - Always visible */}
-      <ServiceSummary 
+      <ServiceSummary
         business={business}
         service={service}
         selectedDate={selectedDate}
         selectedTime={selectedTime}
       />
 
-      {/* Step Content */}
       <div className={styles.stepContent}>
         {currentStep === BOOKING_STEPS.SUMMARY && (
           <div className={styles.summaryStep}>
             <h2>בחרת את השירות</h2>
-            <p>לחץ 'המשך' כדי לבחור תאריך ושעה</p>
-            <button 
+            <p>לחצי 'המשך' כדי לבחור תאריך ושעה</p>
+            <button
               onClick={() => setCurrentStep(BOOKING_STEPS.CALENDAR)}
               className={styles.continueButton}
             >
@@ -272,7 +293,7 @@ export default function BookingPage() {
         )}
 
         {currentStep === BOOKING_STEPS.CALENDAR && (
-          <CalendarPicker 
+          <CalendarPicker
             businessId={businessId}
             serviceId={serviceId}
             onDateSelect={handleDateSelect}
@@ -326,14 +347,18 @@ export default function BookingPage() {
               קיבלת אישור לתור שלך. פרטי התור נשלחו לאימייל שלך.
             </p>
             <div className={styles.bookingNumber}>
-              <span>מספר תור: <strong>#{Date.now().toString().slice(-6)}</strong></span>
+              <span>
+                מספר תור: <strong>#{Date.now().toString().slice(-6)}</strong>
+              </span>
             </div>
             <div className={styles.successDetails}>
               <div className={styles.successDetailItem}>
                 <strong>{service?.service_name || service?.name}</strong>
               </div>
               <div className={styles.successDetailItem}>
-                <FiCalendar /> {new Date(selectedDate).toLocaleDateString('he-IL')} בשעה {selectedTime}
+                <FiCalendar />{" "}
+                {new Date(toYYYYMMDD(selectedDate)).toLocaleDateString("he-IL")}{" "}
+                בשעה {toHHMM(selectedTime)}
               </div>
               <div className={styles.successDetailItem}>
                 <FiMapPin /> {business?.business_name || business?.name}
@@ -342,14 +367,13 @@ export default function BookingPage() {
             <p className={styles.redirectMessage}>
               מעביר אותך לדשבורד תוך 5 שניות...
             </p>
-            <button 
+            <button
               onClick={() => {
-                const currentUser = JSON.parse(localStorage.getItem("userInfo"));
-                if (currentUser) {
-                  navigate(`/user/${currentUser.id}/dashboard`);
-                } else {
-                  navigate('/home');
-                }
+                const currentUser = JSON.parse(
+                  localStorage.getItem("userInfo")
+                );
+                if (currentUser) navigate(`/user/${currentUser.id}/dashboard`);
+                else navigate("/home");
               }}
               className={styles.goToDashboardButton}
             >

@@ -6,7 +6,7 @@
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(201, 178, 245, 0.2);
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between; /* היה space-around; מתאים יותר ללא פרופיל */
   align-items: center;
   padding: 12px 20px;
   box-sizing: border-box;
@@ -17,42 +17,14 @@
   z-index: 100;
 }
 
-/* Style for the round profile link on the left */
-.profileLink {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--light-purple), var(--primary-purple));
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 16px;
-  text-decoration: none;
-  transition: var(--transition);
-  box-shadow: var(--shadow-light);
-  border: 2px solid rgba(255, 255, 255, 0.8);
-}
-
-.profileLink:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-medium);
-  background: linear-gradient(135deg, var(--primary-purple), #9c27b0);
-}
-
-.profileInitials {
-  text-transform: uppercase;
-}
-
-/* Style for the navigation links container in the middle */
+/* מרכז: קישורי ניווט (בית + חיפוש) */
 .navLinks {
   display: flex;
   gap: 2rem;
   align-items: center;
 }
 
-/* Style for the home icon */
+/* אייקון בית */
 .homeLink {
   color: var(--text-primary);
   font-size: 28px;
@@ -70,7 +42,7 @@
   transform: translateY(-1px);
 }
 
-/* Style for the search icon */
+/* אייקון חיפוש */
 .searchLink {
   color: var(--text-primary);
   font-size: 26px;
@@ -88,7 +60,7 @@
   transform: translateY(-1px);
 }
 
-/* Style for the logout button on the right */
+/* ימין: כפתור התנתקות */
 .logoutButton {
   background: rgba(244, 67, 54, 0.1);
   border: 1px solid rgba(244, 67, 54, 0.2);
@@ -108,3 +80,4 @@
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(244, 67, 54, 0.2);
 }
+
