@@ -31,6 +31,30 @@ function debounce(func, delay) {
   return debouncedFunction;
 }
 
+// --- NEW: Haversine (קו אווירי) בק״מ ---
+function haversineKm(a, b) {
+  if (
+    !a ||
+    !b ||
+    typeof a.lat !== "number" ||
+    typeof a.lng !== "number" ||
+    typeof b.lat !== "number" ||
+    typeof b.lng !== "number"
+  ) {
+    return Infinity;
+  }
+  const toRad = (x) => (x * Math.PI) / 180;
+  const R = 6371; // ק״מ
+  const dLat = toRad(b.lat - a.lat);
+  const dLon = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
 function SearchPage({ user }) {
   const [allBusinesses, setAllBusinesses] = useState([]);
   const [filteredBusinesses, setFilteredBusinesses] = useState([]);
@@ -55,16 +79,25 @@ function SearchPage({ user }) {
     schedule: "",
   });
 
+  // --- NEW: סטייטים לחיפוש לפי מרחק ---
+  const [useGeoRadius, setUseGeoRadius] = useState(false);
+  const [radiusKm, setRadiusKm] = useState(10); // ברירת מחדל
+  const [userGeo, setUserGeo] = useState(null); // {lat, lng}
+  const [geoError, setGeoError] = useState("");
+
   const fetchAllBusinesses = useCallback(async () => {
     try {
-      await executeWithRetry(async () => {
-        const response = await axiosInstance.get("/businesses");
-        const businesses = response.data || [];
+      await executeWithRetry(
+        async () => {
+          const response = await axiosInstance.get("/businesses");
+          const businesses = response.data || [];
 
-        setAllBusinesses(businesses);
-        setFilteredBusinesses(businesses);
-        setTotalItems(businesses.length);
-      }, { maxRetries: 2 });
+          setAllBusinesses(businesses);
+          setFilteredBusinesses(businesses);
+          setTotalItems(businesses.length);
+        },
+        { maxRetries: 2 }
+      );
     } catch (err) {
       console.error("Error fetching businesses:", err);
       setAllBusinesses([]);
@@ -72,6 +105,26 @@ function SearchPage({ user }) {
       setTotalItems(0);
     }
   }, [executeWithRetry]);
+
+  // --- NEW: הפעלת מצב רדיוס וקבלת מיקום מהדפדפן ---
+  const enableGeoRadius = useCallback(() => {
+    setUseGeoRadius(true);
+    setGeoError("");
+    if (!userGeo && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setGeoError("");
+        },
+        (err) => {
+          console.warn("Geolocation denied/unavailable:", err);
+          setGeoError("לא התקבל מיקום מהמכשיר");
+          // עדיין נשאיר useGeoRadius=true כדי לאפשר למשתמש לנסות שוב/להזין ידנית בעתיד אם תרצי
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+  }, [userGeo]);
 
   const filterBusinesses = useCallback(() => {
     let filtered = [...allBusinesses];
@@ -92,6 +145,40 @@ function SearchPage({ user }) {
       );
     }
 
+    // --- NEW: חישוב מרחק וסינון לפי רדיוס (אם הופעל וקיבלנו מיקום) ---
+    if (useGeoRadius && userGeo?.lat && userGeo?.lng) {
+      filtered = filtered
+        .map((b) => {
+          // תמיכה בשמות שדות שונים מהשרת: lat/lng או latitude/longitude
+          const lat =
+            typeof b.lat === "number"
+              ? b.lat
+              : typeof b.latitude === "number"
+              ? b.latitude
+              : null;
+          const lng =
+            typeof b.lng === "number"
+              ? b.lng
+              : typeof b.longitude === "number"
+              ? b.longitude
+              : null;
+          const d =
+            typeof lat === "number" && typeof lng === "number"
+              ? haversineKm(userGeo, { lat, lng })
+              : Infinity;
+          return { ...b, __distance_km: d };
+        })
+        .filter((b) => b.__distance_km <= radiusKm);
+    } else {
+      // אם לא במצב גיאו—נבטיח שלא יישאר שדה עזר ישן
+      filtered = filtered.map((b) => {
+        const copy = { ...b };
+        if ("__distance_km" in copy) delete copy.__distance_km;
+        return copy;
+      });
+    }
+
+    // מיון
     filtered.sort((a, b) => {
       switch (orderBy) {
         case "category":
@@ -103,6 +190,9 @@ function SearchPage({ user }) {
           return (b.average_rating || 0) - (a.average_rating || 0);
         case "newest":
           return (b.business_id || 0) - (a.business_id || 0);
+        // --- NEW: מיון לפי מרחק ---
+        case "distance":
+          return (a.__distance_km ?? Infinity) - (b.__distance_km ?? Infinity);
         default:
           return (a.name || "").localeCompare(b.name || "");
       }
@@ -111,7 +201,15 @@ function SearchPage({ user }) {
     setFilteredBusinesses(filtered);
     setTotalItems(filtered.length);
     setCurrentPage(1);
-  }, [allBusinesses, searchTerm, selectedCategory, orderBy]);
+  }, [
+    allBusinesses,
+    searchTerm,
+    selectedCategory,
+    orderBy,
+    useGeoRadius,
+    userGeo,
+    radiusKm,
+  ]);
 
   const debouncedFilter = useCallback(
     debounce(() => {
@@ -144,7 +242,16 @@ function SearchPage({ user }) {
     if (allBusinesses.length > 0) {
       debouncedFilter();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, debouncedFilter]);
+
+  // --- NEW: רענון הסינון כשמשתנה מיקום/רדיוס/מצב גיאו ---
+  useEffect(() => {
+    if (allBusinesses.length > 0) {
+      debouncedFilter();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useGeoRadius, radiusKm, userGeo]);
 
   const handleSearchInputChange = useCallback((event) => {
     setSearchTerm(event.target.value);
@@ -275,6 +382,7 @@ function SearchPage({ user }) {
               aria-label="Search businesses"
             />
           </div>
+
           <div className={styles.filterControls}>
             <select
               value={selectedCategory}
@@ -289,24 +397,60 @@ function SearchPage({ user }) {
                 </option>
               ))}
             </select>
+
             <select
               value={orderBy}
               onChange={handleOrderByChange}
               className={styles.filterSelect}
               aria-label="Order by"
             >
+              {/* NEW: אם מופעל חיפוש לפי קרבה, ניתן לסדר לפי מרחק */}
+              {useGeoRadius && <option value="distance">סדר לפי מרחק</option>}
               <option value="name">סדר לפי שם</option>
               <option value="category">סדר לפי קטגוריה</option>
               <option value="newest">חדשים ראשון</option>
             </select>
+          </div>
+
+          {/* NEW: שורת שליטה על חיפוש לפי קרבה */}
+          <div className={styles.locationModeRow}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={useGeoRadius}
+                onChange={(e) =>
+                  e.target.checked ? enableGeoRadius() : setUseGeoRadius(false)
+                }
+              />
+              חיפוש לפי קרבה אלי (רדיוס)
+            </label>
+
+            {useGeoRadius && (
+              <>
+                <input
+                  type="range"
+                  min="1"
+                  max="50"
+                  step="1"
+                  value={radiusKm}
+                  onChange={(e) => setRadiusKm(Number(e.target.value))}
+                  className={styles.radiusSlider}
+                  aria-label="Radius in km"
+                />
+                <span className={styles.radiusValue}>{radiusKm} ק״מ</span>
+                {geoError && (
+                  <span className={styles.geoError}>{geoError}</span>
+                )}
+              </>
+            )}
           </div>
         </form>
       </header>
 
       {/* Error Display */}
       {error && (
-        <ErrorMessage 
-          error={error} 
+        <ErrorMessage
+          error={error}
           onRetry={fetchAllBusinesses}
           onClose={clearError}
           className={styles.errorMessage}
@@ -315,7 +459,7 @@ function SearchPage({ user }) {
 
       {/* Loading Display */}
       {isLoading && !error && (
-        <LoadingSpinner 
+        <LoadingSpinner
           message="טוען עסקים..."
           className={styles.loadingSpinner}
         />
