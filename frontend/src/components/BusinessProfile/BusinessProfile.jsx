@@ -91,7 +91,7 @@ export default function BusinessProfile() {
         // Mock data for development - remove when API is ready
         setTimeout(() => {
           setBusiness({
-            business_id: businessId,
+            businessId: businessId,
             name: "מאפיית איילה",
             category: "מאפיה",
             description: "המאפיה של איילה - חלה לשבת!",

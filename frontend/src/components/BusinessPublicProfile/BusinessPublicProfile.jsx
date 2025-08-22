@@ -36,7 +36,7 @@ export default function BusinessPublicProfile() {
     try {
       const payload = {
         ...newAppointmentData,
-        business_id: business.business_id,
+        businessId: business.businessId,
       };
       await axiosInstance.post("/appointments", payload);
       alert("התור נשמר בהצלחה!");
@@ -92,7 +92,7 @@ export default function BusinessPublicProfile() {
             {business.services && business.services.length > 0 ? (
               <div className={styles.servicesGrid}>
                 {business.services.map((service) => (
-                  <div key={service.service_id} className={styles.serviceCard}>
+                  <div key={service.serviceId} className={styles.serviceCard}>
                     <h3 className={styles.serviceName}>{service.name}</h3>
                     <p className={styles.servicePrice}>₪{service.price}</p>
                     <p className={styles.serviceDuration}>

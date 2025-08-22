@@ -235,17 +235,17 @@ export default function NewBusinessDashboard({ user }) {
         </div>
       )}
 
-      {dashboardData.analytics?.service_stats && dashboardData.analytics.service_stats.length > 0 && (
+      {dashboardData.analytics?.serviceStats && dashboardData.analytics.serviceStats.length > 0 && (
         <div className={styles.section}>
           <h2>השירותים שלי</h2>
           <div className={styles.servicesGrid}>
-            {dashboardData.analytics.service_stats.map(service => (
-              <div key={service.service_id} className={styles.serviceTile}>
+            {dashboardData.analytics.serviceStats.map(service => (
+              <div key={service.serviceId} className={styles.serviceTile}>
                 <div className={styles.serviceName}>{service.serviceName}</div>
-                <div className={styles.servicePrice}>₪{service.service_revenue || 0}</div>
+                <div className={styles.servicePrice}>₪{service.serviceRevenue || 0}</div>
                 <div className={styles.serviceDuration}>הכנסות סה"כ</div>
                 <div className={styles.serviceBookings}>
-                  {service.booking_count || 0} הזמנות סה"כ
+                  {service.bookingCount || 0} הזמנות סה"כ
                 </div>
               </div>
             ))}

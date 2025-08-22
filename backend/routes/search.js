@@ -107,9 +107,20 @@ router.get("/businesses", async (req, res) => {
       return res.status(500).json({ error: "Failed to get count results / שליפת מספר התוצאות נכשלה" });
     }
 
-    // --- Step 5: Send the combined response ---
+    // --- Step 5: Transform results to camelCase and send response ---
+    const transformedResults = (results || []).map(business => ({
+      businessId: business.business_id,
+      name: business.name,
+      category: business.category,
+      description: business.description,
+      location: business.location,
+      photos: business.photos,
+      averageRating: business.average_rating,
+      reviewCount: business.review_count
+    }));
+
     res.json({
-      results: results || [],
+      results: transformedResults,
       total: countResult[0].total || 0,
       limit,
       offset,

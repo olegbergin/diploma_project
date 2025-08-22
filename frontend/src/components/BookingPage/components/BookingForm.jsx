@@ -46,9 +46,9 @@ export default function BookingForm({
       if (userInfo) {
         try {
           const user = JSON.parse(userInfo);
-          if (user.id || user.user_id) {
+          if (user.id || user.userId) {
             setIsLoadingUserData(true);
-            const userId = user.id || user.user_id;
+            const userId = user.id || user.userId;
             
             // Fetch fresh user data from server
             const response = await axiosInstance.get(`/users/${userId}`);
@@ -56,8 +56,8 @@ export default function BookingForm({
             
             setFormData(prev => ({
               ...prev,
-              firstName: userData.first_name || '',
-              lastName: userData.last_name || '',
+              firstName: userData.firstName || '',
+              lastName: userData.lastName || '',
               phone: userData.phone || '',
               email: userData.email || ''
             }));

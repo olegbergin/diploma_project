@@ -176,7 +176,7 @@ function SearchPage({ user }) {
 
     // Get current user from localStorage
     const currentUser = JSON.parse(localStorage.getItem("userInfo"));
-    const owner_id = currentUser?.user_id;
+    const owner_id = currentUser?.userId;
 
     try {
       // Send all fields to server including email, schedule and owner_id
@@ -203,7 +203,7 @@ function SearchPage({ user }) {
   const handleUpdateBusiness = useCallback((updatedBusiness) => {
     setAllBusinesses((prev) =>
       prev.map((business) =>
-        business.business_id === updatedBusiness.business_id
+        business.businessId === updatedBusiness.business_id
           ? updatedBusiness
           : business
       )
@@ -212,7 +212,7 @@ function SearchPage({ user }) {
 
   const handleDeleteBusiness = useCallback((businessId) => {
     setAllBusinesses((prev) =>
-      prev.filter((business) => business.business_id !== businessId)
+      prev.filter((business) => business.businessId !== businessId)
     );
   }, []);
 
@@ -472,7 +472,7 @@ const BusinessList = React.memo(
       <main className={styles.businessesGrid}>
         {businesses.map((business) => (
           <BusinessCard
-            key={business.business_id}
+            key={business.businessId}
             business={business}
             onUpdate={onUpdate}
             onDelete={onDelete}

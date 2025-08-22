@@ -43,7 +43,7 @@ export default function RequestsTab({ businessId, onAction }) {
         status: newStatus,
       });
       setRequests((prev) =>
-        prev.filter((req) => req.appointment_id !== appointmentId)
+        prev.filter((req) => req.appointmentId !== appointmentId)
       );
       if (onAction) onAction();
     } catch {
@@ -55,8 +55,8 @@ export default function RequestsTab({ businessId, onAction }) {
   const filteredRequests = requests.filter(
     (req) =>
       (req.notes || "").toLowerCase().includes(search.toLowerCase()) ||
-      (req.customer_id + "").includes(search) ||
-      (req.service_id + "").includes(search)
+      (req.customerId + "").includes(search) ||
+      (req.serviceId + "").includes(search)
   );
 
   return (
@@ -78,18 +78,18 @@ export default function RequestsTab({ businessId, onAction }) {
       ) : (
         <ul className={styles.list}>
           {filteredRequests.map((req) => (
-            <li key={req.appointment_id} className={styles.item}>
+            <li key={req.appointmentId} className={styles.item}>
               <div>
                 <div className={styles.date}>
                   {req.date} {req.time}
                 </div>
                 <div>
                   <span className={styles.label}>לקוח:</span>{" "}
-                  <span>{req.customer_id}</span>
+                  <span>{req.customerId}</span>
                 </div>
                 <div>
                   <span className={styles.label}>שירות:</span>{" "}
-                  <span>{req.service_id}</span>
+                  <span>{req.serviceId}</span>
                 </div>
                 {req.notes && (
                   <div>
@@ -101,13 +101,13 @@ export default function RequestsTab({ businessId, onAction }) {
               <div className={styles.actions}>
                 <button
                   className={styles.approve}
-                  onClick={() => handleAction(req.appointment_id, "scheduled")}
+                  onClick={() => handleAction(req.appointmentId, "scheduled")}
                 >
                   אשר
                 </button>
                 <button
                   className={styles.decline}
-                  onClick={() => handleAction(req.appointment_id, "declined")}
+                  onClick={() => handleAction(req.appointmentId, "declined")}
                 >
                   דחה
                 </button>
