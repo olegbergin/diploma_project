@@ -174,8 +174,8 @@ export default function BookingForm({
 
     // Prepare booking data
     const bookingData = {
-      businessId: business?.business_id,
-      serviceId: service?.service_id,
+      businessId: business?.businessId,
+      serviceId: service?.serviceId,
       date: selectedDate,
       time: selectedTime,
       customerInfo: {
@@ -185,7 +185,7 @@ export default function BookingForm({
         email: formData.email.trim(),
         notes: formData.notes.trim()
       },
-      serviceName: service?.service_name || '',
+      serviceName: service?.name || '',
       servicePrice: service?.price || 0,
       serviceDuration: service?.duration || 0
     };

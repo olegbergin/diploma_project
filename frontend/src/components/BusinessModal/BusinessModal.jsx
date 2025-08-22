@@ -28,7 +28,7 @@ function BusinessModal({ business, isOpen, onClose }) {
       setError(null);
       try {
         // Try to fetch services - if endpoint doesn't exist, we'll show basic info
-        const response = await axiosInstance.get(`/businesses/${business.business_id}/services`);
+        const response = await axiosInstance.get(`/businesses/${business.businessId}/services`);
         setServices(response.data || []);
       } catch (err) {
         console.log('Services endpoint not available:', err);
@@ -38,10 +38,10 @@ function BusinessModal({ business, isOpen, onClose }) {
       }
     };
 
-    if (isOpen && business?.business_id) {
+    if (isOpen && business?.businessId) {
       fetchServices();
     }
-  }, [isOpen, business?.business_id]);
+  }, [isOpen, business?.businessId]);
 
   if (!isOpen || !business) return null;
 
@@ -63,7 +63,7 @@ function BusinessModal({ business, isOpen, onClose }) {
    */
   const handleBookService = (service) => {
     // Navigate to booking page with business and service data
-    navigate(`/booking/${business.business_id}/${service.service_id}`, {
+    navigate(`/booking/${business.businessId}/${service.serviceId}`, {
       state: {
         business,
         service
@@ -92,7 +92,7 @@ function BusinessModal({ business, isOpen, onClose }) {
             ) : services.length > 0 ? (
               <div className={styles.servicesList}>
                 {services.map(service => (
-                  <div key={service.service_id} className={styles.serviceItem}>
+                  <div key={service.serviceId} className={styles.serviceItem}>
                     <div className={styles.serviceInfo}>
                       <div className={styles.serviceName}>{service.name}</div>
                       <div className={styles.serviceDetails}>

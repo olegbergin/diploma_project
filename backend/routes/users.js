@@ -23,7 +23,12 @@ router.get("/:id", async (req, res) => {
 
     const user = rows[0];
     const response = {
-      ...user,
+      userId: user.user_id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
       avatarUrl: null, // No avatar support in current DB schema
     };
     console.log(`Sending user data:`, response);
@@ -150,7 +155,14 @@ router.get("/:id/favorites", async (req, res) => {
         WHERE f.user_id = ?`,
       [userId]
     );
-    res.json(rows);
+    
+    const favorites = rows.map(row => ({
+      businessId: row.business_id,
+      name: row.name,
+      imageUrl: row.image_url
+    }));
+    
+    res.json(favorites);
   } catch (err) {
     res.status(500).json({ error: "Failed to get favorites" });
   }
@@ -321,7 +333,12 @@ router.get("/:id/dashboard", async (req, res) => {
     // Compile dashboard data
     const dashboardData = {
       user: {
-        ...user,
+        userId: user.user_id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
         avatarUrl: null // No avatar support in current DB schema
       },
       totalBookings: appointmentStats[0].total_bookings || 0,
@@ -342,7 +359,7 @@ router.get("/:id/dashboard", async (req, res) => {
         business: activity.business_name
       })),
       favorites: detailedFavorites.map(fav => ({
-        id: fav.business_id,
+        businessId: fav.business_id,
         name: fav.name,
         category: fav.category,
         address: fav.location,
@@ -353,7 +370,7 @@ router.get("/:id/dashboard", async (req, res) => {
         favoritedDate: fav.favorited_date
       })),
       upcomingAppointments: upcomingAppointments.map(apt => ({
-        id: apt.appointment_id,
+        appointmentId: apt.appointment_id,
         businessName: apt.business_name,
         serviceName: apt.service_name,
         date: apt.appointment_datetime,
@@ -365,7 +382,7 @@ router.get("/:id/dashboard", async (req, res) => {
         businessPhone: null // Not available in current schema
       })),
       pastAppointments: pastAppointments.map(apt => ({
-        id: apt.appointment_id,
+        appointmentId: apt.appointment_id,
         businessName: apt.business_name,
         serviceName: apt.service_name,
         date: apt.appointment_datetime,

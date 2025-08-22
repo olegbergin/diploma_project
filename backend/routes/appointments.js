@@ -44,7 +44,19 @@ router.get("/", async (req, res) => {
     }
 
     const [rows] = await db.query(sql, params);
-    res.json(rows);
+    
+    const transformedAppointments = rows.map(row => ({
+      appointmentId: row.appointment_id,
+      customerId: row.customer_id,
+      serviceId: row.service_id,
+      date: row.date,
+      time: row.time,
+      appointmentDatetime: row.appointment_datetime,
+      status: row.status,
+      notes: row.notes
+    }));
+    
+    res.json(transformedAppointments);
   } catch (error) {
     console.error("Error fetching appointments:", error);
     res.status(500).json({ error: "Failed to fetch appointments / שליפת תורים נכשלה" });
@@ -243,7 +255,9 @@ router.get("/user/:userId", async (req, res) => {
   try {
     const [rows] = await db.query(
       `
-      SELECT a.*, b.name AS business_name, s.service_name
+      SELECT a.appointment_id, a.customer_id, a.business_id, a.service_id,
+             a.appointment_datetime, a.status, a.notes, a.created_at,
+             b.name AS business_name, s.name AS service_name, s.price, s.duration_minutes
       FROM appointments a
       LEFT JOIN businesses b ON a.business_id = b.business_id
       LEFT JOIN services s ON a.service_id = s.service_id
@@ -253,7 +267,23 @@ router.get("/user/:userId", async (req, res) => {
       `,
       params
     );
-    res.json(rows);
+    
+    const transformedAppointments = rows.map(row => ({
+      appointmentId: row.appointment_id,
+      customerId: row.customer_id,
+      businessId: row.business_id,
+      serviceId: row.service_id,
+      appointmentDatetime: row.appointment_datetime,
+      status: row.status,
+      notes: row.notes,
+      createdAt: row.created_at,
+      businessName: row.business_name,
+      serviceName: row.service_name,
+      price: row.price,
+      durationMinutes: row.duration_minutes
+    }));
+    
+    res.json(transformedAppointments);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "DB error" });

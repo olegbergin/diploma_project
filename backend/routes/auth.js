@@ -116,12 +116,12 @@ router.post("/login", async (req, res) => {
       message: "Login successful",
       token: token,
       user: {
-        user_id: user.user_id,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        userId: user.user_id,
+        firstName: user.first_name,
+        lastName: user.last_name,
         email: user.email,
         role: user.role,
-        businessId: businessId, // מזהה עסק (רק לבעלים)
+        businessId: businessId,
       },
     });
   } catch (err) {

@@ -61,7 +61,7 @@ export default function BookingPage() {
           // Fetch service data  
           if (!service) {
             const servicesResponse = await axiosInstance.get(`/businesses/${businessId}/services`);
-            const foundService = servicesResponse.data.find(s => s.service_id === parseInt(serviceId));
+            const foundService = servicesResponse.data.find(s => s.serviceId === parseInt(serviceId));
             if (foundService) {
               setService(foundService);
             } else {

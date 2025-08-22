@@ -83,9 +83,30 @@ router.get("/:id", async (req, res) => { // <-- Add async
     
     // Combine business info with services
     const business = businessRows[0];
-    business.services = servicesRows;
+    const transformedBusiness = {
+      businessId: business.business_id,
+      ownerId: business.owner_id,
+      name: business.name,
+      category: business.category,
+      description: business.description,
+      location: business.location,
+      photos: business.photos,
+      schedule: business.schedule,
+      createdAt: business.created_at,
+      services: servicesRows.map(service => ({
+        serviceId: service.service_id,
+        businessId: service.business_id,
+        name: service.name,
+        price: service.price,
+        durationMinutes: service.duration_minutes,
+        description: service.description,
+        createdAt: service.created_at,
+        category: service.category,
+        isActive: service.is_active
+      }))
+    };
     
-    res.json(business); // Send the business with services
+    res.json(transformedBusiness);
   } catch (err) {
     console.error(`DB error fetching business with id ${req.params.id}:`, err);
     res.status(500).json({ error: "Failed to fetch business details." });
@@ -141,11 +162,24 @@ router.get("/:id/services", async (req, res) => {
 
     // Fetch services with correct column mapping
     const [services] = await db.query(
-      "SELECT service_id, name, description, price, duration_minutes as duration FROM services WHERE business_id = ? ORDER BY name ASC",
+      "SELECT service_id, business_id, name, description, price, duration_minutes, category, is_active, created_at FROM services WHERE business_id = ? ORDER BY name ASC",
       [req.params.id]
     );
 
-    res.json(services);
+    const transformedServices = services.map(service => ({
+      serviceId: service.service_id,
+      businessId: service.business_id,
+      name: service.name,
+      description: service.description,
+      price: service.price,
+      duration: service.duration_minutes,
+      durationMinutes: service.duration_minutes,
+      category: service.category,
+      isActive: service.is_active,
+      createdAt: service.created_at
+    }));
+
+    res.json(transformedServices);
   } catch (err) {
     console.error(`DB error fetching services for business ${req.params.id}:`, err);
     res.status(500).json({ error: "Failed to fetch services." });
@@ -269,27 +303,56 @@ router.get("/:id/dashboard", async (req, res) => {
     // Compile dashboard data
     const dashboardData = {
       business: {
-        ...business,
-        total_services: serviceStats.length
+        businessId: business.business_id,
+        ownerId: business.owner_id,
+        name: business.name,
+        category: business.category,
+        description: business.description,
+        location: business.location,
+        photos: business.photos,
+        schedule: business.schedule,
+        createdAt: business.created_at,
+        totalServices: serviceStats.length
       },
       analytics: {
-        total_appointments: appointmentStats[0].total_appointments || 0,
-        approved_appointments: appointmentStats[0].approved_appointments || 0,
-        pending_appointments: appointmentStats[0].pending_appointments || 0,
-        cancelled_appointments: appointmentStats[0].cancelled_appointments || 0,
-        monthly_appointments: appointmentStats[0].monthly_appointments || 0,
-        weekly_appointments: appointmentStats[0].weekly_appointments || 0,
-        total_revenue: parseFloat(revenueStats[0].total_revenue) || 0,
-        monthly_revenue: parseFloat(revenueStats[0].monthly_revenue) || 0,
-        average_service_price: parseFloat(revenueStats[0].average_service_price) || 0,
-        monthly_trends: monthlyTrends,
-        service_stats: serviceStats
+        totalAppointments: appointmentStats[0].total_appointments || 0,
+        approvedAppointments: appointmentStats[0].approved_appointments || 0,
+        pendingAppointments: appointmentStats[0].pending_appointments || 0,
+        cancelledAppointments: appointmentStats[0].cancelled_appointments || 0,
+        monthlyAppointments: appointmentStats[0].monthly_appointments || 0,
+        weeklyAppointments: appointmentStats[0].weekly_appointments || 0,
+        totalRevenue: parseFloat(revenueStats[0].total_revenue) || 0,
+        monthlyRevenue: parseFloat(revenueStats[0].monthly_revenue) || 0,
+        averageServicePrice: parseFloat(revenueStats[0].average_service_price) || 0,
+        monthlyTrends: monthlyTrends,
+        serviceStats: serviceStats.map(stat => ({
+          serviceName: stat.service_name,
+          serviceId: stat.service_id,
+          bookingCount: stat.booking_count,
+          serviceRevenue: stat.service_revenue
+        }))
       },
-      recent_appointments: recentAppointments,
-      today_appointments: todayAppointments,
+      recentAppointments: recentAppointments.map(apt => ({
+        appointmentId: apt.appointment_id,
+        appointmentDatetime: apt.appointment_datetime,
+        status: apt.status,
+        firstName: apt.first_name,
+        lastName: apt.last_name,
+        serviceName: apt.service_name,
+        durationMinutes: apt.duration_minutes
+      })),
+      todayAppointments: todayAppointments.map(apt => ({
+        appointmentId: apt.appointment_id,
+        appointmentDatetime: apt.appointment_datetime,
+        status: apt.status,
+        firstName: apt.first_name,
+        lastName: apt.last_name,
+        serviceName: apt.service_name,
+        durationMinutes: apt.duration_minutes
+      })),
       notifications: {
-        pending_count: appointmentStats[0].pending_appointments || 0,
-        today_count: todayAppointments.length || 0
+        pendingCount: appointmentStats[0].pending_appointments || 0,
+        todayCount: todayAppointments.length || 0
       }
     };
 
@@ -437,12 +500,12 @@ router.post("/:id/services", async (req, res) => {
     );
 
     res.status(201).json({
-      service_id: result.insertId,
-      business_id: parseInt(businessId),
+      serviceId: result.insertId,
+      businessId: parseInt(businessId),
       name,
       description: description || '',
       price,
-      duration_minutes,
+      durationMinutes: duration_minutes,
       message: "Service created successfully"
     });
 
@@ -483,12 +546,12 @@ router.put("/:id/services/:serviceId", async (req, res) => {
     );
 
     res.status(200).json({
-      service_id: parseInt(serviceId),
-      business_id: parseInt(businessId),
+      serviceId: parseInt(serviceId),
+      businessId: parseInt(businessId),
       name,
       description: description || '',
       price,
-      duration_minutes,
+      durationMinutes: duration_minutes,
       message: "Service updated successfully"
     });
 

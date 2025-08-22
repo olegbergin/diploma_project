@@ -73,7 +73,7 @@ const BusinessCard = memo(function BusinessCard({
   const [showModal, setShowModal] = useState(false);
 
   const {
-    business_id,
+    businessId,
     name = "שם עסק לא ידוע",
     category = "",
     location = "",
@@ -137,7 +137,7 @@ const BusinessCard = memo(function BusinessCard({
       try {
         await executeWithErrorHandling(async () => {
           const response = await axiosInstance.put(
-            `/businesses/${business_id}`,
+            `/businesses/${businessId}`,
             editData
           );
           if (onUpdate) onUpdate(response.data);
@@ -147,21 +147,21 @@ const BusinessCard = memo(function BusinessCard({
         console.error('Failed to update business:', err);
       }
     },
-    [business_id, editData, onUpdate, handleError, executeWithErrorHandling]
+    [businessId, editData, onUpdate, handleError, executeWithErrorHandling]
   );
 
   const handleDelete = useCallback(async () => {
     if (window.confirm("האם אתה בטוח שברצונך למחוק עסק זה?")) {
       try {
         await executeWithErrorHandling(async () => {
-          await axiosInstance.delete(`/businesses/${business_id}`);
-          if (onDelete) onDelete(business_id);
+          await axiosInstance.delete(`/businesses/${businessId}`);
+          if (onDelete) onDelete(businessId);
         });
       } catch (err) {
         console.error('Failed to delete business:', err);
       }
     }
-  }, [business_id, onDelete, executeWithErrorHandling]);
+  }, [businessId, onDelete, executeWithErrorHandling]);
 
   const handleImageClick = useCallback(
     (e) => {
@@ -262,7 +262,7 @@ const BusinessCard = memo(function BusinessCard({
   return (
     <>
       <Link
-        to={`/home/business/${business_id}`}
+        to={`/home/business/${businessId}`}
         className={styles.cardLink}
         aria-label={`View details for ${name}`}
       >

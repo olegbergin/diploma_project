@@ -85,13 +85,13 @@ export default function NewBusinessDashboard({ user }) {
   };
 
   const getAllAppointments = () => {
-    if (!dashboardData.recent_appointments) return [];
-    return dashboardData.recent_appointments.sort((a, b) => new Date(b.appointment_datetime) - new Date(a.appointment_datetime));
+    if (!dashboardData.recentAppointments) return [];
+    return dashboardData.recentAppointments.sort((a, b) => new Date(b.appointmentDatetime) - new Date(a.appointmentDatetime));
   };
 
   const getPendingAppointments = () => {
-    if (!dashboardData.recent_appointments) return [];
-    return dashboardData.recent_appointments.filter(apt => apt.status === 'pending');
+    if (!dashboardData.recentAppointments) return [];
+    return dashboardData.recentAppointments.filter(apt => apt.status === 'pending');
   };
 
   const handleAppointmentAction = async (appointmentId, action) => {
@@ -172,28 +172,28 @@ export default function NewBusinessDashboard({ user }) {
           <h2>תורים ממתינים לאישור ({getPendingAppointments().length})</h2>
           <div className={styles.appointmentsGrid}>
             {getPendingAppointments().map(appointment => (
-              <div key={appointment.appointment_id} className={styles.pendingAppointmentTile}>
+              <div key={appointment.appointmentId} className={styles.pendingAppointmentTile}>
                 <div className={styles.appointmentTime}>
-                  {formatDate(appointment.appointment_datetime)}
+                  {formatDate(appointment.appointmentDatetime)}
                 </div>
                 <div className={styles.appointmentCustomer}>
-                  {appointment.first_name && appointment.last_name 
-                    ? `${appointment.first_name} ${appointment.last_name}` 
+                  {appointment.firstName && appointment.lastName 
+                    ? `${appointment.firstName} ${appointment.lastName}` 
                     : 'לקוח'}
                 </div>
                 <div className={styles.appointmentService}>
-                  {appointment.service_name}
+                  {appointment.serviceName}
                 </div>
                 <div className={styles.appointmentActions}>
                   <button 
                     className={styles.approveButton}
-                    onClick={() => handleAppointmentAction(appointment.appointment_id, 'approve')}
+                    onClick={() => handleAppointmentAction(appointment.appointmentId, 'approve')}
                   >
                     ✅ אשר
                   </button>
                   <button 
                     className={styles.rejectButton}
-                    onClick={() => handleAppointmentAction(appointment.appointment_id, 'reject')}
+                    onClick={() => handleAppointmentAction(appointment.appointmentId, 'reject')}
                   >
                     ❌ דחה
                   </button>
@@ -209,17 +209,17 @@ export default function NewBusinessDashboard({ user }) {
           <h2>תורים להיום</h2>
           <div className={styles.appointmentsGrid}>
             {dashboardData.today_appointments.map(appointment => (
-              <div key={appointment.appointment_id} className={styles.appointmentTile}>
+              <div key={appointment.appointmentId} className={styles.appointmentTile}>
                 <div className={styles.appointmentTime}>
-                  {formatDate(appointment.appointment_datetime)}
+                  {formatDate(appointment.appointmentDatetime)}
                 </div>
                 <div className={styles.appointmentCustomer}>
-                  {appointment.first_name && appointment.last_name 
-                    ? `${appointment.first_name} ${appointment.last_name}` 
+                  {appointment.firstName && appointment.lastName 
+                    ? `${appointment.firstName} ${appointment.lastName}` 
                     : 'לקוח'}
                 </div>
                 <div className={styles.appointmentService}>
-                  {appointment.service_name}
+                  {appointment.serviceName}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
                   {appointment.price && (
@@ -241,7 +241,7 @@ export default function NewBusinessDashboard({ user }) {
           <div className={styles.servicesGrid}>
             {dashboardData.analytics.service_stats.map(service => (
               <div key={service.service_id} className={styles.serviceTile}>
-                <div className={styles.serviceName}>{service.service_name}</div>
+                <div className={styles.serviceName}>{service.serviceName}</div>
                 <div className={styles.servicePrice}>₪{service.service_revenue || 0}</div>
                 <div className={styles.serviceDuration}>הכנסות סה"כ</div>
                 <div className={styles.serviceBookings}>
@@ -260,17 +260,17 @@ export default function NewBusinessDashboard({ user }) {
             {getAllAppointments().length > 0 ? (
               <div className={styles.allAppointmentsGrid}>
                 {getAllAppointments().map(appointment => (
-                  <div key={appointment.appointment_id} className={styles.appointmentTile}>
+                  <div key={appointment.appointmentId} className={styles.appointmentTile}>
                     <div className={styles.appointmentTime}>
-                      {formatDate(appointment.appointment_datetime)}
+                      {formatDate(appointment.appointmentDatetime)}
                     </div>
                     <div className={styles.appointmentCustomer}>
-                      {appointment.first_name && appointment.last_name 
-                        ? `${appointment.first_name} ${appointment.last_name}` 
+                      {appointment.firstName && appointment.lastName 
+                        ? `${appointment.firstName} ${appointment.lastName}` 
                         : 'לקוח'}
                     </div>
                     <div className={styles.appointmentService}>
-                      {appointment.service_name}
+                      {appointment.serviceName}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
                       {appointment.price && (
@@ -316,10 +316,10 @@ export default function NewBusinessDashboard({ user }) {
                 <div className={styles.activityIcon}>📅</div>
                 <div className={styles.activityContent}>
                   <div className={styles.activityTitle}>
-                    תור חדש - {appointment.first_name} {appointment.last_name}
+                    תור חדש - {appointment.firstName} {appointment.lastName}
                   </div>
                   <div className={styles.activityDescription}>
-                    {appointment.service_name} בתאריך {formatDate(appointment.appointment_datetime)}
+                    {appointment.serviceName} בתאריך {formatDate(appointment.appointmentDatetime)}
                   </div>
                   <div className={styles.activityTime}>
                     סטטוס: {getStatusBadge(appointment.status)}

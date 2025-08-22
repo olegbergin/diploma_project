@@ -10,11 +10,11 @@ export default function UserDashboard({ user }) {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      if (!user?.user_id) return;
+      if (!user?.userId) return;
       
       try {
         setLoading(true);
-        const response = await axiosInstance.get(`/users/${user.user_id}/dashboard`);
+        const response = await axiosInstance.get(`/users/${user.userId}/dashboard`);
         setDashboardData(response.data);
         setError(null);
       } catch (error) {
@@ -26,7 +26,7 @@ export default function UserDashboard({ user }) {
     };
 
     fetchDashboardData();
-  }, [user?.user_id]);
+  }, [user?.userId]);
 
   if (loading) {
     return (
@@ -86,7 +86,7 @@ export default function UserDashboard({ user }) {
   return (
     <div className={styles.dashboard}>
       <div className={styles.header}>
-        <h1>שלום, {dashboardData.user.first_name}</h1>
+        <h1>שלום, {dashboardData.user.firstName}</h1>
         <p>סיכום הפעילות שלך</p>
       </div>
 
