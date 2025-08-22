@@ -80,24 +80,30 @@ function AuthPage({ onLoginSuccess }) {
   };
 
   const handleQuickFill = (userType) => {
-    if (userType === 'customer') {
-      setFormData(prev => ({
-        ...prev,
-        email: 'user@mail.com',
-        password: 'user1'
-      }));
-    } else if (userType === 'business_owner') {
-      setFormData(prev => ({
-        ...prev,
-        email: 'danny.cohen@cornercafe.co.il',
-        password: 'cafe456'
-      }));
-    } else if (userType === 'admin') {
-      setFormData(prev => ({
-        ...prev,
-        email: 'admin@mail.com',
-        password: 'admin1'
-      }));
+    switch (userType) {
+      case 'customer':
+        setFormData(prev => ({
+          ...prev,
+          email: 'john.doe@example.com',
+          password: 'pass123'
+        }));
+        break;
+      case 'business_owner':
+        setFormData(prev => ({
+          ...prev,
+          email: 'newbiz1@example.com',
+          password: 'newpass1'
+        }));
+        break;
+      case 'admin':
+        setFormData(prev => ({
+          ...prev,
+          email: 'jane.doe@example.com',
+          password: 'pass456'
+        }));
+        break;
+      default:
+        break;
     }
   };
 
