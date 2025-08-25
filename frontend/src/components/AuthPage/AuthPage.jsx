@@ -72,7 +72,7 @@ function AuthPage({ onLoginSuccess }) {
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error when user starts typing
     if (error) {
       clearError();
@@ -84,7 +84,7 @@ function AuthPage({ onLoginSuccess }) {
       case 'customer':
         setFormData(prev => ({
           ...prev,
-          email: 'john.doe@example.com',
+          email: 'bergin.oleg@gmail.com',
           password: 'pass123'
         }));
         break;
@@ -178,16 +178,16 @@ function AuthPage({ onLoginSuccess }) {
 
       {/* Error Display */}
       {error && (
-        <ErrorMessage 
-          error={error} 
+        <ErrorMessage
+          error={error}
           onClose={clearError}
           className={styles.errorMessage}
         />
       )}
-      
+
       {/* Success Display */}
       {success && (
-        <ErrorMessage 
+        <ErrorMessage
           error={success}
           type="success"
           onClose={() => setSuccess('')}

@@ -161,11 +161,7 @@ export default function BookingPage() {
             }
           });
         } else {
-          navigate('/home', {
-            state: { 
-              message: 'הזמנה נוצרה בהצלחה!' 
-            }
-          });
+          navigate('/login');
         }
       }, 5000);
       
@@ -348,7 +344,7 @@ export default function BookingPage() {
                 if (currentUser) {
                   navigate(`/user/${currentUser.id}/dashboard`);
                 } else {
-                  navigate('/home');
+                  navigate('/login');
                 }
               }}
               className={styles.goToDashboardButton}

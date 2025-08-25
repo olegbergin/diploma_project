@@ -1,0 +1,371 @@
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(107, 114, 128, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-8);
+  animation: fadeIn var(--transition-normal) var(--ease-out);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Content */
+.modalContent {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-light);
+  width: 100%;
+  max-width: 600px;
+  max-height: 86vh;
+  overflow-y: auto;
+  animation: slideUp var(--transition-normal) var(--ease-out);
+  direction: rtl;
+  position: relative;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-8)) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal Header */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.modalHeader h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: var(--text-xl);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.closeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Form */
+.form {
+  padding: var(--space-6);
+}
+
+.formSection {
+  margin-bottom: var(--space-6);
+}
+
+.formSection h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: var(--space-2);
+}
+
+.inputGroup {
+  margin-bottom: var(--space-4);
+}
+
+.inputGroup label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.input:disabled {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.input::placeholder {
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+}
+
+/* Password Toggle */
+.passwordToggle {
+  margin-bottom: var(--space-4);
+}
+
+.toggleButton {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-height: 44px;
+}
+
+.toggleButton:hover {
+  background: var(--border-light);
+  border-color: var(--border-dark);
+}
+
+.toggleButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Button Group */
+.buttonGroup {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
+}
+
+.cancelButton,
+.saveButton {
+  flex: 1;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.cancelButton {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+}
+
+.cancelButton:hover {
+  background: var(--border-light);
+  border-color: var(--border-dark);
+}
+
+.saveButton {
+  background: var(--primary-blue);
+  color: var(--text-inverse);
+}
+
+.saveButton:hover {
+  background: var(--primary-blue-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.cancelButton:disabled,
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.buttonSpinner {
+  margin-right: var(--space-2);
+}
+
+/* Error and Success Messages */
+.errorMessage,
+.successMessage {
+  margin-bottom: var(--space-4);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .modalOverlay {
+    padding: var(--space-4);
+    align-items: flex-start;
+    padding-top: var(--space-6);
+  }
+
+  .modalContent {
+    max-height: calc(100vh - var(--space-12));
+    border-radius: var(--radius-lg);
+    max-width: none;
+  }
+
+  .modalHeader {
+    padding: var(--space-4);
+  }
+
+  .modalHeader h2 {
+    font-size: var(--text-xl);
+  }
+
+  .form {
+    padding: var(--space-4);
+  }
+
+  .formSection {
+    margin-bottom: var(--space-5);
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .cancelButton,
+  .saveButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalOverlay {
+    padding: var(--space-1);
+    padding-top: var(--space-4);
+  }
+
+  .modalContent {
+    max-height: calc(100vh - var(--space-8));
+  }
+
+  .modalHeader {
+    padding: var(--space-3);
+  }
+
+  .form {
+    padding: var(--space-3);
+  }
+
+  .inputGroup {
+    margin-bottom: var(--space-3);
+  }
+
+  .input {
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+/* Loading state */
+.form:has(.saveButton:disabled) .input {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.form:has(.saveButton:disabled) .toggleButton {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.form:has(.saveButton:disabled) {
+  position: relative;
+}
+
+.form:has(.saveButton:disabled)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Focus management for accessibility */
+.modalContent:focus {
+  outline: none;
+}
+
+.input:focus-visible,
+.closeButton:focus-visible,
+.toggleButton:focus-visible,
+.cancelButton:focus-visible,
+.saveButton:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+
+  .modalOverlay,
+  .modalContent,
+  .closeButton,
+  .input,
+  .toggleButton,
+  .cancelButton,
+  .saveButton {
+    animation: none;
+    transition: none;
+  }
+}

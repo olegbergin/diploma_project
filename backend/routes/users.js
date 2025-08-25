@@ -44,7 +44,7 @@ router.get("/:id", async (req, res) => {
 // PUT /api/users/:id
 router.put("/:id", async (req, res) => {
   const userId = req.params.id;
-  const { firstName, lastName, phone } = req.body;
+  const { firstName, lastName, email, phone } = req.body;
   
   // Validation
   const errors = {};
@@ -57,7 +57,16 @@ router.put("/:id", async (req, res) => {
     errors.lastName = "שם משפחה נדרש ויש להכיל לפחות 2 תווים / Last name required, minimum 2 characters";
   }
   
-  if (!phone || typeof phone !== 'string' || !/^[0-9+\-\s()]{10,}$/.test(phone.trim())) {
+  if (!email || typeof email !== 'string') {
+    errors.email = "אימייל נדרש / Email is required";
+  } else {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(email.trim())) {
+      errors.email = "כתובת אימייל לא תקינה / Invalid email address";
+    }
+  }
+  
+  if (phone && (typeof phone !== 'string' || !/^[0-9+\-\s()]{9,}$/.test(phone.trim()))) {
     errors.phone = "מספר טלפון לא תקין / Invalid phone number";
   }
   
@@ -72,9 +81,18 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
     
+    // Check if email is already taken by another user
+    const [emailCheck] = await db.query(
+      "SELECT user_id FROM users WHERE email = ? AND user_id != ?", 
+      [email.trim(), userId]
+    );
+    if (emailCheck.length > 0) {
+      return res.status(400).json({ errors: { email: "אימייל כבר קיים במערכת / Email already exists" } });
+    }
+    
     await db.query(
-      "UPDATE users SET first_name=?, last_name=?, phone=? WHERE user_id=?",
-      [firstName.trim(), lastName.trim(), phone.trim(), userId]
+      "UPDATE users SET first_name=?, last_name=?, email=?, phone=? WHERE user_id=?",
+      [firstName.trim(), lastName.trim(), email.trim(), phone ? phone.trim() : null, userId]
     );
     res.json({ message: "User updated successfully" });
   } catch (err) {
@@ -224,10 +242,10 @@ router.get("/:id/dashboard", async (req, res) => {
     const [appointmentStats] = await db.query(`
       SELECT 
         COUNT(*) as total_bookings,
-        COUNT(CASE WHEN status = 'scheduled' AND appointment_datetime >= NOW() THEN 1 END) as upcoming_bookings,
-        COUNT(CASE WHEN status = 'scheduled' AND appointment_datetime < NOW() THEN 1 END) as past_bookings,
+        COUNT(CASE WHEN (status = 'pending' OR status = 'confirmed') AND appointment_datetime >= NOW() THEN 1 END) as upcoming_bookings,
+        COUNT(CASE WHEN status = 'completed' AND appointment_datetime < NOW() THEN 1 END) as past_bookings,
         COUNT(CASE WHEN status = 'cancelled_by_user' OR status = 'cancelled_by_business' THEN 1 END) as cancelled_bookings,
-        COUNT(CASE WHEN status = 'scheduled' AND appointment_datetime >= CURDATE() AND appointment_datetime < DATE_ADD(CURDATE(), INTERVAL 14 DAY) THEN 1 END) as bookings_next_two_weeks
+        COUNT(CASE WHEN (status = 'pending' OR status = 'confirmed') AND appointment_datetime >= CURDATE() AND appointment_datetime < DATE_ADD(CURDATE(), INTERVAL 14 DAY) THEN 1 END) as bookings_next_two_weeks
       FROM appointments 
       WHERE customer_id = ?
     `, [userId]);
@@ -243,9 +261,9 @@ router.get("/:id/dashboard", async (req, res) => {
     // For now, we'll use a placeholder calculation
     const [ratingStats] = await db.query(`
       SELECT 
-        COALESCE(AVG(CASE WHEN a.status = 'scheduled' THEN 4.5 END), 0) as average_rating
+        COALESCE(AVG(CASE WHEN a.status = 'completed' THEN 4.5 END), 0) as average_rating
       FROM appointments a
-      WHERE a.customer_id = ? AND a.status = 'scheduled'
+      WHERE a.customer_id = ? AND a.status = 'completed'
     `, [userId]);
 
     // Get recent activities
@@ -277,8 +295,8 @@ router.get("/:id/dashboard", async (req, res) => {
         b.photos,
         b.schedule,
         f.created_at as favorited_date,
-        (SELECT COUNT(*) FROM appointments WHERE customer_id = ? AND business_id = b.business_id AND status = 'scheduled') as visit_count,
-        (SELECT MAX(appointment_datetime) FROM appointments WHERE customer_id = ? AND business_id = b.business_id AND status = 'scheduled') as last_visit
+        (SELECT COUNT(*) FROM appointments WHERE customer_id = ? AND business_id = b.business_id AND status = 'completed') as visit_count,
+        (SELECT MAX(appointment_datetime) FROM appointments WHERE customer_id = ? AND business_id = b.business_id AND status = 'completed') as last_visit
       FROM user_favorites f
       JOIN businesses b ON f.business_id = b.business_id
       WHERE f.user_id = ?
@@ -302,7 +320,7 @@ router.get("/:id/dashboard", async (req, res) => {
       LEFT JOIN businesses b ON a.business_id = b.business_id
       LEFT JOIN services s ON a.service_id = s.service_id
       WHERE a.customer_id = ? 
-      AND a.status = 'scheduled' 
+      AND (a.status = 'pending' OR a.status = 'confirmed') 
       AND a.appointment_datetime >= NOW()
       ORDER BY a.appointment_datetime ASC
       LIMIT 5
@@ -324,7 +342,7 @@ router.get("/:id/dashboard", async (req, res) => {
       LEFT JOIN businesses b ON a.business_id = b.business_id
       LEFT JOIN services s ON a.service_id = s.service_id
       WHERE a.customer_id = ? 
-      AND a.status = 'scheduled' 
+      AND (a.status = 'completed' OR a.status = 'not_arrived')
       AND a.appointment_datetime < NOW()
       ORDER BY a.appointment_datetime DESC
       LIMIT 10

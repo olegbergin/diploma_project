@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1
--- Время создания: Авг 22 2025 г., 18:18
+-- Время создания: Авг 25 2025 г., 11:54
 -- Версия сервера: 10.4.32-MariaDB
 -- Версия PHP: 8.2.12
 
@@ -93,7 +93,10 @@ INSERT INTO `appointments` (`appointment_id`, `customer_id`, `business_id`, `ser
 (45, 19, 5, 31, '2024-12-25 09:00:00', 'completed', 'איפור יומיומי מושלם', '2024-12-20 10:50:00'),
 (46, 20, 6, 36, '2025-01-10 14:00:00', 'cancelled_by_user', 'נדחה בגלל מחלה', '2025-01-05 08:30:00'),
 (47, 9, 7, 41, '2025-01-12 16:00:00', 'cancelled_by_business', 'עובדת חלתה', '2025-01-08 13:20:00'),
-(48, 10, 8, 51, '2025-01-14 12:00:00', 'cancelled_by_user', 'שינוי תוכניות', '2025-01-10 15:45:00');
+(48, 10, 8, 51, '2025-01-14 12:00:00', 'cancelled_by_user', 'שינוי תוכניות', '2025-01-10 15:45:00'),
+(49, 19, 11, 53, '2025-09-01 10:00:00', 'confirmed', 'First appointment with New Salon', '2025-08-22 17:20:17'),
+(50, 19, 11, 53, '2025-09-02 11:00:00', 'confirmed', 'Second appointment with New Salon', '2025-08-22 17:20:17'),
+(51, 19, 2, 7, '2025-09-03 14:00:00', 'pending', 'Manicure with Yael', '2025-08-22 17:20:17');
 
 -- --------------------------------------------------------
 
@@ -125,7 +128,9 @@ INSERT INTO `businesses` (`business_id`, `owner_id`, `name`, `category`, `descri
 (5, 5, 'מייק אפ אמנות - נועה', 'יופי וטיפוח', 'מאפרת מקצועית לחתנות, אירועים וצילומים. התמחות באיפור כלות, איפור ערב ושיעורי איפור אישיים. שימוש במוצרים מובילים בעולם.', 'גבעתיים, בורוכוב 12', '[]', '{\"ראשון\": \"10:00-17:00\", \"שני\": \"10:00-18:00\", \"שלישי\": \"10:00-18:00\", \"רביעי\": \"10:00-18:00\", \"חמישי\": \"10:00-19:00\", \"שישי\": \"09:00-14:00\", \"שבת\": \"10:00-15:00\"}', '2025-08-22 15:54:45'),
 (6, 6, 'לאש טיק - הרמת ריסים ועיצוב גבות', 'יופי וטיפוח', 'מתמחים בהרמת ריסים, הדבקת ריסים, צביעה ועיצוב גבות. טכניקות מתקדמות ותוצאות טבעיות לחיזוק המראה הטבעי שלך.', 'תל אביב, אלנבי 65', '[]', '{\"ראשון\": \"09:00-18:00\", \"שני\": \"09:00-18:00\", \"שלישי\": \"09:00-18:00\", \"רביעי\": \"09:00-18:00\", \"חמישי\": \"09:00-19:00\", \"שישי\": \"08:00-14:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
 (7, 7, 'גבות פרפקט - תמר', 'יופי וטיפוח', 'מתמחים בעיצוב גבות מקצועי, שעווה, חוטים ופיגמנטציה. יצירת צורת גבות מושלמת הניתנת לפניך ולאישיותך.', 'בת ים, בן גוריון 78', '[]', '{\"ראשון\": \"10:00-17:00\", \"שני\": \"10:00-18:00\", \"שלישי\": \"10:00-18:00\", \"רביעי\": \"10:00-18:00\", \"חמישי\": \"10:00-19:00\", \"שישי\": \"09:00-14:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
-(8, 8, 'קליניקת העור ליאור - טיפולי פנים מתקדמים', 'יופי וטיפוח', 'קליניקה מתקדמת לטיפולי פנים קוסמטיים. מתמחים בטיפולי לייזר, פילינג כימי, בוטוקס וחומצה היאלורונית. טיפול מקצועי ובטוח.', 'רעננה, אחוזה 95', '[]', '{\"ראשון\": \"09:00-17:00\", \"שני\": \"09:00-19:00\", \"שלישי\": \"09:00-19:00\", \"רביעי\": \"09:00-19:00\", \"חמישי\": \"09:00-17:00\", \"שישי\": \"09:00-13:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45');
+(8, 8, 'קליניקת העור ליאור - טיפולי פנים מתקדמים', 'יופי וטיפוח', 'קליניקה מתקדמת לטיפולי פנים קוסמטיים. מתמחים בטיפולי לייזר, פילינג כימי, בוטוקס וחומצה היאלורונית. טיפול מקצועי ובטוח.', 'רעננה, אחוזה 95', '[]', '{\"ראשון\": \"09:00-17:00\", \"שני\": \"09:00-19:00\", \"שלישי\": \"09:00-19:00\", \"רביעי\": \"09:00-19:00\", \"חמישי\": \"09:00-17:00\", \"שישי\": \"09:00-13:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
+(11, 23, 'New Salon', 'Hair Salon', 'A brand new hair salon.', '100 New St, New City', '[]', '{\"שעות פעילות\": \"Mon-Sat 9 AM - 7 PM\"}', '2025-08-22 17:14:16'),
+(12, 24, 'New Spa', 'Spa', 'Relaxing spa services.', '200 Old Rd, Old Town', '[]', '{\"שעות פעילות\": \"Tue-Sun 10 AM - 8 PM\"}', '2025-08-22 17:14:22');
 
 -- --------------------------------------------------------
 
@@ -227,7 +232,13 @@ INSERT INTO `services` (`service_id`, `business_id`, `name`, `price`, `duration_
 (46, 8, 'פילינג כימי עמוק', 600.00, 90, 'פילינג כימי לחידוש העור', '2025-08-22 15:54:45', 'טיפולים אסתטיים', 1),
 (47, 8, 'טיפול לייזר להסרת שיער', 300.00, 45, 'הסרת שיער בלייזר - אזור לבחירה', '2025-08-22 15:54:45', 'הסרת שיער', 1),
 (48, 8, 'טיפול פנים רפואי', 350.00, 75, 'טיפול פנים רפואי מתקדם', '2025-08-22 15:54:45', 'פנים', 1),
-(49, 8, 'טיפול נגד צלקות', 450.00, 60, 'טיפול מתקדם להפחתת צלקות', '2025-08-22 15:54:45', 'טיפולים אסתטיים', 1);
+(49, 8, 'טיפול נגד צלקות', 450.00, 60, 'טיפול מתקדם להפחתת צלקות', '2025-08-22 15:54:45', 'טיפולים אסתטיים', 1),
+(50, 9, 'Haircut', 50.00, 30, 'Professional haircut for men and women.', '2025-08-22 16:28:50', 'Services', 1),
+(51, 9, 'Hair Coloring', 120.00, 90, 'Full hair coloring with premium products.', '2025-08-22 16:28:50', 'Services', 1),
+(52, 9, 'Manicure', 25.00, 45, 'Classic manicure with nail shaping and polish.', '2025-08-22 16:28:50', 'Services', 1),
+(53, 11, 'Basic Haircut', 40.00, 30, 'A standard haircut service.', '2025-08-22 17:16:03', 'Services', 1),
+(54, 11, 'Deluxe Hair Coloring', 150.00, 120, 'Premium hair coloring with deep conditioning.', '2025-08-22 17:16:03', 'Services', 1),
+(55, 11, 'Manicure & Pedicure', 75.00, 90, 'Complete nail care for hands and feet.', '2025-08-22 17:17:28', 'Services', 1);
 
 -- --------------------------------------------------------
 
@@ -268,7 +279,11 @@ INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `email`, `phone`, `pa
 (15, 'דיאנה', 'כפיר', 'diana.kfir@gmail.com', '053-7777777', '$2b$10$customer7hash', 'customer', '2025-08-22 15:54:45'),
 (16, 'יעל', 'פרידמן', 'yael.fridman@gmail.com', '050-8888888', '$2b$10$customer8hash', 'customer', '2025-08-22 15:54:45'),
 (17, 'נטלי', 'גרין', 'natali.green@gmail.com', '052-9999999', '$2b$10$customer9hash', 'customer', '2025-08-22 15:54:45'),
-(18, 'ענת', 'בלום', 'anat.bloom@gmail.com', '054-1010101', '$2b$10$customer10hash', 'customer', '2025-08-22 15:54:45');
+(18, 'ענת', 'בלום', 'anat.bloom@gmail.com', '054-1010101', '$2b$10$customer10hash', 'customer', '2025-08-22 15:54:45'),
+(19, 'Oleg', 'Bergin', 'bergin.oleg@gmail.com', '0509951291', '$2b$10$uzmth9vLGhe7aVDYt65/aOQuoqzc3Cx7TrlpUlaBCqV.foiBW8kJ2', 'customer', '2025-08-22 16:23:52'),
+(20, 'Jane', 'Doe', 'jane.doe@example.com', '0987654321', '$2b$10$JubWeDJg2AGwLn.peUFwPeJHHiY2J73NgmAuuKxg2VJo3v.uE8Hc6', 'admin', '2025-08-22 16:23:52'),
+(23, 'NewOwner1', 'Biz', 'newbiz1@example.com', '1111111111', '$2b$10$gtlJIp6Oq/RVCM78IcTNpeeeSdw4s5mxK6HG9UCPcvK.h0WigiFlu', 'business', '2025-08-22 17:14:16'),
+(24, 'NewOwner2', 'Biz', 'newbiz2@example.com', '2222222222', '$2b$10$kvCLyWVVxw/fDJi7cKLBy.FyfziLXbLJhVZf6mFqFtUqUfC.UFUV.', 'business', '2025-08-22 17:14:22');
 
 -- --------------------------------------------------------
 
@@ -281,28 +296,6 @@ CREATE TABLE `user_favorites` (
   `business_id` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Дамп данных таблицы `user_favorites`
---
-
-INSERT INTO `user_favorites` (`user_id`, `business_id`, `created_at`) VALUES
-(9, 1, '2025-08-22 15:54:45'),
-(9, 2, '2025-08-22 15:54:45'),
-(10, 1, '2025-08-22 15:54:45'),
-(10, 3, '2025-08-22 15:54:45'),
-(11, 2, '2025-08-22 15:54:45'),
-(11, 5, '2025-08-22 15:54:45'),
-(12, 3, '2025-08-22 15:54:45'),
-(12, 4, '2025-08-22 15:54:45'),
-(13, 5, '2025-08-22 15:54:45'),
-(13, 6, '2025-08-22 15:54:45'),
-(14, 6, '2025-08-22 15:54:45'),
-(14, 7, '2025-08-22 15:54:45'),
-(15, 7, '2025-08-22 15:54:45'),
-(15, 8, '2025-08-22 15:54:45'),
-(16, 1, '2025-08-22 15:54:45'),
-(16, 8, '2025-08-22 15:54:45');
 
 --
 -- Индексы сохранённых таблиц
@@ -352,7 +345,7 @@ ALTER TABLE `users`
 --
 ALTER TABLE `user_favorites`
   ADD PRIMARY KEY (`user_id`,`business_id`),
-  ADD KEY `fk_user_fav_business` (`business_id`);
+  ADD KEY `fk_business_favorites` (`business_id`);
 
 --
 -- AUTO_INCREMENT для сохранённых таблиц
@@ -362,7 +355,7 @@ ALTER TABLE `user_favorites`
 -- AUTO_INCREMENT для таблицы `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `appointment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `appointment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT для таблицы `businesses`
@@ -380,13 +373,13 @@ ALTER TABLE `reviews`
 -- AUTO_INCREMENT для таблицы `services`
 --
 ALTER TABLE `services`
-  MODIFY `service_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `service_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
@@ -396,8 +389,8 @@ ALTER TABLE `users`
 -- Ограничения внешнего ключа таблицы `user_favorites`
 --
 ALTER TABLE `user_favorites`
-  ADD CONSTRAINT `fk_user_fav_business` FOREIGN KEY (`business_id`) REFERENCES `businesses` (`business_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_user_fav_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_business_favorites` FOREIGN KEY (`business_id`) REFERENCES `businesses` (`business_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_user_favorites` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
