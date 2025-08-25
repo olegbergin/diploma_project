@@ -1,0 +1,231 @@
+.favoritesPage {
+  padding: var(--space-6);
+  max-width: 1200px;
+  margin: 0 auto;
+  direction: rtl;
+  animation: fadeIn var(--transition-normal) var(--ease-out);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-5));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header {
+  margin-bottom: var(--space-8);
+  text-align: center;
+}
+
+.header h1 {
+  font-size: var(--text-4xl);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-semibold);
+}
+
+.header p {
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.loadingContainer, .errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.loadingContainer p {
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  margin-top: var(--space-4);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.favoritesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+}
+
+.emptyState h3 {
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-2);
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+}
+
+.emptyState p {
+  font-size: var(--text-base);
+  margin-bottom: var(--space-6);
+  line-height: var(--leading-relaxed);
+}
+
+.emptyStateIcon {
+  font-size: var(--text-6xl);
+  margin-bottom: var(--space-4);
+  opacity: 0.5;
+}
+
+.actionButton {
+  background: var(--primary-blue);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  text-decoration: none;
+}
+
+.actionButton:hover {
+  background: var(--primary-blue-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.actionButton:focus {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+.actionButton:active {
+  transform: translateY(0);
+}
+
+.actionIcon {
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+
+.actionLabel {
+  font-weight: var(--font-medium);
+  line-height: var(--leading-tight);
+}
+
+/* Tablet responsive */
+@media (max-width: 1024px) {
+  .favoritesPage {
+    padding: var(--space-5);
+  }
+
+  .favoritesGrid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-5);
+  }
+
+  .emptyState {
+    padding: var(--space-10) var(--space-5);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .favoritesPage {
+    padding: var(--space-4);
+  }
+
+  .header {
+    margin-bottom: var(--space-6);
+  }
+
+  .header h1 {
+    font-size: var(--text-3xl);
+    margin-bottom: var(--space-1);
+  }
+
+  .header p {
+    font-size: var(--text-base);
+  }
+
+  .favoritesGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .emptyState {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .emptyState h3 {
+    font-size: var(--text-lg);
+  }
+
+  .emptyState p {
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-5);
+  }
+
+  .emptyStateIcon {
+    font-size: var(--text-5xl);
+    margin-bottom: var(--space-3);
+  }
+
+  .actionButton {
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-sm);
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 480px) {
+  .favoritesPage {
+    padding: var(--space-3);
+  }
+
+  .header h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .emptyState {
+    padding: var(--space-6) var(--space-3);
+  }
+
+  .emptyState h3 {
+    font-size: var(--text-base);
+  }
+
+  .emptyStateIcon {
+    font-size: var(--text-4xl);
+  }
+
+  .actionButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

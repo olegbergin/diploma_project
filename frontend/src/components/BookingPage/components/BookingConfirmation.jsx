@@ -22,7 +22,7 @@ import {
   FiMapPin, 
   FiPhone, 
   FiMail,
-  FiHome,
+  FiEdit,
   FiList,
   FiDownload,
   FiShare2
@@ -305,7 +305,7 @@ END:VCALENDAR`;
           className={styles.secondaryButton}
           disabled={isLoading}
         >
-          <FiHome className={styles.buttonIcon} />
+          <FiEdit className={styles.buttonIcon} />
           <span>עריכה</span>
         </button>
       </div>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiHome, FiLogOut, FiSearch } from 'react-icons/fi'; // Import the icons we need
+import { FiLogOut, FiSearch } from 'react-icons/fi'; // Import the icons we need
 import styles from './header.module.css';
 
 /**
@@ -20,9 +20,6 @@ function Header({ user, onLogout }) {
       <header className={styles.header}>
         {/* Simple navigation for non-authenticated users */}
         <div className={styles.navLinks}>
-          <Link to="/login" className={styles.homeLink} aria-label="Login">
-            <FiHome />
-          </Link>
           <Link to="/search" className={styles.searchLink} aria-label="Search businesses">
             <FiSearch />
           </Link>
@@ -54,9 +51,6 @@ function Header({ user, onLogout }) {
 
       {/* Middle: Navigation Links */}
       <div className={styles.navLinks}>
-        <Link to="/home" className={styles.homeLink} aria-label="Go to home page">
-          <FiHome />
-        </Link>
         <Link to="/search" className={styles.searchLink} aria-label="Search businesses">
           <FiSearch />
         </Link>

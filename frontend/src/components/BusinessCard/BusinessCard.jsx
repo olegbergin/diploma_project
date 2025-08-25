@@ -262,7 +262,7 @@ const BusinessCard = memo(function BusinessCard({
   return (
     <>
       <Link
-        to={`/home/business/${businessId}`}
+        to={`/business/${businessId}/profile`}
         className={styles.cardLink}
         aria-label={`View details for ${name}`}
       >

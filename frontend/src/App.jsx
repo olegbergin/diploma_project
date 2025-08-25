@@ -12,10 +12,11 @@ import Header from "./components/layout/Header/Header";
 import Footer from "./components/layout/Footer/Footer";
 import AuthPage from "./components/AuthPage/AuthPage";
 import BusinessRegistration from "./components/BusinessRegistration/BusinessRegistration";
-import HomePage from "./components/HomePage/HomePage";
 import BusinessProfile from "./components/BusinessProfile/BusinessProfile";
+import BusinessPublicProfile from "./components/BusinessPublicProfile/BusinessPublicProfile";
 import NewBusinessDashboard from "./components/BusinessDashboard/NewBusinessDashboard";
 import UserDashboard from "./components/UserDashboard/UserDashboard";
+import FavoritesPage from "./components/FavoritesPage/FavoritesPage";
 import SearchPage from "./components/SearchPage/SearchPage";
 import BookingPage from "./components/BookingPage/BookingPage";
 import AdminPanel from "./components/AdminPanel/AdminPanel";
@@ -35,7 +36,15 @@ function App() {
     const storedUserInfo = localStorage.getItem("userInfo");
     if (storedUserInfo) {
       try {
-        setCurrentUser(JSON.parse(storedUserInfo));
+        const userData = JSON.parse(storedUserInfo);
+        // Normalize user data to ensure consistent field names
+        const normalizedUserData = {
+          ...userData,
+          id: userData.id || userData.userId // Ensure we have an 'id' field
+        };
+        setCurrentUser(normalizedUserData);
+        // Update localStorage with normalized data
+        localStorage.setItem("userInfo", JSON.stringify(normalizedUserData));
       } catch (error) {
         console.error("Failed to parse user info from localStorage:", error);
         localStorage.clear();
@@ -49,9 +58,32 @@ function App() {
    * @param {Object} userData - User data returned from authentication
    */
   const handleLoginSuccess = (userData) => {
-    setCurrentUser(userData);
-    localStorage.setItem("userInfo", JSON.stringify(userData));
-    navigate("/home"); // Navigate to home page after login
+    // Normalize user data to ensure consistent field names
+    const normalizedUserData = {
+      ...userData,
+      id: userData.id || userData.userId // Ensure we have an 'id' field
+    };
+    
+    setCurrentUser(normalizedUserData);
+    localStorage.setItem("userInfo", JSON.stringify(normalizedUserData));
+    
+    // Use the normalized id for navigation
+    const userId = normalizedUserData.id;
+    
+    // Redirect to role-specific dashboard
+    switch (normalizedUserData.role) {
+      case "customer":
+        navigate(`/user/${userId}/dashboard`);
+        break;
+      case "business":
+        navigate(`/business/${normalizedUserData.businessId || userId}/dashboard`);
+        break;
+      case "admin":
+        navigate("/admin");
+        break;
+      default:
+        navigate("/search"); // Fallback to search for unknown roles
+    }
   };
 
   /**
@@ -133,23 +165,36 @@ function App() {
             path="/search"
             element={<SearchPage user={currentUser} />}
           />
-          {/* Redirect home */}
+          {/* Favorites page - accessible to logged in users */}
           <Route
-            path="/"
+            path="/favorites"
             element={
               currentUser ? (
-                <Navigate replace to="/home" />
+                <FavoritesPage user={currentUser} />
               ) : (
                 <Navigate replace to="/login" />
               )
             }
           />
-          {/* Home page - accessible to all logged in users */}
+          {/* Public business profile - accessible to all users */}
           <Route
-            path="/home/*"
+            path="/business/:id/profile"
+            element={<BusinessPublicProfile />}
+          />
+          {/* Redirect to appropriate dashboard */}
+          <Route
+            path="/"
             element={
               currentUser ? (
-                <HomePage user={currentUser} />
+                currentUser.role === "customer" ? (
+                  <Navigate replace to={`/user/${currentUser.id || currentUser.userId}/dashboard`} />
+                ) : currentUser.role === "business" ? (
+                  <Navigate replace to={`/business/${currentUser.businessId || currentUser.id || currentUser.userId}/dashboard`} />
+                ) : currentUser.role === "admin" ? (
+                  <Navigate replace to="/admin" />
+                ) : (
+                  <Navigate replace to="/search" />
+                )
               ) : (
                 <Navigate replace to="/login" />
               )
@@ -171,7 +216,7 @@ function App() {
             path="/profile/*"
             element={
               currentUser && currentUser.role === "customer" ? (
-                <Navigate replace to={`/user/${currentUser.id}/dashboard`} />
+                <Navigate replace to={`/user/${currentUser.id || currentUser.userId}/dashboard`} />
               ) : (
                 <Navigate replace to="/login" />
               )
@@ -204,7 +249,7 @@ function App() {
             path="/business/:id"
             element={
               currentUser && currentUser.role === "business" ? (
-                <Navigate replace to={`/business/${currentUser.businessId || currentUser.id}/dashboard`} />
+                <Navigate replace to={`/business/${currentUser.businessId || currentUser.id || currentUser.userId}/dashboard`} />
               ) : (
                 <Navigate replace to="/login" />
               )
