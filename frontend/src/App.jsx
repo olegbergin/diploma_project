@@ -13,6 +13,7 @@ import Footer from "./components/layout/Footer/Footer";
 import AuthPage from "./components/AuthPage/AuthPage";
 import BusinessRegistration from "./components/BusinessRegistration/BusinessRegistration";
 import BusinessProfile from "./components/BusinessProfile/BusinessProfile";
+import BusinessEditPage from "./components/BusinessEditPage/BusinessEditPage";
 import BusinessPublicProfile from "./components/BusinessPublicProfile/BusinessPublicProfile";
 import NewBusinessDashboard from "./components/BusinessDashboard/NewBusinessDashboard";
 import ServiceManagement from "./components/ServiceManagement/ServiceManagement";
@@ -269,7 +270,7 @@ function App() {
               path="/business/:id/edit"
               element={
                 currentUser && currentUser.role === "business" ? (
-                  <BusinessProfile />
+                  <BusinessEditPage />
                 ) : (
                   <Navigate replace to="/login" />
                 )

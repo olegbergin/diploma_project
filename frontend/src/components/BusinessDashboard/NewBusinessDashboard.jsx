@@ -87,7 +87,7 @@ export default function NewBusinessDashboard({ user }) {
         <div className={styles.headerActions}>
           <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate('/calendar')}>📅 הצג לוח שנה</button>
           <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate('/services')}>🔧 ניהול שירותים</button>
-          <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate(`/business-profile/${user?.businessId || user?.id}`)}>✏️ עריכת פרופיל</button>
+          <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate(`/business/${user?.businessId || user?.id}/edit`)}>✏️ עריכת פרופיל</button>
         </div>
       </header>
 

@@ -38,7 +38,7 @@ function Header({ user, onLogout }) {
       <Link 
         to={
           user?.role === "customer" ? "/profile" : 
-          user?.role === "business" ? `/business/${user.businessId || user.id}` : 
+          user?.role === "business" ? `/business/${user.businessId || user.id}/dashboard` : 
           user?.role === "admin" ? "/admin" :
           "/profile"
         } 

@@ -27,14 +27,21 @@ exports.getBusinessById = async (req, res) => {
 
 exports.createBusiness = async (req, res) => {
   const {
-    name, category, description, phone, email, address, image_url = "", opening_hours = "",
+    name, category, description, address = "", opening_hours = "",
   } = req.body;
 
   const sql = `
-    INSERT INTO businesses (name, category, description, phone, email, address, image_url, opening_hours)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO businesses (name, category, description, location, photos, schedule)
+    VALUES (?, ?, ?, ?, ?, ?)
   `;
-  const params = [name, category, description, phone, email, address, image_url, opening_hours];
+  const params = [
+    name, 
+    category, 
+    description, 
+    address, // address maps to location
+    '[]', // empty photos array
+    opening_hours ? JSON.stringify({"opening_hours": opening_hours}) : '{}' // schedule as JSON
+  ];
 
   try {
     const connection = db.getPromise();
@@ -48,28 +55,82 @@ exports.createBusiness = async (req, res) => {
 
 exports.updateBusiness = async (req, res) => {
   const {
-    name, category, description, phone, email, address, image_url = "", opening_hours = "",
+    name, category, description, phone, email, address, 
+    working_hours = "", gallery = []
   } = req.body;
-
-  const sql = `
-    UPDATE businesses SET name = ?, category = ?, description = ?, phone = ?, email = ?,
-    address = ?, image_url = ?, opening_hours = ?
-    WHERE business_id = ?
-  `;
-  const params = [name, category, description, phone, email, address, image_url, opening_hours, req.params.id];
 
   try {
     const connection = db.getPromise();
-    const [result] = await connection.query(sql, params);
+    const businessId = req.params.id;
     
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Business not found" });
+    // Convert gallery array to photos JSON format
+    let photosJson = '[]';
+    if (gallery && Array.isArray(gallery) && gallery.length > 0) {
+      const photoUrls = gallery.map(item => item.url);
+      photosJson = JSON.stringify(photoUrls);
+    }
+    
+    const businessSql = `
+      UPDATE businesses SET 
+        name = ?, 
+        category = ?, 
+        description = ?, 
+        location = ?, 
+        photos = ?,
+        schedule = ?
+      WHERE business_id = ?
+    `;
+    const businessParams = [
+      name, 
+      category, 
+      description, 
+      address,
+      photosJson,
+      working_hours || '{}',
+      businessId
+    ];
+    
+    const [result] = await connection.query(businessSql, businessParams);
+    
+    // Handle owner contact info update
+    if (phone || email) {
+      try {
+        const [ownerRows] = await connection.query('SELECT owner_id FROM businesses WHERE business_id = ?', [businessId]);
+        if (ownerRows.length > 0 && ownerRows[0].owner_id) {
+          const ownerId = ownerRows[0].owner_id;
+          
+          const userUpdates = [];
+          const userParams = [];
+          
+          if (phone) {
+            userUpdates.push('phone = ?');
+            userParams.push(phone);
+          }
+          if (email) {
+            userUpdates.push('email = ?');
+            userParams.push(email);
+          }
+          
+          if (userUpdates.length > 0) {
+            const userSql = `UPDATE users SET ${userUpdates.join(', ')} WHERE user_id = ?`;
+            userParams.push(ownerId);
+            await connection.query(userSql, userParams);
+          }
+        }
+      } catch (userError) {
+        // Don't fail the whole request if user update fails
+        console.error('Error updating user contact info:', userError);
+      }
     }
     
     res.json({ message: "Business updated successfully" });
+    
   } catch (error) {
     console.error(`DB error updating business with id ${req.params.id}:`, error);
-    res.status(500).json({ error: "Failed to update business." });
+    res.status(500).json({ 
+      error: "Failed to update business.",
+      details: error.message 
+    });
   }
 };
 
