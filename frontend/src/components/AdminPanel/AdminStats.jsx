@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect } from "react";
 import LoadingSpinner from "../shared/LoadingSpinner/LoadingSpinner";
+import axiosInstance from "../../api/axiosInstance";
 import styles from "./AdminStats.module.css";
 
 function AdminStats() {
@@ -16,19 +17,22 @@ function AdminStats() {
     totalBusinesses: 0,
     totalAppointments: 0,
     todayAppointments: 0,
+    pendingApprovals: 0,
+    weeklyNewUsers: 0,
+    weeklyNewBusinesses: 0,
+    systemStatus: 'operational',
     loading: true
   });
 
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+
   useEffect(() => {
-    // TODO: Implement admin API endpoints
     const loadStats = async () => {
       try {
-        // No admin API endpoints implemented yet
+        const response = await axiosInstance.get('/admin/stats');
         setStats({
-          totalUsers: 0,
-          totalBusinesses: 0,
-          totalAppointments: 0,
-          todayAppointments: 0,
+          ...response.data,
           loading: false
         });
       } catch (error) {
@@ -37,37 +41,53 @@ function AdminStats() {
       }
     };
 
+    const loadRecentActivity = async () => {
+      try {
+        const response = await axiosInstance.get('/admin/activity?limit=5');
+        setRecentActivity(response.data);
+      } catch (error) {
+        console.error("Failed to load recent activity:", error);
+      } finally {
+        setActivityLoading(false);
+      }
+    };
+
     loadStats();
+    loadRecentActivity();
   }, []);
 
   const statsCards = [
     {
-      title: "סה״כ משתמשים",
-      value: stats.totalUsers,
+      title: "משתמשים חדשים החודש",
+      value: stats.monthlyNewUsers || 0,
       emoji: "👥",
       color: "#673ab7",
-      bgColor: "#f7eafd"
+      bgColor: "#f7eafd",
+      subtitle: `השבוע: +${stats.weeklyNewUsers}`
     },
     {
-      title: "סה״כ עסקים",
-      value: stats.totalBusinesses,
+      title: "עסקים חדשים החודש",
+      value: stats.monthlyNewBusinesses || 0,
       emoji: "🏢",
       color: "#9c27b0",
-      bgColor: "#f3e6fa"
+      bgColor: "#f3e6fa",
+      subtitle: `השבוע: +${stats.weeklyNewBusinesses}`
     },
     {
-      title: "סה״כ תורים",
-      value: stats.totalAppointments,
-      emoji: "📅",
-      color: "#7b1fa2",
-      bgColor: "#f8f4ff"
+      title: "ביקורות ממתינות למחיקה",
+      value: stats.pendingReviewDeletions || 0,
+      emoji: "⚠️",
+      color: "#f44336",
+      bgColor: "#ffebee",
+      subtitle: "דורש תשומת לב"
     },
     {
-      title: "תורים היום",
-      value: stats.todayAppointments,
-      emoji: "⭐",
-      color: "#8e24aa",
-      bgColor: "#f4eafd"
+      title: "ממתינים לאישור",
+      value: stats.pendingApprovals,
+      emoji: "⏳",
+      color: "#f57c00",
+      bgColor: "#fff8e1",
+      subtitle: "עסקים חדשים"
     }
   ];
 
@@ -108,17 +128,45 @@ function AdminStats() {
             >
               {card.value.toLocaleString()}
             </div>
+            {card.subtitle && (
+              <div className={styles.cardSubtitle}>
+                {card.subtitle}
+              </div>
+            )}
           </div>
         ))}
       </div>
+
 
       <div className={styles.additionalInfo}>
         <div className={styles.infoCard}>
           <h3 className={styles.infoTitle}>פעילות אחרונה</h3>
           <div className={styles.activityList}>
-            <div className={styles.emptyState}>
-              <p>נתוני פעילות יוצגו כאן לאחר הטמעת API מנהל</p>
-            </div>
+            {activityLoading ? (
+              <div className={styles.emptyState}>
+                <p>טוען פעילות...</p>
+              </div>
+            ) : recentActivity.length > 0 ? (
+              recentActivity.map((activity, index) => (
+                <div key={activity.id || index} className={styles.activityItem}>
+                  <div className={styles.activityIcon}>
+                    {activity.type === 'user_registration' && '👤'}
+                    {activity.type === 'business_registration' && '🏢'}
+                    {activity.type === 'new_appointment' && '📅'}
+                  </div>
+                  <div className={styles.activityContent}>
+                    <p className={styles.activityMessage}>{activity.message}</p>
+                    <span className={styles.activityTime}>
+                      {new Date(activity.timestamp).toLocaleString('he-IL')}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.emptyState}>
+                <p>אין פעילות אחרונה</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -126,16 +174,22 @@ function AdminStats() {
           <h3 className={styles.infoTitle}>סטטוס המערכת</h3>
           <div className={styles.systemStatus}>
             <div className={styles.statusItem}>
-              <div className={styles.statusIndicator + " " + styles.online}></div>
+              <div className={`${styles.statusIndicator} ${styles.online}`}></div>
               <span>שרת פעיל</span>
             </div>
             <div className={styles.statusItem}>
-              <div className={styles.statusIndicator + " " + styles.online}></div>
+              <div className={`${styles.statusIndicator} ${styles.online}`}></div>
               <span>בסיס נתונים פעיל</span>
             </div>
             <div className={styles.statusItem}>
-              <div className={styles.statusIndicator + " " + styles.warning}></div>
-              <span>שירות התראות - איטי</span>
+              <div className={`${styles.statusIndicator} ${
+                stats.systemStatus === 'operational' ? styles.online : 
+                stats.systemStatus === 'degraded' ? styles.warning : styles.offline
+              }`}></div>
+              <span>
+                {stats.systemStatus === 'operational' ? 'מערכת תקינה' :
+                 stats.systemStatus === 'degraded' ? 'מערכת איטית' : 'מערכת לא פעילה'}
+              </span>
             </div>
           </div>
         </div>

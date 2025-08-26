@@ -8,6 +8,7 @@ const searchRoutes = require("../routes/search");
 const businessRoutes = require("../routes/businesses");
 const userRoutes = require("../routes/users");
 const appointmentRoutes = require("../routes/appointments");
+const adminRoutes = require("../routes/admin");
 
 app.use(cors());
 app.use(express.json());
@@ -18,7 +19,8 @@ app.use("/api/businesses", businessRoutes);
 app.use("/api/auth/", authRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/upload", require("../routes/upload"));
 
-const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT || 3031;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT} and accessible from external connections`));

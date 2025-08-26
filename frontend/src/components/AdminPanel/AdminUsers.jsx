@@ -7,6 +7,7 @@
  */
 
 import React, { useState, useEffect } from "react";
+import axiosInstance from "../../api/axiosInstance";
 import styles from "./AdminUsers.module.css";
 
 function AdminUsers() {
@@ -14,84 +15,95 @@ function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
-
-  useEffect(() => {
-    // TODO: Replace with actual API call
-    const loadUsers = async () => {
-      try {
-        // Mock data for now
-        setTimeout(() => {
-          setUsers([
-            {
-              id: 1,
-              firstName: "אברהם",
-              lastName: "כהן",
-              email: "abraham@email.com",
-              role: "customer",
-              status: "active",
-              createdAt: "2024-01-15",
-              lastLogin: "2024-01-20"
-            },
-            {
-              id: 2,
-              firstName: "שרה",
-              lastName: "לוי",
-              email: "sarah@email.com",
-              role: "business",
-              status: "active",
-              createdAt: "2024-01-10",
-              lastLogin: "2024-01-19"
-            },
-            {
-              id: 3,
-              firstName: "דוד",
-              lastName: "שמעון",
-              email: "david@email.com",
-              role: "customer",
-              status: "inactive",
-              createdAt: "2024-01-05",
-              lastLogin: "2024-01-10"
-            },
-            {
-              id: 4,
-              firstName: "רחל",
-              lastName: "אברמוביץ",
-              email: "rachel@email.com",
-              role: "business",
-              status: "pending",
-              createdAt: "2024-01-18",
-              lastLogin: null
-            }
-          ]);
-          setLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error("Failed to load users:", error);
-        setLoading(false);
-      }
-    };
-
-    loadUsers();
-  }, []);
-
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = filterRole === "all" || user.role === filterRole;
-    
-    return matchesSearch && matchesRole;
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0
   });
 
-  const handleStatusChange = (userId, newStatus) => {
-    setUsers(prevUsers => 
-      prevUsers.map(user => 
-        user.id === userId ? { ...user, status: newStatus } : user
-      )
-    );
-    // TODO: Add API call to update user status
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: pagination.page,
+        limit: pagination.limit,
+        search: searchTerm,
+        role: filterRole !== 'all' ? filterRole : '',
+        status: filterStatus !== 'all' ? filterStatus : ''
+      };
+
+      const response = await axiosInstance.get('/admin/users', { params });
+      
+      // Map the API response to match expected frontend format
+      const mappedUsers = response.data.users.map(user => ({
+        id: user.user_id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        status: user.status || 'active',
+        createdAt: user.created_at,
+        lastLogin: user.last_login
+      }));
+      
+      setUsers(mappedUsers);
+      setPagination(response.data.pagination);
+    } catch (error) {
+      console.error("Failed to load users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, [pagination.page, pagination.limit]);
+
+  useEffect(() => {
+    // Reset to first page when filters change
+    setPagination(prev => ({ ...prev, page: 1 }));
+    const timeoutId = setTimeout(() => {
+      loadUsers();
+    }, 300); // Debounce search
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, filterRole, filterStatus]);
+
+  const handleStatusChange = async (userId, newStatus) => {
+    try {
+      await axiosInstance.put(`/admin/users/${userId}/status`, { status: newStatus });
+      
+      // Update local state to reflect the change immediately
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId ? { ...user, status: newStatus } : user
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update user status:", error);
+    }
+  };
+
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      await axiosInstance.put(`/admin/users/${userId}/role`, { role: newRole });
+      
+      // Update local state to reflect the change immediately
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId ? { ...user, role: newRole } : user
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update user role:", error);
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
   };
 
   const getRoleText = (role) => {
@@ -158,6 +170,17 @@ function AdminUsers() {
             <option value="business">עסקים</option>
             <option value="admin">מנהלים</option>
           </select>
+          
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className={styles.filterSelect}
+          >
+            <option value="all">כל הסטטוסים</option>
+            <option value="active">פעיל</option>
+            <option value="suspended">מושעה</option>
+            <option value="deleted">נמחק</option>
+          </select>
         </div>
       </div>
 
@@ -171,7 +194,7 @@ function AdminUsers() {
           <div className={styles.headerCell}>פעולות</div>
         </div>
         
-        {filteredUsers.map(user => (
+        {users.map(user => (
           <div key={user.id} className={styles.tableRow}>
             <div className={styles.tableCell}>
               <div className={styles.userInfo}>
@@ -235,9 +258,33 @@ function AdminUsers() {
         ))}
       </div>
 
-      {filteredUsers.length === 0 && (
+      {users.length === 0 && !loading && (
         <div className={styles.noResults}>
           <p>לא נמצאו משתמשים התואמים לחיפוש</p>
+        </div>
+      )}
+      
+      {pagination.totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button
+            className={styles.paginationBtn}
+            onClick={() => handlePageChange(pagination.page - 1)}
+            disabled={pagination.page <= 1}
+          >
+            הקודם
+          </button>
+          
+          <span className={styles.paginationInfo}>
+            עמוד {pagination.page} מתוך {pagination.totalPages}
+          </span>
+          
+          <button
+            className={styles.paginationBtn}
+            onClick={() => handlePageChange(pagination.page + 1)}
+            disabled={pagination.page >= pagination.totalPages}
+          >
+            הבא
+          </button>
         </div>
       )}
     </div>

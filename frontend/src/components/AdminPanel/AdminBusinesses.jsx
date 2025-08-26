@@ -1,139 +1,116 @@
 /**
- * Admin Businesses Management Component
- * Allows administrators to view and manage businesses in the system
+ * Admin Business Management Component
+ * Provides comprehensive business management with status-based tabs and approval workflow
  * 
  * @component
- * @returns {JSX.Element} Businesses management interface
+ * @returns {JSX.Element} Business management interface with tabs and actions
  */
 
 import React, { useState, useEffect } from "react";
+import axiosInstance from "../../api/axiosInstance";
 import styles from "./AdminBusinesses.module.css";
 
 function AdminBusinesses() {
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("pending"); // Start with pending for urgent actions
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
-
-  useEffect(() => {
-    // TODO: Replace with actual API call
-    const loadBusinesses = async () => {
-      try {
-        // Mock data for now
-        setTimeout(() => {
-          setBusinesses([
-            {
-              id: 1,
-              name: "מאפיית איילה",
-              category: "מאפיה",
-              owner: "איילה כהן",
-              email: "ayala@bakery.com",
-              phone: "054-1234567",
-              status: "active",
-              servicesCount: 8,
-              appointmentsCount: 156,
-              createdAt: "2024-01-10",
-              address: "רחוב הרצל 15, תל אביב"
-            },
-            {
-              id: 2,
-              name: "סלון יופי רחל",
-              category: "יופי וטיפוח",
-              owner: "רחל לוי",
-              email: "rachel@beauty.com",
-              phone: "052-9876543",
-              status: "pending",
-              servicesCount: 12,
-              appointmentsCount: 89,
-              createdAt: "2024-01-18",
-              address: "שדרות רוטשילד 42, תל אביב"
-            },
-            {
-              id: 3,
-              name: "מוסך דוד",
-              category: "רכב",
-              owner: "דוד שמעון",
-              email: "david@garage.com",
-              phone: "053-5555555",
-              status: "suspended",
-              servicesCount: 6,
-              appointmentsCount: 23,
-              createdAt: "2023-12-15",
-              address: "רחוב המלאכה 8, פתח תקווה"
-            },
-            {
-              id: 4,
-              name: "מרפאת שיניים ד\"ר כהן",
-              category: "בריאות",
-              owner: "ד\"ר משה כהן",
-              email: "cohen@dental.com",
-              phone: "050-1111111",
-              status: "active",
-              servicesCount: 15,
-              appointmentsCount: 267,
-              createdAt: "2023-11-20",
-              address: "רחוב דיזנגוף 123, תל אביב"
-            }
-          ]);
-          setLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error("Failed to load businesses:", error);
-        setLoading(false);
-      }
-    };
-
-    loadBusinesses();
-  }, []);
-
-  const filteredBusinesses = businesses.filter(business => {
-    const matchesSearch = 
-      business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      business.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      business.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = filterStatus === "all" || business.status === filterStatus;
-    
-    return matchesSearch && matchesStatus;
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 15,
+    total: 0,
+    totalPages: 0
   });
 
-  const handleStatusChange = (businessId, newStatus) => {
-    setBusinesses(prevBusinesses => 
-      prevBusinesses.map(business => 
-        business.id === businessId ? { ...business, status: newStatus } : business
-      )
-    );
-    // TODO: Add API call to update business status
+  // Status tab configuration
+  const statusTabs = [
+    { id: "pending", label: "ממתינים לאישור", status: "pending", urgent: true },
+    { id: "approved", label: "מאושרים", status: "approved" },
+    { id: "rejected", label: "נדחו", status: "rejected" },
+    { id: "all", label: "הכל", status: "" }
+  ];
+
+  const loadBusinesses = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: pagination.page,
+        limit: pagination.limit,
+        search: searchTerm,
+        status: statusTabs.find(tab => tab.id === activeTab)?.status || ''
+      };
+
+      const response = await axiosInstance.get('/admin/businesses', { params });
+      
+      setBusinesses(response.data.businesses || []);
+      setPagination(response.data.pagination);
+    } catch (error) {
+      console.error("Failed to load businesses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadBusinesses();
+  }, [pagination.page, pagination.limit]);
+
+  useEffect(() => {
+    // Reset to first page when tab or search changes
+    setPagination(prev => ({ ...prev, page: 1 }));
+    const timeoutId = setTimeout(() => {
+      loadBusinesses();
+    }, 300); // Debounce search
+
+    return () => clearTimeout(timeoutId);
+  }, [activeTab, searchTerm]);
+
+  const handleBusinessAction = async (businessId, action) => {
+    try {
+      if (action === 'approve') {
+        await axiosInstance.put(`/admin/businesses/${businessId}/approve`);
+      } else if (action === 'reject') {
+        await axiosInstance.put(`/admin/businesses/${businessId}/reject`);
+      }
+      
+      // Reload businesses to reflect changes
+      loadBusinesses();
+    } catch (error) {
+      console.error(`Failed to ${action} business:`, error);
+    }
+  };
+
+  const handleDeleteBusiness = async (businessId) => {
+    if (window.confirm("האם אתה בטוח שברצונך למחוק עסק זה? פעולה זו אינה ניתנת לביטול.")) {
+      try {
+        await axiosInstance.delete(`/admin/businesses/${businessId}`);
+        loadBusinesses();
+      } catch (error) {
+        console.error("Failed to delete business:", error);
+      }
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
   };
 
   const getStatusText = (status) => {
     const statusMap = {
-      active: "פעיל",
       pending: "ממתין לאישור",
-      suspended: "מושעה"
+      approved: "מאושר", 
+      rejected: "נדחה"
     };
-    return statusMap[status] || status;
+    return statusMap[status] || "לא ידוע";
   };
 
   const getStatusColor = (status) => {
     const colorMap = {
-      active: "#4caf50",
       pending: "#ff9800",
-      suspended: "#f44336"
+      approved: "#4caf50",
+      rejected: "#f44336"
     };
     return colorMap[status] || "#9e9e9e";
-  };
-
-  const getCategoryEmoji = (category) => {
-    const emojiMap = {
-      "מאפיה": "🥖",
-      "יופי וטיפוח": "💄",
-      "רכב": "🚗",
-      "בריאות": "🏥",
-      "מסעדה": "🍽️",
-      "חינוך": "📚"
-    };
-    return emojiMap[category] || "🏢";
   };
 
   if (loading) {
@@ -151,6 +128,27 @@ function AdminBusinesses() {
     <div className={styles.businessesContainer}>
       <h2 className={styles.sectionTitle}>ניהול עסקים</h2>
       
+      {/* Status Tabs */}
+      <div className={styles.statusTabs}>
+        {statusTabs.map(tab => (
+          <button
+            key={tab.id}
+            className={`${styles.statusTab} ${
+              activeTab === tab.id ? styles.activeTab : ''
+            } ${tab.urgent ? styles.urgentTab : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+            {tab.urgent && pagination.total > 0 && (
+              <span className={styles.urgentBadge}>
+                {pagination.total}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Search and Controls */}
       <div className={styles.controls}>
         <div className={styles.searchContainer}>
           <input
@@ -162,113 +160,158 @@ function AdminBusinesses() {
           />
         </div>
         
-        <div className={styles.filterContainer}>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className={styles.filterSelect}
-          >
-            <option value="all">כל הסטטוסים</option>
-            <option value="active">פעיל</option>
-            <option value="pending">ממתין לאישור</option>
-            <option value="suspended">מושעה</option>
-          </select>
+        <div className={styles.statsInfo}>
+          {activeTab === "pending" && pagination.total > 0 && (
+            <span className={styles.urgentInfo}>
+              ⚠️ {pagination.total} עסקים הממתינים לאישור
+            </span>
+          )}
+          {activeTab !== "pending" && (
+            <span>סה״כ {pagination.total} עסקים</span>
+          )}
         </div>
       </div>
 
-      <div className={styles.businessesGrid}>
-        {filteredBusinesses.map(business => (
-          <div key={business.id} className={styles.businessCard}>
-            <div className={styles.cardHeader}>
+      {/* Businesses Table */}
+      <div className={styles.businessesTable}>
+        <div className={styles.tableHeader}>
+          <div className={styles.headerCell}>עסק</div>
+          <div className={styles.headerCell}>בעלים</div>
+          <div className={styles.headerCell}>קטגוריה</div>
+          <div className={styles.headerCell}>סטטוס</div>
+          <div className={styles.headerCell}>תאריך יצירה</div>
+          <div className={styles.headerCell}>פעולות</div>
+        </div>
+        
+        {businesses.map(business => (
+          <div key={business.business_id} className={styles.tableRow}>
+            <div className={styles.tableCell}>
               <div className={styles.businessInfo}>
-                <div className={styles.businessIcon}>
-                  {getCategoryEmoji(business.category)}
-                </div>
-                <div className={styles.businessDetails}>
-                  <h3 className={styles.businessName}>{business.name}</h3>
-                  <p className={styles.businessCategory}>{business.category}</p>
-                </div>
+                <div className={styles.businessName}>{business.name}</div>
+                <div className={styles.businessLocation}>{business.location}</div>
+                {business.description && (
+                  <div className={styles.businessDescription}>
+                    {business.description.substring(0, 60)}...
+                  </div>
+                )}
               </div>
-              <div 
-                className={styles.statusBadge}
+            </div>
+            <div className={styles.tableCell}>
+              <div className={styles.ownerInfo}>
+                <div className={styles.ownerName}>
+                  {business.owner_first_name} {business.owner_last_name}
+                </div>
+                <div className={styles.ownerContact}>
+                  {business.owner_email}
+                </div>
+                {business.owner_phone && (
+                  <div className={styles.ownerPhone}>
+                    {business.owner_phone}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className={styles.tableCell}>
+              <span className={styles.categoryTag}>
+                {business.category}
+              </span>
+            </div>
+            <div className={styles.tableCell}>
+              <span 
+                className={styles.statusTag}
                 style={{ 
                   backgroundColor: getStatusColor(business.status) + "20",
-                  color: getStatusColor(business.status)
+                  color: getStatusColor(business.status),
+                  borderColor: getStatusColor(business.status)
                 }}
               >
                 {getStatusText(business.status)}
+              </span>
+            </div>
+            <div className={styles.tableCell}>
+              <div className={styles.dateInfo}>
+                {new Date(business.created_at).toLocaleDateString('he-IL')}
               </div>
             </div>
-
-            <div className={styles.cardContent}>
-              <div className={styles.ownerInfo}>
-                <span className={styles.label}>בעלים:</span>
-                <span className={styles.value}>{business.owner}</span>
-              </div>
-              
-              <div className={styles.contactInfo}>
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>📧</span>
-                  <span className={styles.value}>{business.email}</span>
-                </div>
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>📞</span>
-                  <span className={styles.value}>{business.phone}</span>
-                </div>
-                <div className={styles.infoRow}>
-                  <span className={styles.label}>📍</span>
-                  <span className={styles.value}>{business.address}</span>
-                </div>
-              </div>
-
-              <div className={styles.statsInfo}>
-                <div className={styles.stat}>
-                  <span className={styles.statValue}>{business.servicesCount}</span>
-                  <span className={styles.statLabel}>שירותים</span>
-                </div>
-                <div className={styles.stat}>
-                  <span className={styles.statValue}>{business.appointmentsCount}</span>
-                  <span className={styles.statLabel}>תורים</span>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.cardActions}>
-              {business.status === "pending" && (
+            <div className={styles.tableCell}>
+              <div className={styles.actions}>
+                {business.status === "pending" && (
+                  <>
+                    <button
+                      className={styles.approveBtn}
+                      onClick={() => handleBusinessAction(business.business_id, 'approve')}
+                    >
+                      אשר
+                    </button>
+                    <button
+                      className={styles.rejectBtn}
+                      onClick={() => handleBusinessAction(business.business_id, 'reject')}
+                    >
+                      דחה
+                    </button>
+                  </>
+                )}
+                {business.status === "approved" && (
+                  <button
+                    className={styles.rejectBtn}
+                    onClick={() => handleBusinessAction(business.business_id, 'reject')}
+                  >
+                    דחה
+                  </button>
+                )}
+                {business.status === "rejected" && (
+                  <button
+                    className={styles.approveBtn}
+                    onClick={() => handleBusinessAction(business.business_id, 'approve')}
+                  >
+                    אשר
+                  </button>
+                )}
                 <button
-                  className={styles.approveBtn}
-                  onClick={() => handleStatusChange(business.id, "active")}
+                  className={styles.deleteBtn}
+                  onClick={() => handleDeleteBusiness(business.business_id)}
                 >
-                  אשר עסק
+                  מחק
                 </button>
-              )}
-              {business.status === "active" && (
-                <button
-                  className={styles.suspendBtn}
-                  onClick={() => handleStatusChange(business.id, "suspended")}
-                >
-                  השעה עסק
-                </button>
-              )}
-              {business.status === "suspended" && (
-                <button
-                  className={styles.activateBtn}
-                  onClick={() => handleStatusChange(business.id, "active")}
-                >
-                  הפעל עסק
-                </button>
-              )}
-              <button className={styles.viewBtn}>
-                צפה בפרטים
-              </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {filteredBusinesses.length === 0 && (
+      {businesses.length === 0 && !loading && (
         <div className={styles.noResults}>
-          <p>לא נמצאו עסקים התואמים לחיפוש</p>
+          <p>
+            {activeTab === "pending" ? 
+              "🎉 אין עסקים הממתינים לאישור" : 
+              "לא נמצאו עסקים התואמים לחיפוש"
+            }
+          </p>
+        </div>
+      )}
+      
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button
+            className={styles.paginationBtn}
+            onClick={() => handlePageChange(pagination.page - 1)}
+            disabled={pagination.page <= 1}
+          >
+            הקודם
+          </button>
+          
+          <span className={styles.paginationInfo}>
+            עמוד {pagination.page} מתוך {pagination.totalPages}
+          </span>
+          
+          <button
+            className={styles.paginationBtn}
+            onClick={() => handlePageChange(pagination.page + 1)}
+            disabled={pagination.page >= pagination.totalPages}
+          >
+            הבא
+          </button>
         </div>
       )}
     </div>

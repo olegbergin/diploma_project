@@ -213,6 +213,53 @@
   }
 }
 
+/* Activity Item Styles */
+.cardSubtitle {
+  font-size: 0.85rem;
+  color: #666;
+  text-align: center;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+.activityItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: rgba(201, 178, 245, 0.05);
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.activityItem:hover {
+  background: rgba(201, 178, 245, 0.1);
+}
+
+.activityIcon {
+  font-size: 1.1rem;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.activityContent {
+  flex: 1;
+}
+
+.activityMessage {
+  font-size: 0.9rem;
+  color: #2d1b69;
+  margin: 0 0 0.25rem 0;
+  font-weight: 500;
+}
+
+.activityTime {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 400;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .statsGrid {
