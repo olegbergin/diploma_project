@@ -1,0 +1,186 @@
+/* ServiceList Component Styles */
+
+.servicesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.serviceItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+  background: var(--bg-secondary, #f8f9fa);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border-light, #e9ecef);
+  transition: all var(--transition-normal, 0.2s ease);
+}
+
+.serviceItem:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.1));
+  border-color: var(--primary-blue, #2563eb);
+}
+
+.serviceInfo {
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.serviceName {
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: var(--font-semibold, 600);
+  color: var(--text-primary, #1f2937);
+  margin-bottom: 0.5rem;
+  line-height: var(--leading-tight, 1.25);
+}
+
+.serviceDetails {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.servicePrice {
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: var(--font-bold, 700);
+  color: var(--success-green, #059669);
+  background: rgba(5, 150, 105, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full, 9999px);
+}
+
+.serviceDuration {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-secondary, #6b7280);
+  background: var(--bg-tertiary, #f3f4f6);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full, 9999px);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.serviceDuration::before {
+  content: "⏱️";
+}
+
+.serviceDescription {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-secondary, #6b7280);
+  line-height: var(--leading-relaxed, 1.625);
+  margin-top: 0.5rem;
+}
+
+.bookButton {
+  background: var(--primary-blue, #2563eb);
+  color: var(--text-inverse, #ffffff);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--font-medium, 500);
+  cursor: pointer;
+  transition: all var(--transition-normal, 0.2s ease);
+  white-space: nowrap;
+  min-width: 80px;
+  height: fit-content;
+}
+
+.bookButton:hover {
+  background: var(--primary-blue-dark, #1d4ed8);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(37, 99, 235, 0.3));
+}
+
+.bookButton:active {
+  transform: translateY(0);
+}
+
+.bookButton:focus {
+  outline: 2px solid var(--primary-blue-light, #60a5fa);
+  outline-offset: 2px;
+}
+
+/* Loading and Error States */
+.loading, .error, .noServices {
+  text-align: center;
+  padding: 2rem;
+  font-size: var(--text-base, 1rem);
+  color: var(--text-secondary, #6b7280);
+  background: var(--bg-secondary, #f8f9fa);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border-light, #e9ecef);
+}
+
+.loading {
+  color: var(--primary-blue, #2563eb);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.error {
+  color: var(--error-red, #dc2626);
+  background: var(--error-light, #fef2f2);
+  border-color: var(--error-red, #dc2626);
+}
+
+.noServices {
+  font-style: italic;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .serviceItem {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .serviceInfo {
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+
+  .serviceDetails {
+    justify-content: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .serviceName {
+    font-size: var(--text-base, 1rem);
+  }
+
+  .bookButton {
+    width: 100%;
+    padding: 1rem;
+    font-size: var(--text-base, 1rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .serviceItem {
+    padding: 1rem;
+  }
+
+  .serviceDetails {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .servicePrice, .serviceDuration {
+    font-size: var(--text-sm, 0.875rem);
+  }
+}

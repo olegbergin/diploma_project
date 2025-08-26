@@ -1,8 +1,8 @@
 // src/components/SearchPage/SearchPage.jsx
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import BusinessCard from "../BusinessCard/BusinessCard.jsx";
-import BusinessModal from "../BusinessModal/BusinessModal.jsx";
 import ErrorMessage from "../shared/ErrorMessage/ErrorMessage.jsx";
 import LoadingSpinner from "../shared/LoadingSpinner/LoadingSpinner.jsx";
 import styles from "./SearchPage.module.css";
@@ -32,28 +32,20 @@ function debounce(func, delay) {
 }
 
 function SearchPage({ user }) {
+  const navigate = useNavigate();
   const [allBusinesses, setAllBusinesses] = useState([]);
   const [filteredBusinesses, setFilteredBusinesses] = useState([]);
   const { error, isLoading, clearError, executeWithRetry } = useErrorHandler();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
   const [orderBy, setOrderBy] = useState("name");
   const [categories, setCategories] = useState([]);
+  const [cities, setCities] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(9);
   const [totalItems, setTotalItems] = useState(0);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [modalBusiness, setModalBusiness] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newBusiness, setNewBusiness] = useState({
-    name: "",
-    category: "",
-    description: "",
-    location: "",
-    phone: "",
-    email: "",
-    schedule: "",
-  });
+  const [userFavorites, setUserFavorites] = useState([]);
 
   const fetchAllBusinesses = useCallback(async () => {
     try {
@@ -92,6 +84,12 @@ function SearchPage({ user }) {
       );
     }
 
+    if (selectedCity) {
+      filtered = filtered.filter(
+        (business) => (business.location || business.city || "").toLowerCase().includes(selectedCity.toLowerCase())
+      );
+    }
+
     filtered.sort((a, b) => {
       switch (orderBy) {
         case "category":
@@ -111,14 +109,12 @@ function SearchPage({ user }) {
     setFilteredBusinesses(filtered);
     setTotalItems(filtered.length);
     setCurrentPage(1);
-  }, [allBusinesses, searchTerm, selectedCategory, orderBy]);
+  }, [allBusinesses, searchTerm, selectedCategory, selectedCity, orderBy]);
 
-  const debouncedFilter = useCallback(
-    debounce(() => {
-      filterBusinesses();
-    }, 150),
-    [filterBusinesses]
-  );
+  const debouncedFilter = useCallback(() => {
+    const debounced = debounce(filterBusinesses, 150);
+    debounced();
+  }, [filterBusinesses]);
 
   useEffect(() => {
     fetchAllBusinesses();
@@ -134,17 +130,51 @@ function SearchPage({ user }) {
     fetchCategories();
   }, [fetchAllBusinesses]);
 
+  // Extract unique cities from businesses
+  useEffect(() => {
+    if (allBusinesses.length > 0) {
+      const uniqueCities = [...new Set(
+        allBusinesses
+          .map(business => {
+            // Try to extract city from location field
+            const location = business.location || business.city || "";
+            // Simple city extraction - you might want to make this more sophisticated
+            return location.trim();
+          })
+          .filter(city => city.length > 0)
+      )].sort();
+      setCities(uniqueCities);
+    }
+  }, [allBusinesses]);
+
+  // Fetch user favorites if logged in
+  useEffect(() => {
+    const fetchUserFavorites = async () => {
+      if (user?.id) {
+        try {
+          const response = await axiosInstance.get(`/users/${user.id}/favorites`);
+          const favoriteIds = response.data.map(fav => fav.businessId || fav.business_id);
+          setUserFavorites(favoriteIds);
+        } catch (error) {
+          console.error('Error fetching user favorites:', error);
+          setUserFavorites([]);
+        }
+      }
+    };
+    fetchUserFavorites();
+  }, [user?.id]);
+
   useEffect(() => {
     if (allBusinesses.length > 0) {
       filterBusinesses();
     }
-  }, [selectedCategory, orderBy, filterBusinesses]);
+  }, [selectedCategory, selectedCity, orderBy, allBusinesses.length, filterBusinesses]);
 
   useEffect(() => {
     if (allBusinesses.length > 0) {
       debouncedFilter();
     }
-  }, [searchTerm, debouncedFilter]);
+  }, [searchTerm, allBusinesses.length, debouncedFilter]);
 
   const handleSearchInputChange = useCallback((event) => {
     setSearchTerm(event.target.value);
@@ -152,6 +182,11 @@ function SearchPage({ user }) {
 
   const handleCategoryChange = useCallback((event) => {
     setSelectedCategory(event.target.value);
+    setCurrentPage(1);
+  }, []);
+
+  const handleCityChange = useCallback((event) => {
+    setSelectedCity(event.target.value);
     setCurrentPage(1);
   }, []);
 
@@ -171,34 +206,6 @@ function SearchPage({ user }) {
     [debouncedFilter, filterBusinesses]
   );
 
-  const handleCreateBusiness = async (e) => {
-    e.preventDefault();
-
-    // Get current user from localStorage
-    const currentUser = JSON.parse(localStorage.getItem("userInfo"));
-    const owner_id = currentUser?.userId;
-
-    try {
-      // Send all fields to server including email, schedule and owner_id
-      const response = await axiosInstance.post("/businesses", {
-        ...newBusiness,
-        owner_id: owner_id,
-      });
-      setAllBusinesses((prev) => [response.data, ...prev]);
-      setNewBusiness({
-        name: "",
-        category: "",
-        description: "",
-        location: "",
-        phone: "",
-        email: "",
-        schedule: "",
-      });
-      setShowCreateForm(false);
-    } catch {
-      alert("Failed to create business");
-    }
-  };
 
   const handleUpdateBusiness = useCallback((updatedBusiness) => {
     setAllBusinesses((prev) =>
@@ -216,25 +223,32 @@ function SearchPage({ user }) {
     );
   }, []);
 
-  const handleNewBusinessChange = (e) => {
-    const { name, value } = e.target;
-    setNewBusiness((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
 
-  const handleOpenModal = useCallback((business) => {
-    setModalBusiness(business);
-    setIsModalOpen(true);
-  }, []);
+  const handleNavigateToProfile = useCallback((businessId) => {
+    navigate(`/business/${businessId}`);
+  }, [navigate]);
 
-  const handleCloseModal = useCallback(() => {
-    setIsModalOpen(false);
-    setModalBusiness(null);
-  }, []);
+  const handleToggleFavorite = useCallback(async (businessId, isFavorite) => {
+    if (!user?.id) {
+      navigate('/login');
+      return;
+    }
 
-  const canCreateBusiness = true;
+    try {
+      if (isFavorite) {
+        // Remove from favorites
+        await axiosInstance.delete(`/users/${user.id}/favorites/${businessId}`);
+        setUserFavorites(prev => prev.filter(id => id !== businessId));
+      } else {
+        // Add to favorites
+        await axiosInstance.post(`/users/${user.id}/favorites`, { businessId });
+        setUserFavorites(prev => [...prev, businessId]);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  }, [user, navigate]);
+
 
   const renderPagination = () => {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -290,6 +304,19 @@ function SearchPage({ user }) {
               ))}
             </select>
             <select
+              value={selectedCity}
+              onChange={handleCityChange}
+              className={styles.filterSelect}
+              aria-label="Select city"
+            >
+              <option value="">כל הערים</option>
+              {cities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+            <select
               value={orderBy}
               onChange={handleOrderByChange}
               className={styles.filterSelect}
@@ -321,97 +348,6 @@ function SearchPage({ user }) {
         />
       )}
 
-      {(canCreateBusiness || !user?.role) && (
-        <div className={styles.createBusinessSection}>
-          {!showCreateForm ? (
-            <button
-              className={styles.createButton}
-              onClick={() => setShowCreateForm(true)}
-            >
-              ➕ הוסף עסק חדש
-            </button>
-          ) : (
-            <form onSubmit={handleCreateBusiness} className={styles.createForm}>
-              <h3>צור עסק חדש</h3>
-              <input
-                type="text"
-                name="name"
-                value={newBusiness.name}
-                onChange={handleNewBusinessChange}
-                placeholder="שם העסק"
-                className={styles.createInput}
-                required
-              />
-              <input
-                type="text"
-                name="category"
-                value={newBusiness.category}
-                onChange={handleNewBusinessChange}
-                placeholder="קטגוריה"
-                className={styles.createInput}
-                required
-              />
-              <textarea
-                name="description"
-                value={newBusiness.description}
-                onChange={handleNewBusinessChange}
-                placeholder="תיאור"
-                className={styles.createTextarea}
-                rows="3"
-              />
-              <input
-                type="text"
-                name="location"
-                value={newBusiness.location}
-                onChange={handleNewBusinessChange}
-                placeholder="מיקום"
-                className={styles.createInput}
-              />
-              <input
-                type="tel"
-                name="phone"
-                value={newBusiness.phone}
-                onChange={handleNewBusinessChange}
-                placeholder="טלפון"
-                className={styles.createInput}
-              />
-              <input
-                type="email"
-                name="email"
-                value={newBusiness.email}
-                onChange={handleNewBusinessChange}
-                placeholder="אימייל (לא חובה)"
-                className={styles.createInput}
-              />
-              <input
-                type="text"
-                name="schedule"
-                value={newBusiness.schedule}
-                onChange={handleNewBusinessChange}
-                placeholder="לוח זמנים (לא חובה)"
-                className={styles.createInput}
-              />
-              <div className={styles.createActions}>
-                <button
-                  type="submit"
-                  className={styles.saveButton}
-                  disabled={isLoading}
-                >
-                  {isLoading ? "💾 יוצר..." : "💾 צור עסק"}
-                </button>
-                <button
-                  type="button"
-                  className={styles.cancelButton}
-                  onClick={() => setShowCreateForm(false)}
-                  disabled={isLoading}
-                >
-                  ❌ ביטול
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      )}
 
       {isLoading && (
         <div className={styles.loadingIndicator}>טוען עסקים...</div>
@@ -448,8 +384,10 @@ function SearchPage({ user }) {
           )}
           onUpdate={handleUpdateBusiness}
           onDelete={handleDeleteBusiness}
-          onOpenModal={handleOpenModal}
+          onNavigateToProfile={handleNavigateToProfile}
           userRole={user?.role}
+          userFavorites={userFavorites}
+          onToggleFavorite={handleToggleFavorite}
         />
       )}
       {!isLoading &&
@@ -457,29 +395,32 @@ function SearchPage({ user }) {
         filteredBusinesses.length > 0 &&
         renderPagination()}
 
-      <BusinessModal
-        business={modalBusiness}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
     </div>
   );
 }
 
 const BusinessList = React.memo(
-  ({ businesses, onUpdate, onDelete, onOpenModal, userRole }) => {
+  ({ businesses, onUpdate, onDelete, onNavigateToProfile, userRole, userFavorites, onToggleFavorite }) => {
     return (
       <main className={styles.businessesGrid}>
-        {businesses.map((business) => (
-          <BusinessCard
-            key={business.businessId}
-            business={business}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-            onOpenModal={onOpenModal}
-            userRole={userRole}
-          />
-        ))}
+        {businesses.map((business) => {
+          const businessId = business.businessId || business.business_id;
+          const isFavorite = userFavorites.includes(businessId);
+          
+          
+          return (
+            <BusinessCard
+              key={businessId}
+              business={business}
+              onUpdate={onUpdate}
+              onDelete={onDelete}
+              onNavigateToProfile={onNavigateToProfile}
+              userRole={userRole}
+              isFavorite={isFavorite}
+              onToggleFavorite={onToggleFavorite}
+            />
+          );
+        })}
       </main>
     );
   }

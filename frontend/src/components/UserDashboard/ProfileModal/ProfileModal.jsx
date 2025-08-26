@@ -18,7 +18,7 @@ export default function ProfileModal({ user, isOpen, onClose, onUpdateSuccess })
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showPasswordSection, setShowPasswordSection] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [_isSubmitted, setIsSubmitted] = useState(false);
 
   // Initialize form data when modal opens
   useEffect(() => {

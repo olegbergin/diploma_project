@@ -45,6 +45,8 @@
   flex-direction: column;
   height: 100%;
   /* Ensures cards in a grid row have the same height */
+  position: relative;
+  /* For absolute positioning of favorite button */
 }
 
 /* --- ИЗМЕНЕНИЕ ЗДЕСЬ (Image Container) --- */
@@ -305,6 +307,41 @@
   transform: translateY(-1px);
 }
 
+/* Favorite Button */
+.favoriteButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.favoriteButton:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.favoriteButton.favorited {
+  background: rgba(255, 182, 193, 0.9);
+}
+
+.favoriteButton.favorited:hover {
+  background: rgba(255, 182, 193, 1);
+}
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .actions {
@@ -313,5 +350,13 @@
   
   .editButton, .deleteButton {
     width: 100%;
+  }
+  
+  .favoriteButton {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    top: 10px;
+    right: 10px;
   }
 }

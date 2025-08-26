@@ -1,8 +1,7 @@
 // src/components/BusinessCard/BusinessCard.jsx
 import React, { useState, memo, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axiosInstance";
-import BusinessModal from "../BusinessModal/BusinessModal";
 import ErrorMessage from "../shared/ErrorMessage/ErrorMessage";
 import useErrorHandler from "../../hooks/useErrorHandler";
 import styles from "./BusinessCard.module.css";
@@ -59,8 +58,11 @@ const BusinessCard = memo(function BusinessCard({
   business, 
   onUpdate, 
   onDelete, 
-  userRole 
+  userRole,
+  isFavorite = false,
+  onToggleFavorite 
 }) {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     name: business.name || "",
@@ -70,10 +72,9 @@ const BusinessCard = memo(function BusinessCard({
     phone: business.phone || "",
   });
   const { error, isLoading, handleError, clearError, executeWithErrorHandling } = useErrorHandler();
-  const [showModal, setShowModal] = useState(false);
 
   const {
-    businessId,
+    businessId: propBusinessId,
     name = "שם עסק לא ידוע",
     category = "",
     location = "",
@@ -83,6 +84,8 @@ const BusinessCard = memo(function BusinessCard({
     average_rating,
     review_count,
   } = business;
+
+  const businessId = String(propBusinessId || business.business_id);
 
   let imageUrl = DEFAULT_PLACEHOLDER_IMAGE;
   if (photos) {
@@ -163,14 +166,6 @@ const BusinessCard = memo(function BusinessCard({
     }
   }, [businessId, onDelete, executeWithErrorHandling]);
 
-  const handleImageClick = useCallback(
-    (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setShowModal(true);
-    },
-    []
-  );
 
   const canModify = userRole === 'business_owner' || userRole === 'admin';
   const showButtons = canModify;
@@ -250,24 +245,21 @@ const BusinessCard = memo(function BusinessCard({
             </div>
           </form>
         </div>
-        <BusinessModal
-          business={business}
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-        />
       </>
     );
   }
 
   return (
     <>
-      <Link
-        to={`/business/${businessId}/profile`}
-        className={styles.cardLink}
+      <article
+        className={`${styles.card} ${styles.cardLink}`}
         aria-label={`View details for ${name}`}
+        onClick={() => {
+          console.log("Navigating to:", `/business/${businessId}`);
+          navigate(`/business/${businessId}`);
+        }}
       >
-        <article className={styles.card}>
-          <div className={styles.imageContainer} onClick={handleImageClick}>
+          <div className={styles.imageContainer}>
             <img
               src={imageUrl}
               alt={`תמונה של ${name}`}
@@ -277,11 +269,7 @@ const BusinessCard = memo(function BusinessCard({
             />
           </div>
           <div className={styles.content}>
-            <h3 className={styles.name} onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setShowModal(true);
-            }}>{name}</h3>
+            <h3 className={styles.name}>{name}</h3>
             {category && <p className={styles.category}>{category}</p>}
             {description && <p className={styles.description}>{description}</p>}
             {location && <p className={styles.location}>📍 {location}</p>}
@@ -308,6 +296,22 @@ const BusinessCard = memo(function BusinessCard({
               </div>
             )}
           </div>
+
+          {/* Favorites Button */}
+          {onToggleFavorite && (
+            <button
+              className={`${styles.favoriteButton} ${isFavorite ? styles.favorited : ''}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite(businessId, isFavorite);
+              }}
+              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              title={isFavorite ? "הסר מהמועדפים" : "הוסף למועדפים"}
+            >
+              {isFavorite ? '❤️' : '🤍'}
+            </button>
+          )}
 
           {showButtons && (
             <div className={styles.actions}>
@@ -336,12 +340,6 @@ const BusinessCard = memo(function BusinessCard({
             </div>
           )}
         </article>
-      </Link>
-      <BusinessModal
-        business={business}
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-      />
     </>
   );
 });

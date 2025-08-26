@@ -36,6 +36,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
     description: '',
     businessPhone: '',
     businessEmail: '',
+    city: '',
     address: '',
     openingHours: ''
   });
@@ -111,6 +112,16 @@ function BusinessRegistration({ onRegistrationSuccess }) {
       return false;
     }
 
+    if (!formData.city || formData.city.length < 2) {
+      handleError("נא להזין עיר לעסק.");
+      return false;
+    }
+
+    if (!formData.address || formData.address.length < 5) {
+      handleError("כתובת העסק חייבת להכיל לפחות 5 תווים.");
+      return false;
+    }
+
     if (formData.businessPhone && !phoneRegex.test(formData.businessPhone)) {
       handleError("נא להזין מספר טלפון עסק תקין.");
       return false;
@@ -154,7 +165,8 @@ function BusinessRegistration({ onRegistrationSuccess }) {
         description: 'סטודיו יוגה מודרני המציע שיעורי ויניאסה, האטה יוגה ומדיטציה בסביבה רגועה ומזמינה.',
         businessPhone: '03-6677889',
         businessEmail: 'info@zenflow.co.il',
-        address: 'רחוב דיזנגוף 145, תל אביב',
+        city: 'תל אביב',
+        address: 'רחוב דיזנגוף 145',
         openingHours: 'ראשון-חמישי 7:00-21:00, שישי 7:00-15:00, שבת 9:00-18:00'
       }));
     } else if (businessType === 'cafe') {
@@ -173,7 +185,8 @@ function BusinessRegistration({ onRegistrationSuccess }) {
         description: 'בית קפה אינטימי עם קפה טרי, מאפים ביתיים וארוחות בוקר מפנקות. אווירה נעימה במרכז העיר.',
         businessPhone: '09-7788990',
         businessEmail: 'hello@cornercafe.co.il',
-        address: 'רחוב הרצל 28, רמת גן',
+        city: 'רמת גן',
+        address: 'רחוב הרצל 28',
         openingHours: 'ראשון-חמישי 7:00-20:00, שישי 7:00-16:00, שבת 8:00-15:00'
       }));
     }
@@ -204,7 +217,9 @@ function BusinessRegistration({ onRegistrationSuccess }) {
         description: formData.description,
         businessPhone: formData.businessPhone || formData.phone,
         businessEmail: formData.businessEmail || formData.email,
+        city: formData.city,
         address: formData.address,
+        location: `${formData.city}, ${formData.address}`,
         openingHours: formData.openingHours
       };
 
@@ -236,6 +251,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
         description: '',
         businessPhone: '',
         businessEmail: '',
+        city: '',
         address: '',
         openingHours: ''
       });
@@ -417,11 +433,23 @@ function BusinessRegistration({ onRegistrationSuccess }) {
           
           <input
             type="text"
+            name="city"
+            placeholder="עיר"
+            className={styles.inputField}
+            value={formData.city}
+            onChange={handleInputChange}
+            required
+            disabled={isLoading}
+          />
+          
+          <input
+            type="text"
             name="address"
-            placeholder="כתובת העסק"
+            placeholder="כתובת רחוב ומספר בית (לדוגמה: רחוב הרצל 25)"
             className={styles.inputField}
             value={formData.address}
             onChange={handleInputChange}
+            required
             disabled={isLoading}
           />
           

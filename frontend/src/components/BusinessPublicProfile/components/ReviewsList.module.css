@@ -1,0 +1,109 @@
+@import url('../../../styles/design-system-variables.css');
+
+.reviewsContainer {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-6);
+    margin: var(--space-4) 0;
+    border: 1px solid var(--border-light);
+    animation: slideUp var(--transition-normal) var(--ease-out);
+}
+
+.reviewsContainer h2 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-4) 0;
+    line-height: var(--leading-tight);
+    border-bottom: 2px solid var(--primary-blue);
+    padding-bottom: var(--space-2);
+}
+
+.reviewList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.reviewItem {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+    background: var(--bg-secondary);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-normal);
+}
+
+.reviewItem:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+    border-color: var(--primary-blue-light);
+}
+
+.reviewHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.reviewHeader strong {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+}
+
+.rating {
+    font-size: var(--text-lg);
+    color: var(--reviews-yellow);
+}
+
+.reviewItem p {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    text-align: justify;
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 640px) {
+    .reviewsContainer {
+        margin: var(--space-3) 0;
+        padding: var(--space-4);
+    }
+    
+    .reviewsContainer h2 {
+        font-size: var(--text-xl);
+    }
+    
+    .reviewItem {
+        padding: var(--space-3);
+        margin-bottom: var(--space-3);
+    }
+    
+    .reviewHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-1);
+    }
+    
+    .reviewItem p {
+        font-size: var(--text-sm);
+        text-align: left;
+    }
+}

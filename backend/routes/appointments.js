@@ -27,14 +27,24 @@ router.get("/", async (req, res) => {
     }
 
     let sql = `
-      SELECT appointment_id, customer_id, service_id,
-             DATE_FORMAT(appointment_datetime,'%Y-%m-%d') AS date,
-             DATE_FORMAT(appointment_datetime,'%H:%i')     AS time,
-             appointment_datetime,
-             status, notes
-        FROM appointments
-       WHERE business_id = ?
-         AND DATE_FORMAT(appointment_datetime,'%Y-%m') = ?
+      SELECT a.appointment_id, a.customer_id, a.service_id, a.business_id,
+             DATE(a.appointment_datetime) AS date,
+             TIME_FORMAT(a.appointment_datetime,'%H:%i') AS time,
+             a.appointment_datetime,
+             a.status, a.notes,
+             COALESCE(u.first_name, 'לקוח') AS first_name, 
+             COALESCE(u.last_name, 'לא ידוע') AS last_name,
+             COALESCE(u.phone, '') AS customer_phone,
+             COALESCE(s.name, 'שירות לא ידוע') AS service_name, 
+             COALESCE(s.price, 0) AS price, 
+             COALESCE(s.duration_minutes, 0) AS duration_minutes,
+             s.service_id as joined_service_id,
+             s.business_id as service_business_id
+        FROM appointments a
+        LEFT JOIN users u ON a.customer_id = u.user_id
+        LEFT JOIN services s ON a.service_id = s.service_id AND s.business_id = a.business_id
+       WHERE a.business_id = ?
+         AND DATE_FORMAT(a.appointment_datetime,'%Y-%m') = ?
     `;
     const params = [parseInt(businessId), month];
 
@@ -43,17 +53,51 @@ router.get("/", async (req, res) => {
       params.push(status);
     }
 
+    // Debug: Check database timezone
+    const [timezoneCheck] = await db.query('SELECT NOW() as server_time, @@session.time_zone as session_tz, @@global.time_zone as global_tz');
+    console.log('Database timezone info:', timezoneCheck[0]);
+
     const [rows] = await db.query(sql, params);
+    
+    // Debug: Check what services exist for this business
+    const [servicesCheck] = await db.query(
+      'SELECT service_id, business_id, name FROM services WHERE business_id = ? LIMIT 5',
+      [parseInt(businessId)]
+    );
+    console.log(`Services available for business ${businessId}:`, servicesCheck);
+    
+    // Debug logging to see what's happening with the JOIN and dates
+    console.log(`Appointments query for business ${businessId}, month ${month}:`);
+    console.log('Sample appointments with dates:', rows.slice(0, 3).map(row => ({
+      appointment_id: row.appointment_id,
+      date: row.date,
+      time: row.time,
+      appointment_datetime: row.appointment_datetime,
+      service_name: row.service_name,
+      customer_name: `${row.first_name} ${row.last_name}`
+    })));
     
     const transformedAppointments = rows.map(row => ({
       appointmentId: row.appointment_id,
+      appointment_id: row.appointment_id,
       customerId: row.customer_id,
       serviceId: row.service_id,
       date: row.date,
       time: row.time,
       appointmentDatetime: row.appointment_datetime,
+      appointment_datetime: row.appointment_datetime,
       status: row.status,
-      notes: row.notes
+      notes: row.notes,
+      first_name: row.first_name,
+      last_name: row.last_name,
+      customer_name: `${row.first_name} ${row.last_name}`,
+      service_name: row.service_name,
+      name: row.service_name,
+      price: row.price,
+      duration_minutes: row.duration_minutes,
+      // Debug fields
+      debug_joined_service_id: row.joined_service_id,
+      debug_service_business_id: row.service_business_id
     }));
     
     res.json(transformedAppointments);

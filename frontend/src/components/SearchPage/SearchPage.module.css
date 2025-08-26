@@ -73,8 +73,17 @@
   margin-top: 2rem;
 }
 
-/* Desktop: Exactly 3 cards per row */
-@media (min-width: 1024px) {
+/* Desktop: Exactly 4 cards per row on large screens */
+@media (min-width: 1200px) {
+  .businessesGrid {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1400px;
+    margin: 2rem auto 0;
+  }
+}
+
+/* Medium Desktop: 3 cards per row */
+@media (min-width: 1024px) and (max-width: 1199px) {
   .businessesGrid {
     grid-template-columns: repeat(3, 1fr);
     max-width: 1200px;

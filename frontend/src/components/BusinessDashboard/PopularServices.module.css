@@ -1,0 +1,57 @@
+@import url('../../styles/design-system-variables.css');
+
+.card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-4);
+}
+
+.cardTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.serviceList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.serviceItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.serviceItem:last-child {
+  border-bottom: none;
+}
+
+.serviceName {
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.serviceStats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.serviceRevenue {
+  font-weight: var(--font-bold);
+  color: var(--success-green);
+}
+
+.serviceBookings {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}

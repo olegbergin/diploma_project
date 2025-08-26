@@ -145,11 +145,13 @@ router.post("/register-business", async (req, res) => {
     description,
     businessPhone,
     businessEmail,
+    city,
     address,
+    location, // This will be concatenated city + address from frontend
     openingHours
   } = req.body;
 
-  if (!first_name || !last_name || !email || !password || !businessName || !category || !description) {
+  if (!first_name || !last_name || !email || !password || !businessName || !category || !description || !city) {
     return res.status(400).json({ error: "Missing required fields." });
   }
 
