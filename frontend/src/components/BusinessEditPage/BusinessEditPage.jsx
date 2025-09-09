@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
+import useImageUpload from '../../hooks/useImageUpload';
+import DragDropUpload from '../shared/DragDropUpload/DragDropUpload';
 import styles from './BusinessEditPage.module.css';
 
 const CATEGORY_OPTIONS = [
@@ -55,7 +57,9 @@ export default function BusinessEditPage() {
 
   // Portfolio state
   const [portfolio, setPortfolio] = useState([]);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // Image upload hook
+  const { isUploading, uploadSingle } = useImageUpload();
 
   // UI state
   const [activeTab, setActiveTab] = useState('business-info');
@@ -70,7 +74,23 @@ export default function BusinessEditPage() {
       const response = await axiosInstance.get(`/businesses/${businessId}`);
       const data = response.data;
       
-      // Set business info
+      // Parse photos from database
+      let parsedPhotos = [];
+      if (data.photos) {
+        try {
+          parsedPhotos = typeof data.photos === 'string' 
+            ? JSON.parse(data.photos) 
+            : data.photos;
+          if (!Array.isArray(parsedPhotos)) {
+            parsedPhotos = [];
+          }
+        } catch (e) {
+          console.warn('Could not parse photos:', e);
+          parsedPhotos = [];
+        }
+      }
+
+      // Set business info - use first photo as profile image
       setBusinessInfo({
         name: data.name || '',
         category: data.category || '',
@@ -78,7 +98,7 @@ export default function BusinessEditPage() {
         phone: data.phone || '',
         email: data.email || '',
         address: data.address || '',
-        image_url: data.image_url || ''
+        image_url: parsedPhotos.length > 0 ? parsedPhotos[0] : ''
       });
 
       // Parse schedule if available
@@ -91,10 +111,12 @@ export default function BusinessEditPage() {
         }
       }
 
-      // Load portfolio images (assuming we have a gallery field or separate endpoint)
-      if (data.gallery) {
-        setPortfolio(data.gallery);
-      }
+      // Set portfolio images (all photos except the first one which is profile image)
+      const portfolioImages = parsedPhotos.slice(1).map((url, index) => ({
+        id: Date.now() + index,
+        url: url
+      }));
+      setPortfolio(portfolioImages);
 
     } catch (error) {
       console.error('Error loading business data:', error);
@@ -124,65 +146,37 @@ export default function BusinessEditPage() {
     }));
   };
 
-  const handleProfileImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-      setUploadingImage(true);
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const response = await axiosInstance.post('/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
+  const handleProfileImageUploadComplete = useCallback((uploadedImages) => {
+    if (uploadedImages && uploadedImages.length > 0) {
+      const newProfileImageUrl = uploadedImages[0].url;
+      
+      // Update business info with new profile image
       setBusinessInfo(prev => ({
         ...prev,
-        image_url: response.data.url
+        image_url: newProfileImageUrl
       }));
-    } catch (error) {
-      console.error('Error uploading profile image:', error);
-      setError('שגיאה בהעלאת תמונת הפרופיל');
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  const handlePortfolioImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-
-    try {
-      setUploadingImage(true);
-      const uploadPromises = files.map(async (file) => {
-        const formData = new FormData();
-        formData.append('image', file);
-        
-        const response = await axiosInstance.post('/upload', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        
-        return {
-          id: Date.now() + Math.random(),
-          url: response.data.url,
-          filename: response.data.filename
-        };
+      
+      // If there was an old profile image, move it to portfolio
+      setPortfolio(prev => {
+        const currentProfileImage = businessInfo.image_url;
+        if (currentProfileImage && currentProfileImage !== '') {
+          // Add old profile image to portfolio if it's not already there
+          const existsInPortfolio = prev.some(img => img.url === currentProfileImage);
+          if (!existsInPortfolio) {
+            return [{
+              id: Date.now() - 1,
+              url: currentProfileImage
+            }, ...prev];
+          }
+        }
+        return prev;
       });
-
-      const uploadedImages = await Promise.all(uploadPromises);
-      setPortfolio(prev => [...prev, ...uploadedImages]);
-    } catch (error) {
-      console.error('Error uploading portfolio images:', error);
-      setError('שגיאה בהעלאת תמונות הפורטפוליו');
-    } finally {
-      setUploadingImage(false);
     }
-  };
+  }, [businessInfo.image_url]);
+
+  const handlePortfolioImageUpload = useCallback((uploadedImages) => {
+    setPortfolio(prev => [...prev, ...uploadedImages]);
+  }, []);
 
   const removePortfolioImage = (imageId) => {
     setPortfolio(prev => prev.filter(img => img.id !== imageId));
@@ -193,10 +187,25 @@ export default function BusinessEditPage() {
       setSaving(true);
       setError('');
       
+      // Combine profile image and portfolio images into one photos array
+      const allPhotos = [];
+      
+      // Add profile image as first photo if it exists
+      if (businessInfo.image_url && businessInfo.image_url.trim() !== '') {
+        allPhotos.push(businessInfo.image_url);
+      }
+      
+      // Add portfolio images
+      portfolio.forEach(image => {
+        if (image.url && !allPhotos.includes(image.url)) {
+          allPhotos.push(image.url);
+        }
+      });
+      
       const updateData = {
         ...businessInfo,
         working_hours: JSON.stringify(schedule),
-        gallery: portfolio
+        gallery: allPhotos
       };
 
       await axiosInstance.put(`/businesses/${businessId}`, updateData);
@@ -369,21 +378,18 @@ export default function BusinessEditPage() {
                 </div>
 
                 <div className={styles.inputGroup}>
-                  <label htmlFor="profileImage">תמונת פרופיל</label>
-                  <input
-                    type="file"
-                    id="profileImage"
-                    accept="image/*"
-                    onChange={handleProfileImageUpload}
-                    disabled={uploadingImage}
-                    className={styles.fileInput}
+                  <label>תמונת פרופיל</label>
+                  <DragDropUpload
+                    onUploadComplete={handleProfileImageUploadComplete}
+                    multiple={false}
+                    disabled={isUploading}
+                    className={styles.profileImageUpload}
                   />
-                  {uploadingImage && <div className={styles.uploadingText}>מעלה תמונה...</div>}
                   {businessInfo.image_url && (
                     <div className={styles.imagePreview}>
                       <img 
                         src={businessInfo.image_url.startsWith('/') ? 
-                          `http://localhost:3030${businessInfo.image_url}` : 
+                          `http://localhost:3031${businessInfo.image_url}` : 
                           businessInfo.image_url
                         } 
                         alt="תמונת פרופיל" 
@@ -455,19 +461,12 @@ export default function BusinessEditPage() {
             <h2>פורטפוליו תמונות</h2>
             
             <div className={styles.uploadSection}>
-              <label htmlFor="portfolioImages" className={styles.uploadButton}>
-                <span>+ הוסף תמונות לפורטפוליו</span>
-                <input
-                  type="file"
-                  id="portfolioImages"
-                  accept="image/*"
-                  multiple
-                  onChange={handlePortfolioImageUpload}
-                  disabled={uploadingImage}
-                  className={styles.hiddenFileInput}
-                />
-              </label>
-              {uploadingImage && <div className={styles.uploadingText}>מעלה תמונות...</div>}
+              <DragDropUpload
+                onUploadComplete={handlePortfolioImageUpload}
+                multiple={true}
+                disabled={isUploading}
+                className={styles.portfolioUpload}
+              />
             </div>
 
             <div className={styles.portfolioGrid}>
@@ -475,7 +474,7 @@ export default function BusinessEditPage() {
                 <div key={image.id} className={styles.portfolioItem}>
                   <img 
                     src={image.url.startsWith('/') ? 
-                      `http://localhost:3030${image.url}` : 
+                      `http://localhost:3031${image.url}` : 
                       image.url
                     } 
                     alt="תמונת פורטפוליו" 

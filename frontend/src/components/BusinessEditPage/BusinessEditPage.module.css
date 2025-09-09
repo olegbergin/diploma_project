@@ -1,5 +1,16 @@
 /* Business Edit Page Styles */
 
+/* Custom styles for DragDropUpload components */
+.profileImageUpload {
+  min-height: 80px;
+  margin-bottom: 1rem;
+}
+
+.portfolioUpload {
+  min-height: 120px;
+  margin-bottom: 2rem;
+}
+
 .editPageContainer {
   max-width: 1200px;
   margin: 0 auto;

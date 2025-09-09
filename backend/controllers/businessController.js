@@ -66,7 +66,10 @@ exports.updateBusiness = async (req, res) => {
     // Convert gallery array to photos JSON format
     let photosJson = '[]';
     if (gallery && Array.isArray(gallery) && gallery.length > 0) {
-      const photoUrls = gallery.map(item => item.url);
+      // Handle both object format {url: "..."} and direct URL strings
+      const photoUrls = gallery.map(item => 
+        typeof item === 'string' ? item : (item.url || item)
+      ).filter(url => url && typeof url === 'string');
       photosJson = JSON.stringify(photoUrls);
     }
     

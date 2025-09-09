@@ -10,6 +10,8 @@ export default defineConfig({
     proxy: {
       // כל בקשה שמתחילה ב-/api → תועבר אוטומטית ל-http://127.0.0.1:3031
       "/api": "http://127.0.0.1:3031",
+      // Proxy for uploaded images
+      "/uploads": "http://127.0.0.1:3031",
     },
   },
 });

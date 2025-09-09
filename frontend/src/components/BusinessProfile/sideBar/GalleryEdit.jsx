@@ -1,56 +1,86 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
+import useImageUpload from '../../../hooks/useImageUpload';
+import DragDropUpload from '../../shared/DragDropUpload/DragDropUpload';
 import styles from "./GalleryEdit.module.css";
 
 export default function GalleryEdit({ gallery = [], onSave }) {
   const [images, setImages] = useState([...gallery]);
-  const fileInputRef = useRef(null);
+  const { isUploading } = useImageUpload();
+  
+  // Convert initial gallery URLs to proper format
+  useEffect(() => {
+    const formattedImages = gallery.map(item => {
+      if (typeof item === 'string') {
+        return { url: item, id: Date.now() + Math.random() };
+      }
+      return item;
+    });
+    setImages(formattedImages);
+  }, [gallery]);
 
-  const handleAdd = (e) => {
-    const files = Array.from(e.target.files);
-    const urls = files.map((file) => URL.createObjectURL(file));
-    setImages((prev) => [...prev, ...urls]);
-  };
 
-  const handleDelete = (idx) => {
-    setImages((prev) => prev.filter((_, i) => i !== idx));
-  };
+  const handleDelete = useCallback((imageId) => {
+    setImages((prev) => prev.filter(img => img.id !== imageId));
+  }, []);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     onSave?.(images);
-  };
+  }, [images, onSave]);
 
   return (
     <section className={styles.container}>
       <h2 className={styles.title}>עריכת גלריה</h2>
 
+
       <div className={styles.grid}>
-        {images.map((src, i) => (
-          <div key={i} className={styles.imageBox}>
-            <img src={src} alt={`img-${i}`} className={styles.image} />
-            <button className={styles.delete} onClick={() => handleDelete(i)}>
-              🗑
-            </button>
-          </div>
-        ))}
-        <div
-          className={styles.addBox}
-          onClick={() => fileInputRef.current.click()}
+        {images.map((image) => {
+          const imageUrl = typeof image === 'string' ? image : image.url;
+          const imageId = typeof image === 'string' ? image : image.id;
+          
+          return (
+            <div key={imageId} className={styles.imageBox}>
+              <img 
+                src={imageUrl} 
+                alt={`תמונה ${imageId}`} 
+                className={styles.image}
+                onError={(e) => {
+                  console.error('Image load error:', imageUrl);
+                  e.target.style.display = 'none';
+                }}
+              />
+              <button 
+                className={styles.delete} 
+                onClick={() => handleDelete(imageId)}
+                disabled={isUploading}
+              >
+                🗑
+              </button>
+            </div>
+          );
+        })}
+        <DragDropUpload
+          onUploadComplete={(uploadedImages) => {
+            setImages((prev) => [...prev, ...uploadedImages]);
+          }}
+          multiple={true}
+          disabled={isUploading}
+          className={styles.dragDropArea}
         >
-          <span>+</span>
-          <span>הוסף תמונות</span>
-        </div>
+          <div className={styles.addBoxContent}>
+            <span className={styles.addIcon}>{isUploading ? '⏳' : '+'}</span>
+            <span className={styles.addText}>
+              {isUploading ? 'מעלה...' : 'גרור תמונות כאן או לחץ לבחירה'}
+            </span>
+          </div>
+        </DragDropUpload>
       </div>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        style={{ display: "none" }}
-        onChange={handleAdd}
-      />
-      <button onClick={handleSave} className={styles.saveBtn}>
-        שמור שינויים
+      <button 
+        onClick={handleSave} 
+        className={styles.saveBtn}
+        disabled={isUploading}
+      >
+        {isUploading ? 'מעלה תמונות...' : 'שמור שינויים'}
       </button>
     </section>
   );
