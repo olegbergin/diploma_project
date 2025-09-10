@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const businessController = require("../controllers/businessController");
+// const reportController = require("../controllers/reportController");
+
 
 // Get unique categories (must come before /:id route)
 router.get("/categories", businessController.getCategories);
@@ -45,6 +47,22 @@ router.get("/", businessController.getAllBusinesses);
 // Create a new business
 router.post("/", businessController.createBusiness);
 
+// === REPORT ROUTES (must come before generic /:id route) ===
+
+// Debug route to test if routes are working
+router.get("/:id/reports/test", (req, res) => {
+  res.json({ message: "Report routes are working!", businessId: req.params.id });
+});
+
+// Generate and download business report
+// router.get("/:id/reports/generate", reportController.generateReport);
+
+// Preview report data (JSON) without generating PDF
+// router.get("/:id/reports/preview", reportController.previewReport);
+
+// Get available report dates for a business
+// router.get("/:id/reports/available-dates", reportController.getAvailableDates);
+
 // Get a single business by ID (with owner contact info, services, and ratings)
 router.get("/:id", businessController.getBusinessById);
 
@@ -80,5 +98,6 @@ router.put("/:id/services/:serviceId", businessController.updateService);
 
 // Delete a service
 router.delete("/:id/services/:serviceId", businessController.deleteService);
+
 
 module.exports = router;

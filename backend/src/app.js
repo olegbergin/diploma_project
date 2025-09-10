@@ -11,6 +11,7 @@ const userRoutes = require("../routes/users");
 const appointmentRoutes = require("../routes/appointments");
 const adminRoutes = require("../routes/admin");
 const reviewRoutes = require("../routes/reviews");
+// Reports routes are now integrated into businesses.js
 const cleanupRoutes = require("../routes/cleanup");
 
 app.use(cors());
