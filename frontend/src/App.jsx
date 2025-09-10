@@ -136,9 +136,10 @@ function App() {
 
   return (
     <UserProvider value={{ currentUser, setCurrentUser }}>
-      <div className="AppContainer">
-        <Header user={currentUser} onLogout={handleLogout} />
-        <div className="content">
+      <ToastProvider>
+        <div className="AppContainer">
+          <Header user={currentUser} onLogout={handleLogout} />
+          <div className="content">
           <Routes>
             {/* Auth (Login/Signup) */}
             <Route
@@ -185,11 +186,7 @@ function App() {
             {/* Public business profile - accessible to all users */}
             <Route
               path="/business/:id"
-              element={
-                <ToastProvider>
-                  <BusinessPublicProfile />
-                </ToastProvider>
-              }
+              element={<BusinessPublicProfile />}
             />
             {/* Redirect to appropriate dashboard */}
             <Route
@@ -293,6 +290,7 @@ function App() {
         </div>
         <Footer />
       </div>
+      </ToastProvider>
     </UserProvider>
   );
 }

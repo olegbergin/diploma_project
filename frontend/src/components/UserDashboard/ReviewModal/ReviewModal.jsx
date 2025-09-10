@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import styles from './ReviewModal.module.css';
 import axiosInstance from '../../../api/axiosInstance';
+import { useToastContext } from '../../../context/ToastContext';
 
-const ReviewModal = ({ appointment, isOpen, onClose, onSuccess }) => {
+const ReviewModal = ({ appointment, user, isOpen, onClose, onSuccess }) => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { showSuccess } = useToastContext();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,11 +25,12 @@ const ReviewModal = ({ appointment, isOpen, onClose, onSuccess }) => {
     try {
       await axiosInstance.post('/reviews', {
         appointmentId: appointment.appointmentId,
-        customerId: appointment.customerId,
+        customerId: user.id,
         rating,
         text: text.trim() || null
       });
 
+      showSuccess('הביקורת שלך נשלחה בהצלחה! 🎉');
       onSuccess && onSuccess();
       onClose();
       

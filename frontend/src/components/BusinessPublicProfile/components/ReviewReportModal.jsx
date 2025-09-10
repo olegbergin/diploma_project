@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styles from './ReviewReportModal.module.css';
 import axiosInstance from '../../../api/axiosInstance';
 import { useContext } from 'react';
-import { UserContext } from '../../../contexts/UserContext';
+import { UserContext } from '../../../context/UserContext';
 
 const ReviewReportModal = ({ review, isOpen, onClose, onSuccess }) => {
   const [complaintType, setComplaintType] = useState('');

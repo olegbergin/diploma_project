@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './ReviewsList.module.css';
 import axiosInstance from '../../../api/axiosInstance';
 import { useContext } from 'react';
-import { UserContext } from '../../../contexts/UserContext';
+import { UserContext } from '../../../context/UserContext';
 import ReviewReportModal from './ReviewReportModal';
 
 const ReviewsList = ({ businessId }) => {
@@ -138,9 +138,9 @@ const ReviewsList = ({ businessId }) => {
         {stats.total_reviews > 0 && (
           <div className={styles.overallRating}>
             <div className={styles.ratingScore}>
-              {renderStars(Math.round(stats.average_rating || 0))}
+              {renderStars(Math.round(Number(stats.average_rating) || 0))}
               <span className={styles.ratingNumber}>
-                {(stats.average_rating || 0).toFixed(1)}
+                {Number(stats.average_rating || 0).toFixed(1)}
               </span>
             </div>
             <p className={styles.ratingText}>

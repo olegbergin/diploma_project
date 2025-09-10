@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './ReviewableAppointments.module.css';
 import axiosInstance from '../../../api/axiosInstance';
 import ReviewModal from '../ReviewModal/ReviewModal';
+import { useToastContext } from '../../../context/ToastContext';
 
 const ReviewableAppointments = ({ user, onReviewSubmitted }) => {
   const [reviewableAppointments, setReviewableAppointments] = useState([]);
@@ -9,6 +10,7 @@ const ReviewableAppointments = ({ user, onReviewSubmitted }) => {
   const [error, setError] = useState('');
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const { showInfo } = useToastContext();
 
   useEffect(() => {
     fetchReviewableAppointments();
@@ -40,6 +42,9 @@ const ReviewableAppointments = ({ user, onReviewSubmitted }) => {
     setReviewableAppointments(prev => 
       prev.filter(apt => apt.appointmentId !== selectedAppointment.appointmentId)
     );
+    
+    // Show informational toast
+    showInfo('תודה על הביקורת! היא תופיע בעמוד העסק');
     
     // Notify parent component
     onReviewSubmitted && onReviewSubmitted();
@@ -135,6 +140,7 @@ const ReviewableAppointments = ({ user, onReviewSubmitted }) => {
 
       <ReviewModal
         appointment={selectedAppointment}
+        user={user}
         isOpen={showReviewModal}
         onClose={() => {
           setShowReviewModal(false);
