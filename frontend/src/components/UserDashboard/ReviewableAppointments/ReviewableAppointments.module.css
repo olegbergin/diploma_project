@@ -1,0 +1,232 @@
+/* Reviewable Appointments Component Styles */
+.container {
+  background: var(--color-white);
+  border-radius: var(--radius-3);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-1);
+  border: 1px solid var(--color-gray-200);
+}
+
+.header {
+  margin-bottom: var(--space-4);
+}
+
+.header h3 {
+  margin: 0 0 var(--space-1) 0;
+  font-size: var(--font-size-3);
+  font-weight: var(--font-weight-6);
+  color: var(--color-gray-900);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--font-size-1);
+  color: var(--color-gray-600);
+}
+
+.loading {
+  text-align: center;
+  padding: var(--space-6);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-gray-200);
+  border-top: 3px solid var(--color-primary-600);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto var(--space-3) auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading p {
+  color: var(--color-gray-600);
+  margin: 0;
+}
+
+.error {
+  text-align: center;
+  padding: var(--space-5);
+  background: var(--color-error-50);
+  border: 1px solid var(--color-error-200);
+  border-radius: var(--radius-2);
+  color: var(--color-error-700);
+}
+
+.error p {
+  margin: 0 0 var(--space-3) 0;
+}
+
+.retryButton {
+  background: var(--color-error-600);
+  color: var(--color-white);
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-1);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.retryButton:hover {
+  background: var(--color-error-700);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-6);
+  color: var(--color-gray-600);
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: var(--space-3);
+  opacity: 0.7;
+}
+
+.emptyState h3 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--font-size-3);
+  color: var(--color-gray-700);
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: var(--font-size-2);
+  line-height: 1.5;
+}
+
+.appointmentsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.appointmentCard {
+  background: var(--color-white);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-2);
+  padding: var(--space-4);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.appointmentCard:hover {
+  border-color: var(--color-primary-300);
+  box-shadow: var(--shadow-2);
+  transform: translateY(-1px);
+}
+
+.appointmentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-3);
+  gap: var(--space-2);
+}
+
+.businessName {
+  margin: 0;
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-6);
+  color: var(--color-primary-600);
+  line-height: 1.3;
+  flex: 1;
+}
+
+.reviewBadge {
+  background: var(--color-warning-100);
+  color: var(--color-warning-700);
+  font-size: var(--font-size-0);
+  font-weight: var(--font-weight-5);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-1);
+  white-space: nowrap;
+  border: 1px solid var(--color-warning-300);
+}
+
+.appointmentDetails {
+  margin-bottom: var(--space-4);
+}
+
+.serviceName {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-5);
+  color: var(--color-gray-800);
+}
+
+.appointmentDate {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--font-size-1);
+  color: var(--color-gray-600);
+}
+
+.price {
+  margin: 0;
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-6);
+  color: var(--color-success-600);
+}
+
+.reviewButton {
+  width: 100%;
+  background: var(--color-primary-600);
+  color: var(--color-white);
+  border: none;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.reviewButton:hover {
+  background: var(--color-primary-700);
+  transform: translateY(-1px);
+}
+
+.reviewButton:active {
+  transform: translateY(0);
+}
+
+/* RTL Support */
+.container {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: var(--space-4);
+  }
+  
+  .appointmentsGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+  
+  .appointmentHeader {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  
+  .reviewBadge {
+    align-self: flex-start;
+  }
+  
+  .businessName {
+    font-size: var(--font-size-3);
+  }
+}

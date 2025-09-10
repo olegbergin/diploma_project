@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './UserDashboard.module.css';
 import axiosInstance from '../../api/axiosInstance';
 import ProfileModal from './ProfileModal/ProfileModal';
+import ReviewableAppointments from './ReviewableAppointments/ReviewableAppointments';
 
 export default function UserDashboard({ user }) {
   const [dashboardData, setDashboardData] = useState(null);
@@ -154,6 +155,22 @@ export default function UserDashboard({ user }) {
     }
   };
 
+  const handleReviewSubmitted = () => {
+    // Refresh dashboard data when a review is submitted
+    const fetchDashboardData = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const response = await axiosInstance.get(`/users/${user.id}/dashboard`);
+        setDashboardData(response.data);
+      } catch (error) {
+        console.error('Error refreshing dashboard data:', error);
+      }
+    };
+
+    fetchDashboardData();
+  };
+
   return (
     <div className={styles.dashboard}>
       <div className={styles.header}>
@@ -235,6 +252,14 @@ export default function UserDashboard({ user }) {
           )}
         </div>
       )}
+
+      {/* Reviewable Appointments Section */}
+      <div className={styles.section}>
+        <ReviewableAppointments 
+          user={user} 
+          onReviewSubmitted={handleReviewSubmitted}
+        />
+      </div>
 
       {dashboardData.favorites.length > 0 && (
         <div className={styles.section}>

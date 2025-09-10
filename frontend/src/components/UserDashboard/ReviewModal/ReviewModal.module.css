@@ -1,0 +1,299 @@
+/* Review Modal Styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  background: var(--color-white);
+  border-radius: var(--radius-3);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-4);
+  animation: modalAppear 0.2s ease-out;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.header h2 {
+  margin: 0;
+  font-size: var(--font-size-4);
+  font-weight: var(--font-weight-6);
+  color: var(--color-gray-900);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: var(--font-size-6);
+  cursor: pointer;
+  color: var(--color-gray-500);
+  padding: var(--space-1);
+  border-radius: var(--radius-2);
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover:not(:disabled) {
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+}
+
+.closeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.appointmentInfo {
+  padding: var(--space-5);
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.appointmentInfo h3 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--font-size-3);
+  font-weight: var(--font-weight-6);
+  color: var(--color-primary-600);
+}
+
+.service {
+  margin: 0 0 var(--space-1) 0;
+  font-size: var(--font-size-2);
+  color: var(--color-gray-700);
+  font-weight: var(--font-weight-5);
+}
+
+.date {
+  margin: 0 0 var(--space-1) 0;
+  font-size: var(--font-size-1);
+  color: var(--color-gray-600);
+}
+
+.price {
+  margin: 0;
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-6);
+  color: var(--color-success-600);
+}
+
+.form {
+  padding: var(--space-5);
+}
+
+.ratingSection {
+  margin-bottom: var(--space-6);
+}
+
+.label {
+  display: block;
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-5);
+  color: var(--color-gray-700);
+}
+
+.starsContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.star {
+  background: none;
+  border: none;
+  font-size: var(--font-size-6);
+  cursor: pointer;
+  color: var(--color-gray-300);
+  transition: color 0.2s ease;
+  padding: var(--space-1);
+  border-radius: var(--radius-1);
+}
+
+.star:hover:not(:disabled) {
+  color: var(--color-warning-400);
+  transform: scale(1.1);
+}
+
+.star.filled {
+  color: var(--color-warning-500);
+}
+
+.star:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.ratingText {
+  font-size: var(--font-size-2);
+  color: var(--color-gray-600);
+  margin-right: var(--space-3);
+  font-weight: var(--font-weight-5);
+}
+
+.textSection {
+  margin-bottom: var(--space-5);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: var(--space-3);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-2);
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+.textarea:disabled {
+  background: var(--color-gray-50);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.characterCount {
+  text-align: left;
+  font-size: var(--font-size-0);
+  color: var(--color-gray-500);
+  margin-top: var(--space-1);
+}
+
+.error {
+  background: var(--color-error-50);
+  border: 1px solid var(--color-error-200);
+  border-radius: var(--radius-2);
+  padding: var(--space-3);
+  margin-bottom: var(--space-4);
+  color: var(--color-error-700);
+  font-size: var(--font-size-1);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--color-gray-300);
+  background: var(--color-white);
+  color: var(--color-gray-700);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover:not(:disabled) {
+  border-color: var(--color-gray-400);
+  background: var(--color-gray-50);
+}
+
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submitButton {
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  background: var(--color-primary-600);
+  color: var(--color-white);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-5);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-width: 120px;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
+
+.submitButton:disabled {
+  background: var(--color-gray-300);
+  cursor: not-allowed;
+}
+
+/* RTL Support */
+.modal {
+  direction: rtl;
+  text-align: right;
+}
+
+.characterCount {
+  text-align: left;
+  direction: ltr;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .overlay {
+    padding: var(--space-2);
+  }
+  
+  .modal {
+    max-height: 95vh;
+  }
+  
+  .header,
+  .appointmentInfo,
+  .form {
+    padding: var(--space-4);
+  }
+  
+  .actions {
+    flex-direction: column-reverse;
+  }
+  
+  .cancelButton,
+  .submitButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -7,7 +7,7 @@ import ContactInfo from './components/ContactInfo';
 import About from './components/About';
 import ImageGallery from './components/ImageGallery';
 import ServiceList from './components/ServiceList';
-// import ReviewsList from './components/ReviewsList';
+import ReviewsList from './components/ReviewsList';
 import { 
     ProfileHeaderSkeleton,
     ContactInfoSkeleton,
@@ -111,7 +111,7 @@ const BusinessPublicProfile = () => {
             <About business={business} />
             <ImageGallery business={business} />
             <ServiceList businessId={id} />
-            {/* <ReviewsList businessId={id} /> */}
+            <ReviewsList businessId={id} />
         </div>
     );
 };
