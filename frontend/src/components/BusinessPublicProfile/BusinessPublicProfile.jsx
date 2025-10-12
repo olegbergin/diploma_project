@@ -32,7 +32,6 @@ const BusinessPublicProfile = () => {
                 const response = await axios.get(`/businesses/${id}`);
                 
                 if (response.data) {
-                    console.log('Business data received:', response.data); // Debug log
                     setBusiness(response.data);
                 } else {
                     throw new Error('No business data received');

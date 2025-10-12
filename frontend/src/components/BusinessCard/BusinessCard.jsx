@@ -254,10 +254,7 @@ const BusinessCard = memo(function BusinessCard({
       <article
         className={`${styles.card} ${styles.cardLink}`}
         aria-label={`View details for ${name}`}
-        onClick={() => {
-          console.log("Navigating to:", `/business/${businessId}`);
-          navigate(`/business/${businessId}`);
-        }}
+        onClick={() => navigate(`/business/${businessId}`)}
       >
           <div className={styles.imageContainer}>
             <img
