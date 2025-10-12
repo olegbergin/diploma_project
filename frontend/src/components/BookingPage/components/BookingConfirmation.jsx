@@ -129,7 +129,7 @@ END:VCALENDAR`;
       try {
         await navigator.share(shareData);
       } catch (err) {
-        console.log('Error sharing:', err);
+        // Error sharing - silently fail
       }
     } else {
       // Fallback: copy to clipboard

@@ -31,7 +31,6 @@ function BusinessModal({ business, isOpen, onClose }) {
         const response = await axiosInstance.get(`/businesses/${business.businessId}/services`);
         setServices(response.data || []);
       } catch (err) {
-        console.log('Services endpoint not available:', err);
         setServices([]); // No services available
       } finally {
         setIsLoading(false);

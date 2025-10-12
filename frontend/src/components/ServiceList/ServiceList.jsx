@@ -38,7 +38,6 @@ function ServiceList({
           const response = await axiosInstance.get(`/businesses/${businessId}/services`);
           setServices(response.data || []);
         } catch (err) {
-          console.log('Services endpoint not available:', err);
           setServices([]);
         } finally {
           setIsLoading(false);

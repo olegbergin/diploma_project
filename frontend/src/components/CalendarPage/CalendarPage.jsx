@@ -58,8 +58,6 @@ export default function CalendarPage() {
 
   // Enhance appointments with missing details
   const enhanceAppointments = async (appointments) => {
-    console.log('Raw appointments data:', appointments);
-    
     const enhancedAppointments = await Promise.all(
       appointments.map(async (apt) => {
         let enhancedApt = { ...apt };
@@ -70,7 +68,6 @@ export default function CalendarPage() {
                                    (apt.customerId || apt.customer_id);
 
         if (customerNameMissing) {
-          console.log(`Fetching customer details for ID: ${apt.customerId || apt.customer_id}`);
           const customerDetails = await fetchCustomerDetails(apt.customerId || apt.customer_id);
           enhancedApt = { ...enhancedApt, ...customerDetails };
         }
@@ -80,7 +77,6 @@ export default function CalendarPage() {
                                   (apt.serviceId || apt.service_id);
 
         if (serviceNameMissing) {
-          console.log(`Fetching service details for ID: ${apt.serviceId || apt.service_id}`);
           const serviceDetails = await fetchServiceDetails(apt.serviceId || apt.service_id);
           enhancedApt = { ...enhancedApt, ...serviceDetails };
         }
@@ -88,8 +84,7 @@ export default function CalendarPage() {
         return enhancedApt;
       })
     );
-    
-    console.log('Enhanced appointments:', enhancedAppointments);
+
     return enhancedAppointments;
   };
 
@@ -114,12 +109,6 @@ export default function CalendarPage() {
       
       // Enhance appointments with missing customer/service details
       const rawAppointments = response.data || [];
-      console.log('Raw appointments from API:', rawAppointments.slice(0, 2));
-      
-      // Check if we're getting service names from the API
-      const servicesWithNames = rawAppointments.filter(apt => apt.service_name && apt.service_name !== 'שירות לא ידוע');
-      console.log(`Got ${servicesWithNames.length}/${rawAppointments.length} appointments with service names`);
-      
       const enhancedAppointments = await enhanceAppointments(rawAppointments);
       
       setAppointments(enhancedAppointments);
@@ -159,33 +148,18 @@ export default function CalendarPage() {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const localDateStr = `${year}-${month}-${day}`;
-    
-    console.log(`Looking for appointments on ${localDateStr}`, {
-      dateInput: date,
-      localDateStr,
-      totalAppointments: appointments.length
-    });
-    
+
     const matchingApts = appointments.filter(apt => {
       // Try multiple date formats to match
       const aptDate = apt.date; // Should be YYYY-MM-DD from backend
       const aptDatetime = apt.appointmentDatetime || apt.appointment_datetime;
       const aptDateFromDatetime = aptDatetime ? aptDatetime.split('T')[0] : null;
-      
+
       const matches = aptDate === localDateStr || aptDateFromDatetime === localDateStr;
-      
-      if (matches) {
-        console.log('Found matching appointment:', {
-          apt_date: aptDate,
-          apt_datetime: aptDatetime,
-          looking_for: localDateStr
-        });
-      }
-      
+
       return matches;
     });
-    
-    console.log(`Found ${matchingApts.length} appointments for ${localDateStr}`);
+
     return matchingApts;
   };
 

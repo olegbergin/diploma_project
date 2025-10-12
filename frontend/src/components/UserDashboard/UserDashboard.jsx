@@ -265,8 +265,8 @@ export default function UserDashboard({ user }) {
         <div className={styles.section}>
           <h2>העסקים המועדפים שלי</h2>
           <div className={styles.favoritesGrid}>
-            {dashboardData.favorites.map(business => (
-              <div key={business.id} className={styles.favoriteTile}>
+            {dashboardData.favorites.map((business, index) => (
+              <div key={business.id || `favorite-${index}`} className={styles.favoriteTile}>
                 <div className={styles.businessName}>{business.name}</div>
                 <div className={styles.businessCategory}>{business.category}</div>
                 <div className={styles.businessAddress}>{business.address}</div>

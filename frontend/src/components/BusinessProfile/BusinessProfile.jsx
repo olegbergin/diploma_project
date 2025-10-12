@@ -173,15 +173,15 @@ export default function BusinessProfile() {
     
     // TODO: Implement proper appointment and request handlers
     const handleAppointmentUpdate = () => {
-      console.log('Appointment update - to be implemented');
+      // Appointment update - to be implemented
     };
-    
+
     const handleAppointmentCancel = () => {
-      console.log('Appointment cancel - to be implemented');
+      // Appointment cancel - to be implemented
     };
-    
+
     const handleRequestAction = () => {
-      console.log('Request action - to be implemented');
+      // Request action - to be implemented
     };
     
     switch (adminPanel) {

@@ -23,12 +23,7 @@ export default function NewBusinessDashboard({ user }) {
     try {
       setLoading(true);
       const response = await axiosInstance.get(`/businesses/${businessId}/dashboard`);
-      
-      // Debug: log the dashboard data
-      console.log('Dashboard data received:', response.data);
-      console.log('Today appointments:', response.data.today_appointments);
-      console.log('Pending appointments:', response.data.pending_appointments);
-      
+
       setDashboardData(response.data);
       setError(null);
     } catch (error) {
