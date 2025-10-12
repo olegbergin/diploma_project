@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiHome, FiLogOut } from 'react-icons/fi'; // Import the icons we need
-import styles from './Header.module.css';
+import { FiLogOut, FiSearch } from 'react-icons/fi'; // Import the icons we need
+import styles from './header.module.css';
 
 /**
  * The main application header.
@@ -14,10 +14,18 @@ import styles from './Header.module.css';
  */
 function Header({ user, onLogout }) {
 
-  // If there is no user, we don't need to show the complex header.
-  // We can return null or a simplified version. For now, we'll return null.
+  // If there is no user, show a simplified header with just search
   if (!user) {
-    return null; 
+    return (
+      <header className={styles.header}>
+        {/* Simple navigation for non-authenticated users */}
+        <div className={styles.navLinks}>
+          <Link to="/search" className={styles.searchLink} aria-label="Search businesses">
+            <FiSearch />
+          </Link>
+        </div>
+      </header>
+    );
   }
 
   // Get the user's initials for the profile icon fallback.
@@ -27,15 +35,26 @@ function Header({ user, onLogout }) {
   return (
     <header className={styles.header}>
       {/* Left Side: Profile Link */}
-      <Link to="/profile" className={styles.profileLink} aria-label="Go to your profile">
+      <Link 
+        to={
+          user?.role === "customer" ? "/profile" : 
+          user?.role === "business" ? `/business/${user.businessId || user.id}/dashboard` : 
+          user?.role === "admin" ? "/admin" :
+          "/profile"
+        } 
+        className={styles.profileLink} 
+        aria-label="Go to your profile"
+      >
         {/* We can add logic here later to show a real avatar image if one exists */}
         <span className={styles.profileInitials}>{userInitials}</span>
       </Link>
 
-      {/* Middle: Home Link */}
-      <Link to="/home" className={styles.homeLink} aria-label="Go to home page">
-        <FiHome />
-      </Link>
+      {/* Middle: Navigation Links */}
+      <div className={styles.navLinks}>
+        <Link to="/search" className={styles.searchLink} aria-label="Search businesses">
+          <FiSearch />
+        </Link>
+      </div>
 
       {/* Right Side: Logout Button */}
       <button onClick={onLogout} className={styles.logoutButton} aria-label="Logout">

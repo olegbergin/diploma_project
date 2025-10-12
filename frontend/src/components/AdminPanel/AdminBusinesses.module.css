@@ -1,0 +1,497 @@
+/* Admin Business Management Styles */
+
+.businessesContainer {
+  direction: rtl;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: 1.8rem;
+  color: #2d1b69;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+/* Loading State */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f7eafd;
+  border-top: 4px solid #673ab7;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Status Tabs */
+.statusTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(201, 178, 245, 0.2);
+}
+
+.statusTab {
+  position: relative;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #9c7bb7;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.statusTab:hover {
+  color: #673ab7;
+  background: rgba(103, 58, 183, 0.05);
+}
+
+.statusTab.activeTab {
+  color: #673ab7;
+  border-bottom-color: #673ab7;
+  background: linear-gradient(145deg, #f7eafd 0%, #f3e6fa 100%);
+}
+
+.statusTab.urgentTab {
+  color: #ff9800;
+}
+
+.statusTab.urgentTab.activeTab {
+  color: #ff9800;
+  border-bottom-color: #ff9800;
+}
+
+.urgentBadge {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  background: #ff5722;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  min-width: 1.2rem;
+  text-align: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.searchContainer {
+  flex: 1;
+  min-width: 250px;
+  max-width: 400px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 2px solid rgba(201, 178, 245, 0.3);
+  border-radius: 12px;
+  font-size: 1rem;
+  background: #f7eafd;
+  color: #673ab7;
+  transition: all 0.3s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #673ab7;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(103, 58, 183, 0.1);
+}
+
+.searchInput::placeholder {
+  color: #9c7bb7;
+}
+
+.statsInfo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #673ab7;
+}
+
+.urgentInfo {
+  color: #ff9800;
+  background: rgba(255, 152, 0, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 152, 0, 0.3);
+  animation: pulse 2s infinite;
+}
+
+/* Businesses Table */
+.businessesTable {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 
+    0 4px 15px rgba(201, 178, 245, 0.15),
+    0 2px 8px rgba(103, 58, 183, 0.08);
+  border: 1px solid rgba(201, 178, 245, 0.2);
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 2.5fr 2fr 1fr 1fr 1.2fr 1.5fr;
+  background: linear-gradient(135deg, #673ab7 0%, #9c27b0 100%);
+  color: #fff;
+  font-weight: 600;
+}
+
+.headerCell {
+  padding: 1rem;
+  text-align: center;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.headerCell:last-child {
+  border-left: none;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 2.5fr 2fr 1fr 1fr 1.2fr 1.5fr;
+  border-bottom: 1px solid rgba(201, 178, 245, 0.2);
+  transition: background-color 0.3s ease;
+}
+
+.tableRow:hover {
+  background: linear-gradient(145deg, #f7eafd 0%, #f3e6fa 100%);
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableCell {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid rgba(201, 178, 245, 0.1);
+  color: #5a4b7c;
+}
+
+.tableCell:last-child {
+  border-left: none;
+}
+
+/* Business Info Cell */
+.businessInfo {
+  flex: 1;
+  text-align: right;
+}
+
+.businessName {
+  font-weight: 600;
+  color: #673ab7;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.businessLocation {
+  font-size: 0.85rem;
+  color: #9c7bb7;
+  margin-bottom: 0.25rem;
+}
+
+.businessDescription {
+  font-size: 0.8rem;
+  color: #999;
+  font-style: italic;
+}
+
+/* Owner Info Cell */
+.ownerInfo {
+  flex: 1;
+  text-align: right;
+}
+
+.ownerName {
+  font-weight: 600;
+  color: #673ab7;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.ownerContact {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.ownerPhone {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+/* Category Tag */
+.categoryTag {
+  background: linear-gradient(135deg, #f7eafd 0%, #f3e6fa 100%);
+  color: #673ab7;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(201, 178, 245, 0.3);
+}
+
+/* Status Tag */
+.statusTag {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid currentColor;
+}
+
+/* Date Info */
+.dateInfo {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.approveBtn,
+.rejectBtn,
+.deleteBtn {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 50px;
+}
+
+.approveBtn {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: white;
+}
+
+.approveBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.rejectBtn {
+  background: linear-gradient(135deg, #f44336 0%, #ef5350 100%);
+  color: white;
+}
+
+.rejectBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+}
+
+.deleteBtn {
+  background: linear-gradient(135deg, #9e9e9e 0%, #bdbdbd 100%);
+  color: white;
+}
+
+.deleteBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(158, 158, 158, 0.4);
+}
+
+/* No Results */
+.noResults {
+  text-align: center;
+  padding: 3rem;
+  color: #9c7bb7;
+  font-size: 1.1rem;
+  background: linear-gradient(145deg, #f7eafd 0%, #f3e6fa 100%);
+  border-radius: 16px;
+  margin-top: 2rem;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.paginationBtn {
+  background-color: var(--primary-purple, #673ab7);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.paginationBtn:hover:not(:disabled) {
+  background-color: var(--primary-purple-dark, #5e35b1);
+  transform: translateY(-1px);
+}
+
+.paginationBtn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.paginationInfo {
+  color: var(--text-secondary, #666);
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .statusTabs {
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+  
+  .tableHeader,
+  .tableRow {
+    grid-template-columns: 2fr 2fr 1fr 1fr 2fr;
+  }
+  
+  .tableCell:nth-child(4) {
+    display: none;
+  }
+  
+  .headerCell:nth-child(4) {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .searchContainer {
+    max-width: none;
+  }
+  
+  .statusTabs {
+    gap: 0.25rem;
+  }
+  
+  .statusTab {
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .businessesTable {
+    overflow-x: auto;
+  }
+  
+  .tableHeader,
+  .tableRow {
+    grid-template-columns: 1.5fr 1.5fr 1fr 2fr;
+    min-width: 600px;
+  }
+  
+  .tableCell:nth-child(3),
+  .tableCell:nth-child(5) {
+    display: none;
+  }
+  
+  .headerCell:nth-child(3),
+  .headerCell:nth-child(5) {
+    display: none;
+  }
+  
+  .actions {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .approveBtn,
+  .rejectBtn,
+  .deleteBtn {
+    min-width: 60px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+  
+  .statusTab {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .urgentBadge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.4rem;
+  }
+  
+  .businessName {
+    font-size: 0.9rem;
+  }
+  
+  .businessLocation,
+  .businessDescription {
+    font-size: 0.8rem;
+  }
+  
+  .ownerName {
+    font-size: 0.85rem;
+  }
+  
+  .ownerContact,
+  .ownerPhone {
+    font-size: 0.75rem;
+  }
+  
+  .tableHeader,
+  .tableRow {
+    min-width: 500px;
+  }
+}

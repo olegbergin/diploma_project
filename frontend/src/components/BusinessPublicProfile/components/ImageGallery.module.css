@@ -1,0 +1,73 @@
+@import url('../../../styles/design-system-variables.css');
+
+.galleryContainer {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-6);
+    margin: var(--space-4) 0;
+    border: 1px solid var(--border-light);
+    animation: slideUp var(--transition-normal) var(--ease-out);
+}
+
+.galleryContainer h2 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-4) 0;
+    line-height: var(--leading-tight);
+    border-bottom: 2px solid var(--primary-blue);
+    padding-bottom: var(--space-2);
+}
+
+.imageGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-4);
+}
+
+.galleryImage {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    cursor: pointer;
+}
+
+.galleryImage:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 640px) {
+    .galleryContainer {
+        margin: var(--space-3) 0;
+        padding: var(--space-4);
+    }
+    
+    .galleryContainer h2 {
+        font-size: var(--text-xl);
+    }
+    
+    .imageGrid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: var(--space-3);
+    }
+    
+    .galleryImage {
+        height: 150px;
+    }
+}

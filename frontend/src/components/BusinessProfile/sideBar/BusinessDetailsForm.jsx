@@ -1,6 +1,5 @@
 import { useState } from "react";
-import styles from "./‎BusinessDetailsForm.module.css";
-import axios from "axios";
+import styles from "./BusinessDetailsForm.module.css";
 
 const CATEGORY_OPTIONS = [
   "מספרה",

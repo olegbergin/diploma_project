@@ -1,127 +1,119 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axiosInstance from "../../api/axiosInstance";
-import styles from "../BusinessProfile/BusinessProfile.module.css";
-import Calendar from "../BusinessProfile/tabs/Calendar/Calendar";
-import AppointmentForm from "../BusinessProfile/AppointmentForm/AppointmentForm"; // ודאי שיש לך import כזה
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from '../../api/axiosInstance';
+import styles from './BusinessPublicProfile.module.css';
+import ProfileHeader from './components/ProfileHeader';
+import ContactInfo from './components/ContactInfo';
+import About from './components/About';
+import ImageGallery from './components/ImageGallery';
+import ServiceList from './components/ServiceList';
+import ReviewsList from './components/ReviewsList';
+import { 
+    ProfileHeaderSkeleton,
+    ContactInfoSkeleton,
+    AboutSkeleton,
+    ImageGallerySkeleton,
+    ServiceListSkeleton,
+    // ReviewsListSkeleton
+} from './components/SkeletonLoader';
+const BusinessPublicProfile = () => {
+    const { id } = useParams();
+    const [business, setBusiness] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [retryCount, setRetryCount] = useState(0);
 
-export default function BusinessPublicProfile() {
-  const [business, setBusiness] = useState(null);
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [innerTab, setInnerTab] = useState("calendar");
-  const [booking, setBooking] = useState(null);
+    useEffect(() => {
+        const fetchBusiness = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                
+                const response = await axios.get(`/businesses/${id}`);
+                
+                if (response.data) {
+                    console.log('Business data received:', response.data); // Debug log
+                    setBusiness(response.data);
+                } else {
+                    throw new Error('No business data received');
+                }
+            } catch (err) {
+                console.error('Error fetching business:', err);
+                const errorMessage = err.response?.data?.message || err.message || 'Failed to load business information';
+                setError(errorMessage);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-  const { id: businessId } = useParams();
+        if (id) {
+            fetchBusiness();
+        } else {
+            setError('Invalid business ID');
+            setLoading(false);
+        }
+    }, [id, retryCount]);
 
-  useEffect(() => {
-    setLoading(true);
-    axiosInstance
-      .get(`/businesses/${businessId}`)
-      .then((response) => setBusiness(response.data))
-      .catch(() => setError("Could not load business information."))
-      .finally(() => setLoading(false));
-  }, [businessId]);
+    const handleRetry = () => {
+        setRetryCount(prev => prev + 1);
+    };
 
-  useEffect(() => {
-    // משיכת תורים לעסק
-    axiosInstance
-      .get(`/appointments`, { params: { businessId } })
-      .then((res) => setAppointments(res.data))
-      .catch(() => setAppointments([]));
-  }, [businessId]);
-
-  const handleCreateAppointment = async (newAppointmentData) => {
-    try {
-      const payload = {
-        ...newAppointmentData,
-        business_id: business.business_id,
-      };
-      await axiosInstance.post("/appointments", payload);
-      alert("התור נשמר בהצלחה!");
-      setBooking(null);
-    } catch (err) {
-      alert("שגיאה בשמירת תור.");
+    if (loading) {
+        return (
+            <div className={styles.profileContainer}>
+                <ProfileHeaderSkeleton />
+                <ContactInfoSkeleton />
+                <AboutSkeleton />
+                <ImageGallerySkeleton />
+                <ServiceListSkeleton />
+                {/* <ReviewsListSkeleton /> */}
+            </div>
+        );
     }
-  };
 
-  if (loading) return <p className={styles.loading}>טוען נתוני עסק…</p>;
-  if (error) return <p className={styles.loading}>{error}</p>;
-  if (!business) return <p className={styles.loading}>לא נמצא עסק.</p>;
+    if (error) {
+        return (
+            <div className={styles.profileContainer}>
+                <div className={styles.errorContainer}>
+                    <div className={styles.errorIcon}>⚠️</div>
+                    <h2 className={styles.errorTitle}>Unable to Load Business</h2>
+                    <p className={styles.errorMessage}>{error}</p>
+                    <button 
+                        className={styles.retryButton}
+                        onClick={handleRetry}
+                        disabled={loading}
+                    >
+                        {loading ? 'Loading...' : 'Try Again'}
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
-  return (
-    <div className={styles.pageLayout}>
-      <main className={styles.profileContent} style={{ margin: "auto" }}>
-        <h1 className={styles.title}>{business.name}</h1>
-        <p className={styles.category}>{business.category}</p>
-        <p className={styles.description}>
-          <strong>תיאור:</strong> {business.description}
-        </p>
+    if (!business) {
+        return (
+            <div className={styles.profileContainer}>
+                <div className={styles.notFoundContainer}>
+                    <div className={styles.notFoundIcon}>🔍</div>
+                    <h2 className={styles.notFoundTitle}>Business Not Found</h2>
+                    <p className={styles.notFoundMessage}>
+                        The business you're looking for doesn't exist or has been removed.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
-        <div className={styles.tabBar}>
-          <button
-            className={innerTab === "calendar" ? styles.activeTab : ""}
-            onClick={() => setInnerTab("calendar")}
-          >
-            לוח שנה
-          </button>
-          <button
-            className={innerTab === "contact" ? styles.activeTab : ""}
-            onClick={() => setInnerTab("contact")}
-          >
-            צור קשר
-          </button>
-          <button
-            className={innerTab === "galleryView" ? styles.activeTab : ""}
-            onClick={() => setInnerTab("galleryView")}
-          >
-            גלריה
-          </button>
+    return (
+        <div className={styles.profileContainer}>
+            <ProfileHeader business={business} />
+            <ContactInfo business={business} />
+            <About business={business} />
+            <ImageGallery business={business} />
+            <ServiceList businessId={id} />
+            <ReviewsList businessId={id} />
         </div>
+    );
+};
 
-        {innerTab === "calendar" && (
-          <section className={styles.section}>
-            <h2>לוח שנה</h2>
-            <Calendar
-              appointments={appointments}
-              onDaySelect={(iso, dayAppts) =>
-                setBooking({ dateIso: iso, taken: dayAppts.map((a) => a.time) })
-              }
-            />
-            {/* טופס הזמנת תור - רק אם בחרו יום */}
-            {booking && (
-              <AppointmentForm
-                date={booking.dateIso}
-                takenSlots={booking.taken}
-                services={business.services || []}
-                onSubmit={handleCreateAppointment}
-                onCancel={() => setBooking(null)}
-              />
-            )}
-          </section>
-        )}
-        {innerTab === "contact" && (
-          <section className={styles.section}>
-            <h2>פרטי יצירת קשר</h2>
-            <p>
-              <strong>אימייל:</strong> {business.email}
-            </p>
-            <p>
-              <strong>טלפון:</strong> {business.phone}
-            </p>
-            <p>
-              <strong>כתובת:</strong> {business.address}
-            </p>
-          </section>
-        )}
-        {innerTab === "galleryView" && (
-          <section className={styles.section}>
-            <h2>גלריה</h2>
-            {/* ... */}
-          </section>
-        )}
-      </main>
-    </div>
-  );
-}
+export default BusinessPublicProfile;

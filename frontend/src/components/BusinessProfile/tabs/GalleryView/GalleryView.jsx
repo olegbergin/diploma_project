@@ -1,5 +1,5 @@
 // src/components/BusinessProfile/tabs/galleryView.jsx
-import styles from "./galleryView.module.css";
+import styles from "./GalleryView.module.css";
 
 export default function GalleryView({ images = [] }) {
   if (!images.length) {

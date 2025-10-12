@@ -1,0 +1,68 @@
+@import url('../../styles/design-system-variables.css');
+
+.chartCard {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-4);
+}
+
+.cardTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.chartWrapper {
+  display: flex;
+  gap: var(--space-4);
+  height: 200px;
+}
+
+.yAxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: right;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.chart {
+  flex-grow: 1;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  border-left: 1px solid var(--border-light);
+  padding-left: var(--space-2);
+}
+
+.barWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.bar {
+  width: 70%;
+  background-color: var(--stats-cyan);
+  border-radius: var(--radius-sm);
+  transition: height var(--transition-slow) var(--ease-in-out);
+}
+
+.xLabel {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.emptyState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+  color: var(--text-tertiary);
+  font-style: italic;
+}

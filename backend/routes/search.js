@@ -4,20 +4,59 @@ const router = express.Router();
 const db = require("../dbSingleton").getPromise(); // Use our new method!
 
 router.get("/businesses", async (req, res) => {
-  // <-- Add async
   try {
+    // Validation
+    const errors = {};
+    
+    if (req.query.limit && (isNaN(parseInt(req.query.limit)) || parseInt(req.query.limit) < 1 || parseInt(req.query.limit) > 100)) {
+      errors.limit = "Limit must be a number between 1-100 / Limit חייב להיות מספר בין 1-100";
+    }
+    
+    if (req.query.offset && (isNaN(parseInt(req.query.offset)) || parseInt(req.query.offset) < 0)) {
+      errors.offset = "Offset must be a non-negative number / Offset חייב להיות מספר חיובי או אפס";
+    }
+    
+    if (req.query.min_rating && (isNaN(parseFloat(req.query.min_rating)) || parseFloat(req.query.min_rating) < 0 || parseFloat(req.query.min_rating) > 5)) {
+      errors.min_rating = "Minimum rating must be between 0-5 / דירוג מינימלי חייב להיות בין 0-5";
+    }
+    
+    if (req.query.searchTerm && typeof req.query.searchTerm !== 'string') {
+      errors.searchTerm = "Search term must be a string / מונח חיפוש חייב להיות טקסט";
+    }
+    
+    if (req.query.category && typeof req.query.category !== 'string') {
+      errors.category = "Category must be a string / קטגוריה חייבת להיות טקסט";
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ errors });
+    }
+
     // --- Step 1: Build the WHERE clauses and parameters just ONCE ---
     const whereClauses = [];
     const params = [];
 
-    if (req.query.searchTerm) {
+    if (req.query.searchTerm && req.query.searchTerm.trim()) {
+      const trimmedTerm = req.query.searchTerm.trim();
+      if (trimmedTerm.length > 100) {
+        return res.status(400).json({ 
+          errors: { searchTerm: "Search term too long (max 100 characters) / מונח חיפוש ארוך מדי (מקסימום 100 תווים)" }
+        });
+      }
       whereClauses.push(`(b.name LIKE ? OR b.description LIKE ?)`);
-      const searchTerm = `%${req.query.searchTerm.trim()}%`;
+      const searchTerm = `%${trimmedTerm}%`;
       params.push(searchTerm, searchTerm);
     }
-    if (req.query.category) {
+    
+    if (req.query.category && req.query.category.trim()) {
+      const trimmedCategory = req.query.category.trim();
+      if (trimmedCategory.length > 50) {
+        return res.status(400).json({ 
+          errors: { category: "Category name too long (max 50 characters) / שם קטגוריה ארוך מדי (מקסימום 50 תווים)" }
+        });
+      }
       whereClauses.push(`b.category = ?`);
-      params.push(req.query.category.trim());
+      params.push(trimmedCategory);
     }
 
     // Combine clauses into a string, e.g., "WHERE (b.name LIKE ...) AND b.category = ?"
@@ -48,8 +87,8 @@ router.get("/businesses", async (req, res) => {
 
     resultsSql += ` ORDER BY b.name ASC`;
 
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = parseInt(req.query.offset) || 0;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 100); // Cap at 100
+    const offset = Math.max(parseInt(req.query.offset) || 0, 0); // Ensure non-negative
     resultsSql += ` LIMIT ? OFFSET ?`;
     resultsParams.push(limit, offset);
 
@@ -63,14 +102,33 @@ router.get("/businesses", async (req, res) => {
       db.query(resultsSql, resultsParams),
     ]);
 
-    // --- Step 5: Send the combined response ---
+    // Validate results
+    if (!countResult || countResult.length === 0) {
+      return res.status(500).json({ error: "Failed to get count results / שליפת מספר התוצאות נכשלה" });
+    }
+
+    // --- Step 5: Transform results to camelCase and send response ---
+    const transformedResults = (results || []).map(business => ({
+      businessId: business.business_id,
+      name: business.name,
+      category: business.category,
+      description: business.description,
+      location: business.location,
+      photos: business.photos,
+      averageRating: business.average_rating,
+      reviewCount: business.review_count
+    }));
+
     res.json({
-      results: results,
-      total: countResult[0].total,
+      results: transformedResults,
+      total: countResult[0].total || 0,
+      limit,
+      offset,
+      hasMore: (offset + limit) < (countResult[0].total || 0)
     });
-  } catch (err) {
-    console.error("Error in /search/businesses:", err);
-    res.status(500).json({ error: "Database query failed." });
+  } catch (error) {
+    console.error("Error in /search/businesses:", error);
+    res.status(500).json({ error: "Search failed / חיפוש נכשל" });
   }
 });
 

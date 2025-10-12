@@ -4,79 +4,213 @@ const db = require("../dbSingleton").getPromise();
 
 /* GET /api/appointments?businessId=1&month=2025-05&status=pending */
 router.get("/", async (req, res) => {
-  const { businessId, month, status } = req.query; // month = 'YYYY-MM'
-  if (!businessId || !month)
-    return res.status(400).json({ message: "businessId & month are required" });
-
-  let sql = `
-    SELECT appointment_id, customer_id, service_id,
-           DATE_FORMAT(appointment_datetime,'%Y-%m-%d') AS date,
-           DATE_FORMAT(appointment_datetime,'%H:%i')     AS time,
-           appointment_datetime,
-           status, notes
-      FROM appointments
-     WHERE business_id = ?
-       AND DATE_FORMAT(appointment_datetime,'%Y-%m') = ?
-  `;
-  const params = [businessId, month];
-
-  if (status) {
-    sql += " AND status = ?";
-    params.push(status);
-  }
-
   try {
+    const { businessId, month, status } = req.query; // month = 'YYYY-MM'
+    
+    // Validation
+    const errors = {};
+    
+    if (!businessId || isNaN(parseInt(businessId))) {
+      errors.businessId = "Valid business ID is required / נדרש מזהה עסק תקין";
+    }
+    
+    if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+      errors.month = "Month must be in YYYY-MM format / חודש חייב להיות בפורמט YYYY-MM";
+    }
+    
+    if (status && !['pending', 'approved', 'cancelled'].includes(status)) {
+      errors.status = "Status must be pending, approved, or cancelled / סטטוס חייב להיות pending, approved או cancelled";
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ errors });
+    }
+
+    let sql = `
+      SELECT a.appointment_id, a.customer_id, a.service_id, a.business_id,
+             DATE(a.appointment_datetime) AS date,
+             TIME_FORMAT(a.appointment_datetime,'%H:%i') AS time,
+             a.appointment_datetime,
+             a.status, a.notes,
+             COALESCE(u.first_name, 'לקוח') AS first_name, 
+             COALESCE(u.last_name, 'לא ידוע') AS last_name,
+             COALESCE(u.phone, '') AS customer_phone,
+             COALESCE(s.name, 'שירות לא ידוע') AS service_name, 
+             COALESCE(s.price, 0) AS price, 
+             COALESCE(s.duration_minutes, 0) AS duration_minutes,
+             s.service_id as joined_service_id,
+             s.business_id as service_business_id
+        FROM appointments a
+        LEFT JOIN users u ON a.customer_id = u.user_id
+        LEFT JOIN services s ON a.service_id = s.service_id AND s.business_id = a.business_id
+       WHERE a.business_id = ?
+         AND DATE_FORMAT(a.appointment_datetime,'%Y-%m') = ?
+    `;
+    const params = [parseInt(businessId), month];
+
+    if (status) {
+      sql += " AND status = ?";
+      params.push(status);
+    }
+
+    // Debug: Check database timezone
+    const [timezoneCheck] = await db.query('SELECT NOW() as server_time, @@session.time_zone as session_tz, @@global.time_zone as global_tz');
+    console.log('Database timezone info:', timezoneCheck[0]);
+
     const [rows] = await db.query(sql, params);
-    res.json(rows);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "DB error" });
+    
+    // Debug: Check what services exist for this business
+    const [servicesCheck] = await db.query(
+      'SELECT service_id, business_id, name FROM services WHERE business_id = ? LIMIT 5',
+      [parseInt(businessId)]
+    );
+    console.log(`Services available for business ${businessId}:`, servicesCheck);
+    
+    // Debug logging to see what's happening with the JOIN and dates
+    console.log(`Appointments query for business ${businessId}, month ${month}:`);
+    console.log('Sample appointments with dates:', rows.slice(0, 3).map(row => ({
+      appointment_id: row.appointment_id,
+      date: row.date,
+      time: row.time,
+      appointment_datetime: row.appointment_datetime,
+      service_name: row.service_name,
+      customer_name: `${row.first_name} ${row.last_name}`
+    })));
+    
+    const transformedAppointments = rows.map(row => ({
+      appointmentId: row.appointment_id,
+      appointment_id: row.appointment_id,
+      customerId: row.customer_id,
+      serviceId: row.service_id,
+      date: row.date,
+      time: row.time,
+      appointmentDatetime: row.appointment_datetime,
+      appointment_datetime: row.appointment_datetime,
+      status: row.status,
+      notes: row.notes,
+      first_name: row.first_name,
+      last_name: row.last_name,
+      customer_name: `${row.first_name} ${row.last_name}`,
+      service_name: row.service_name,
+      name: row.service_name,
+      price: row.price,
+      duration_minutes: row.duration_minutes,
+      // Debug fields
+      debug_joined_service_id: row.joined_service_id,
+      debug_service_business_id: row.service_business_id
+    }));
+    
+    res.json(transformedAppointments);
+  } catch (error) {
+    console.error("Error fetching appointments:", error);
+    res.status(500).json({ error: "Failed to fetch appointments / שליפת תורים נכשלה" });
   }
 });
 
 /* POST /api/appointments  (לקוח מבצע בקשת תור – נכנס כ-pending) */
 router.post("/", async (req, res) => {
-  const {
-    business_id,
-    customer_id = 0,
-    service_id = 0,
-    date, // 'YYYY-MM-DD'
-    time, // 'HH:MM'
-    notes = "",
-    status,
-  } = req.body;
-
-  if (!business_id || !date || !time)
-    return res
-      .status(400)
-      .json({ message: "business_id, date, time are required" });
-
-  // *** הגנה - לא ניתן לקבוע תור לעבר ***
-  const appointmentDateTime = new Date(`${date}T${time}:00`);
-  if (appointmentDateTime < new Date()) {
-    return res
-      .status(400)
-      .json({ message: "אי אפשר לקבוע תור לתאריך שכבר עבר" });
-  }
-
-  const statusToSet = status || "pending";
-  const datetime = `${date} ${time}`;
-
   try {
-    const [result] = await db.query(
-      `INSERT INTO appointments
-         (customer_id, business_id, service_id,
-          appointment_datetime, status, notes)
-       VALUES (?,?,?,?,?,?)`,
-      [customer_id, business_id, service_id, datetime, statusToSet, notes]
+    const {
+      businessId,
+      serviceId,
+      date, // 'YYYY-MM-DD'
+      time, // 'HH:MM'
+      firstName,
+      lastName,
+      phone,
+      email,
+      notes = "",
+    } = req.body;
+
+    // Validation
+    const errors = {};
+    
+    if (!businessId || isNaN(parseInt(businessId))) {
+      errors.businessId = "Valid business ID is required / נדרש מזהה עסק תקין";
+    }
+    
+    if (!serviceId || isNaN(parseInt(serviceId))) {
+      errors.serviceId = "Valid service ID is required / נדרש מזהה שירות תקין";
+    }
+    
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      errors.date = "Date must be in YYYY-MM-DD format / תאריך חייב להיות בפורמט YYYY-MM-DD";
+    }
+    
+    if (!time || !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time)) {
+      errors.time = "Time must be in HH:MM format / שעה חייבת להיות בפורמט HH:MM";
+    }
+
+    if (!firstName || !lastName || !phone) {
+      errors.customer = "Customer information is required / פרטי לקוח נדרשים";
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ errors });
+    }
+
+    // *** הגנה - לא ניתן לקבוע תור לעבר ***
+    const appointmentDateTime = new Date(`${date}T${time}:00`);
+    if (appointmentDateTime < new Date()) {
+      return res.status(400).json({ 
+        errors: { date: "אי אפשר לקבוע תור לתאריך שכבר עבר / Cannot schedule appointment in the past" }
+      });
+    }
+
+    // Check if business exists
+    const [businessCheck] = await db.query(
+      "SELECT business_id FROM businesses WHERE business_id = ?",
+      [parseInt(businessId)]
     );
+    
+    if (businessCheck.length === 0) {
+      return res.status(404).json({ 
+        errors: { businessId: "Business not found / עסק לא נמצא" }
+      });
+    }
+
+    // Check for conflicting appointments
+    const datetime = `${date} ${time}:00`;
+    const [existingAppointment] = await db.query(
+      `SELECT appointment_id FROM appointments 
+       WHERE business_id = ? AND appointment_datetime = ? AND status != 'cancelled'`,
+      [parseInt(businessId), datetime]
+    );
+    
+    if (existingAppointment.length > 0) {
+      return res.status(409).json({ 
+        errors: { time: "זמן זה כבר תפוס / This time slot is already booked" }
+      });
+    }
+
+    // Find or create customer
+    let customerId;
+    const findCustomerQuery = 'SELECT user_id FROM users WHERE phone = ?';
+    const [existingCustomer] = await db.query(findCustomerQuery, [phone]);
+    
+    if (existingCustomer.length > 0) {
+      customerId = existingCustomer[0].user_id;
+    } else {
+      // Create new customer
+      const createCustomerQuery = `INSERT INTO users (first_name, last_name, phone, email, role, created_at) VALUES (?, ?, ?, ?, 'customer', NOW())`;
+      const [customerResult] = await db.query(createCustomerQuery, [firstName, lastName, phone, email || null]);
+      customerId = customerResult.insertId;
+    }
+
+    // Create appointment
+    const [result] = await db.query(
+      `INSERT INTO appointments (customer_id, business_id, service_id, appointment_datetime, status, notes, created_at) 
+       VALUES (?, ?, ?, ?, 'pending', ?, NOW())`,
+      [customerId, parseInt(businessId), parseInt(serviceId), datetime, notes || null]
+    );
+    
     res.status(201).json({
-      message: "Appointment request sent",
+      message: "Appointment created successfully / תור נוצר בהצלחה",
       appointmentId: result.insertId,
     });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "DB error" });
+  } catch (error) {
+    console.error("Error creating appointment:", error);
+    res.status(500).json({ error: "Failed to create appointment / יצירת תור נכשלה" });
   }
 });
 
@@ -165,7 +299,9 @@ router.get("/user/:userId", async (req, res) => {
   try {
     const [rows] = await db.query(
       `
-      SELECT a.*, b.name AS business_name, s.service_name
+      SELECT a.appointment_id, a.customer_id, a.business_id, a.service_id,
+             a.appointment_datetime, a.status, a.notes, a.created_at,
+             b.name AS business_name, s.name AS service_name, s.price, s.duration_minutes
       FROM appointments a
       LEFT JOIN businesses b ON a.business_id = b.business_id
       LEFT JOIN services s ON a.service_id = s.service_id
@@ -175,7 +311,23 @@ router.get("/user/:userId", async (req, res) => {
       `,
       params
     );
-    res.json(rows);
+    
+    const transformedAppointments = rows.map(row => ({
+      appointmentId: row.appointment_id,
+      customerId: row.customer_id,
+      businessId: row.business_id,
+      serviceId: row.service_id,
+      appointmentDatetime: row.appointment_datetime,
+      status: row.status,
+      notes: row.notes,
+      createdAt: row.created_at,
+      businessName: row.business_name,
+      serviceName: row.service_name,
+      price: row.price,
+      durationMinutes: row.duration_minutes
+    }));
+    
+    res.json(transformedAppointments);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "DB error" });

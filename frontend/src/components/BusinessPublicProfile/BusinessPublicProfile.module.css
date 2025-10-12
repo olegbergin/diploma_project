@@ -1,0 +1,120 @@
+@import url('../../styles/design-system-variables.css');
+
+.profileContainer {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    background: var(--bg-secondary);
+    min-height: 100vh;
+}
+
+@media (min-width: 640px) {
+    .profileContainer {
+        max-width: 640px;
+    }
+}
+
+@media (min-width: 768px) {
+    .profileContainer {
+        max-width: 768px;
+        padding: 0 var(--space-6);
+    }
+}
+
+@media (min-width: 1024px) {
+    .profileContainer {
+        max-width: 1024px;
+        padding: 0 var(--space-8);
+    }
+}
+
+/* Error and Not Found States */
+.errorContainer,
+.notFoundContainer {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-8);
+    margin: var(--space-6) 0;
+    border: 1px solid var(--border-light);
+    text-align: center;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.errorIcon,
+.notFoundIcon {
+    font-size: 4rem;
+    margin-bottom: var(--space-4);
+}
+
+.errorTitle,
+.notFoundTitle {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-3) 0;
+    line-height: var(--leading-tight);
+}
+
+.errorMessage,
+.notFoundMessage {
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-6) 0;
+}
+
+.retryButton {
+    min-height: 44px;
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-medium);
+    font-size: var(--text-base);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-sm);
+}
+
+.retryButton:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-blue-dark), var(--primary-blue));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.retryButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 640px) {
+    .errorContainer,
+    .notFoundContainer {
+        margin: var(--space-4) 0;
+        padding: var(--space-6);
+    }
+    
+    .errorIcon,
+    .notFoundIcon {
+        font-size: 3rem;
+    }
+    
+    .errorTitle,
+    .notFoundTitle {
+        font-size: var(--text-xl);
+    }
+    
+    .errorMessage,
+    .notFoundMessage {
+        font-size: var(--text-sm);
+    }
+}

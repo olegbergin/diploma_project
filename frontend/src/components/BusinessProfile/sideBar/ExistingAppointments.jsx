@@ -92,7 +92,7 @@ export default function ExistingAppointments({
           <li className={styles.empty}>אין תורים להצגה</li>
         )}
         {filtered.map((a) => (
-          <li key={a.appointment_id} className={styles.item}>
+          <li key={a.appointmentId} className={styles.item}>
             <div>
               <strong>{a.notes || "—"}</strong>
               <br />

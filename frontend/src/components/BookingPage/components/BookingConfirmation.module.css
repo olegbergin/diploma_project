@@ -1,0 +1,556 @@
+/* BookingConfirmation.module.css */
+
+.confirmationContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+/* Success Header */
+.successHeader {
+  text-align: center;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 3rem 2rem;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+}
+
+.successHeader::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 20px,
+    rgba(255, 255, 255, 0.05) 20px,
+    rgba(255, 255, 255, 0.05) 40px
+  );
+  animation: sparkle 3s linear infinite;
+}
+
+@keyframes sparkle {
+  0% { transform: translateX(-100%) translateY(-100%); }
+  100% { transform: translateX(100%) translateY(100%); }
+}
+
+.successIcon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  position: relative;
+  z-index: 1;
+}
+
+.successIcon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.successTitle {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0 0 1rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+.successSubtitle {
+  font-size: 1.125rem;
+  margin: 0 0 1.5rem 0;
+  opacity: 0.95;
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+}
+
+.bookingNumber {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  z-index: 1;
+}
+
+/* Details Card */
+.detailsCard {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.cardTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.cardActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actionButton {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6b7280;
+}
+
+.actionButton:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
+  transform: translateY(-1px);
+}
+
+.actionButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Details Grid */
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.detailSection {
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #f1f5f9;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.sectionIcon {
+  width: 18px;
+  height: 18px;
+  color: #2563eb;
+}
+
+.detailItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0;
+  gap: 1rem;
+}
+
+.detailItem:last-child {
+  margin-bottom: 0;
+}
+
+.detailLabel {
+  font-weight: 500;
+  color: #64748b;
+  font-size: 0.875rem;
+  min-width: 100px;
+}
+
+.detailValue {
+  font-weight: 600;
+  color: #1e293b;
+  text-align: left;
+  flex: 1;
+}
+
+.detailIcon {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+  margin-left: 0.5rem;
+}
+
+/* Info Card */
+.infoCard {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 16px;
+  padding: 2rem;
+}
+
+.infoTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #92400e;
+  margin: 0 0 1.5rem 0;
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.infoIcon {
+  width: 20px;
+  height: 20px;
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+/* Action Buttons */
+.actionButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.primaryButton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+}
+
+.primaryButton:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.35);
+}
+
+.secondaryButton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondaryButton:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.buttonIcon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  padding: 2rem 1rem;
+  border-top: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 12px;
+}
+
+.footer p {
+  margin: 0 0 0.5rem 0;
+}
+
+.footer p:last-child {
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .confirmationContainer {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+  
+  .successHeader {
+    padding: 2rem 1.5rem;
+  }
+  
+  .successTitle {
+    font-size: 2rem;
+  }
+  
+  .successSubtitle {
+    font-size: 1rem;
+  }
+  
+  .detailsCard {
+    padding: 1.5rem;
+  }
+  
+  .detailsGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .detailSection {
+    padding: 1rem;
+  }
+  
+  .detailItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .detailLabel {
+    min-width: auto;
+  }
+  
+  .detailValue {
+    text-align: right;
+    width: 100%;
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+  }
+  
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .infoCard {
+    padding: 1.5rem;
+  }
+  
+  .infoItem {
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .confirmationContainer {
+    padding: 0.5rem;
+  }
+  
+  .successHeader {
+    padding: 1.5rem 1rem;
+    border-radius: 12px;
+  }
+  
+  .successIcon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+  }
+  
+  .successIcon svg {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .successTitle {
+    font-size: 1.5rem;
+  }
+  
+  .detailsCard {
+    padding: 1rem;
+  }
+  
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .cardActions {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .sectionTitle {
+    font-size: 1rem;
+  }
+  
+  .detailItem {
+    padding: 0.5rem 0;
+  }
+  
+  .infoCard {
+    padding: 1rem;
+  }
+  
+  .infoTitle {
+    font-size: 1.125rem;
+  }
+  
+  .infoList {
+    gap: 0.75rem;
+  }
+  
+  .primaryButton,
+  .secondaryButton {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .actionButton,
+  .primaryButton,
+  .secondaryButton,
+  .successHeader::before {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .detailsCard,
+  .infoCard {
+    border: 2px solid #000;
+  }
+  
+  .primaryButton {
+    background: #000;
+    color: #fff;
+  }
+  
+  .secondaryButton {
+    border-color: #000;
+    color: #000;
+  }
+  
+  .detailSection {
+    border: 1px solid #000;
+  }
+}
+
+/* Focus styles */
+.actionButton:focus,
+.primaryButton:focus,
+.secondaryButton:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Animation for card appearance */
+.detailsCard,
+.infoCard {
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Success header animation */
+.successHeader {
+  animation: zoomIn 0.5s ease-out;
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Print styles */
+@media print {
+  .confirmationContainer {
+    background: white;
+    padding: 1rem;
+  }
+  
+  .actionButtons,
+  .cardActions {
+    display: none;
+  }
+  
+  .successHeader {
+    background: #10b981;
+    color: white;
+  }
+  
+  .successHeader::before {
+    display: none;
+  }
+}

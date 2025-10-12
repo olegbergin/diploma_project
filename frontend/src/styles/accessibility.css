@@ -1,0 +1,405 @@
+/* Accessibility & RTL Support - Доступность и поддержка языков справа налево */
+
+@import url('./design-system-variables.css');
+
+/* ==================== БАЗОВЫЕ ACCESSIBILITY СТИЛИ ==================== */
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Screen reader only но видимый при фокусе */
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: var(--space-2) var(--space-4);
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 2px solid var(--primary-blue);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  text-decoration: none;
+  z-index: var(--z-tooltip);
+}
+
+/* Skip links для навигации с клавиатуры */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--primary-blue);
+  color: var(--text-inverse);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  z-index: var(--z-tooltip);
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* ==================== FOCUS MANAGEMENT ==================== */
+
+/* Общие focus стили */
+*:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Focus для интерактивных элементов */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+/* Focus trap для модальных окон */
+.focus-trap {
+  position: relative;
+}
+
+.focus-trap-active {
+  overflow: hidden;
+}
+
+/* Focus ring для кастомных компонентов */
+.focus-ring:focus-visible {
+  box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--primary-blue);
+}
+
+/* ==================== KEYBOARD NAVIGATION ==================== */
+
+/* Показывать focus только при навигации с клавиатуры */
+.js-focus-visible :focus:not(.focus-visible) {
+  outline: none;
+}
+
+/* Стили для табиндекса */
+[tabindex="-1"]:focus {
+  outline: none !important;
+}
+
+/* Кастомный focus для карточек и ссылок */
+.card-focusable:focus-visible,
+.tile-focusable:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* ==================== HIGH CONTRAST MODE SUPPORT ==================== */
+
+@media (prefers-contrast: high) {
+  :root {
+    /* Увеличиваем контрастность цветов */
+    --text-primary: #000000;
+    --text-secondary: #000000;
+    --text-tertiary: #000000;
+    --bg-primary: #ffffff;
+    --bg-secondary: #ffffff;
+    --border-light: #000000;
+    --border-medium: #000000;
+    --border-dark: #000000;
+    
+    /* Более контрастные цвета для состояний */
+    --primary-blue: #0000ff;
+    --success-green: #008000;
+    --error-red: #ff0000;
+    --warning-orange: #ff8000;
+  }
+  
+  /* Утолщаем границы */
+  .btn,
+  .form-input,
+  .form-textarea,
+  .form-select,
+  .card {
+    border-width: 2px;
+  }
+  
+  /* Увеличиваем contrast для теней */
+  .card,
+  .btn:hover,
+  .modal {
+    box-shadow: 0 0 0 2px #000000;
+  }
+}
+
+/* ==================== REDUCED MOTION SUPPORT ==================== */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Отключаем все анимации и переходы */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Отключаем hover эффекты с трансформациями */
+  .dashboard-tile:hover,
+  .card-clickable:hover,
+  .btn:hover {
+    transform: none !important;
+  }
+}
+
+/* ==================== RTL (RIGHT-TO-LEFT) SUPPORT ==================== */
+
+/* Базовые RTL стили */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] body {
+  font-family: var(--font-rtl), var(--font-primary);
+}
+
+/* RTL для текстовых инпутов */
+[dir="rtl"] .form-input,
+[dir="rtl"] .form-textarea {
+  text-align: right;
+  direction: rtl;
+}
+
+/* RTL для кнопок */
+[dir="rtl"] .btn {
+  direction: rtl;
+}
+
+/* RTL для флекс контейнеров */
+[dir="rtl"] .flex {
+  direction: rtl;
+}
+
+/* RTL для навигации */
+[dir="rtl"] .nav,
+[dir="rtl"] .breadcrumb {
+  direction: rtl;
+}
+
+/* RTL для отступов и паддингов */
+[dir="rtl"] .ml-1 { margin-left: 0; margin-right: var(--space-1); }
+[dir="rtl"] .ml-2 { margin-left: 0; margin-right: var(--space-2); }
+[dir="rtl"] .ml-3 { margin-left: 0; margin-right: var(--space-3); }
+[dir="rtl"] .ml-4 { margin-left: 0; margin-right: var(--space-4); }
+
+[dir="rtl"] .mr-1 { margin-right: 0; margin-left: var(--space-1); }
+[dir="rtl"] .mr-2 { margin-right: 0; margin-left: var(--space-2); }
+[dir="rtl"] .mr-3 { margin-right: 0; margin-left: var(--space-3); }
+[dir="rtl"] .mr-4 { margin-right: 0; margin-left: var(--space-4); }
+
+[dir="rtl"] .pl-1 { padding-left: 0; padding-right: var(--space-1); }
+[dir="rtl"] .pl-2 { padding-left: 0; padding-right: var(--space-2); }
+[dir="rtl"] .pl-3 { padding-left: 0; padding-right: var(--space-3); }
+[dir="rtl"] .pl-4 { padding-left: 0; padding-right: var(--space-4); }
+
+[dir="rtl"] .pr-1 { padding-right: 0; padding-left: var(--space-1); }
+[dir="rtl"] .pr-2 { padding-right: 0; padding-left: var(--space-2); }
+[dir="rtl"] .pr-3 { padding-right: 0; padding-left: var(--space-3); }
+[dir="rtl"] .pr-4 { padding-right: 0; padding-left: var(--space-4); }
+
+/* RTL для позиционирования */
+[dir="rtl"] .left-0 { left: auto; right: 0; }
+[dir="rtl"] .right-0 { right: auto; left: 0; }
+
+/* RTL для float */
+[dir="rtl"] .float-left { float: right; }
+[dir="rtl"] .float-right { float: left; }
+
+/* RTL для text-align */
+[dir="rtl"] .text-left { text-align: right; }
+[dir="rtl"] .text-right { text-align: left; }
+
+/* RTL для dashboard компонентов */
+[dir="rtl"] .dashboard-tile-header {
+  direction: rtl;
+}
+
+[dir="rtl"] .dashboard-tile-footer {
+  direction: rtl;
+}
+
+/* ==================== ARIA LIVE REGIONS ==================== */
+
+.sr-live-polite {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ==================== TOUCH ACCESSIBILITY ==================== */
+
+/* Минимальные размеры для touch targets */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Touch friendly кнопки */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 48px;
+    padding: var(--space-4) var(--space-5);
+  }
+  
+  .btn-sm {
+    min-height: 44px;
+    padding: var(--space-3) var(--space-4);
+  }
+  
+  /* Увеличиваем размеры инпутов на touch устройствах */
+  .form-input,
+  .form-textarea,
+  .form-select {
+    min-height: 48px;
+    padding: var(--space-4);
+    font-size: 16px; /* Предотвращает zoom на iOS */
+  }
+}
+
+/* ==================== PRINT STYLES ==================== */
+
+@media print {
+  /* Скрываем интерактивные элементы при печати */
+  .btn,
+  .form-input,
+  .form-textarea,
+  .form-select,
+  .modal,
+  .dropdown {
+    display: none !important;
+  }
+  
+  /* Оптимизируем цвета для печати */
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  /* Показываем URL для ссылок */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
+  
+  /* Предотвращаем разрывы страниц внутри элементов */
+  .card,
+  .dashboard-tile {
+    page-break-inside: avoid;
+  }
+}
+
+/* ==================== СПЕЦИАЛЬНЫЕ ACCESSIBILITY КОМПОНЕНТЫ ==================== */
+
+/* Индикатор загрузки для screen readers */
+.loading-indicator[aria-busy="true"] {
+  position: relative;
+}
+
+.loading-indicator[aria-busy="true"]::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--border-light);
+  border-top: 2px solid var(--primary-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-indicator[aria-busy="true"]::after {
+    animation: none;
+    content: '⟳';
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Toast уведомления с ARIA */
+.toast {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-toast);
+  max-width: 400px;
+}
+
+.toast[role="alert"] {
+  border-left: 4px solid var(--error-red);
+}
+
+.toast[role="status"] {
+  border-left: 4px solid var(--success-green);
+}
+
+/* Прогресс-бар с accessibility */
+.progress {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--primary-blue);
+  transition: width var(--transition-normal);
+  border-radius: var(--radius-full);
+}
+
+/* Роль для кликабельных элементов без семантики */
+.clickable[role="button"] {
+  cursor: pointer;
+}
+
+.clickable[role="button"]:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}

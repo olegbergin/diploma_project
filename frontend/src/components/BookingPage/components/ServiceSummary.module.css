@@ -1,0 +1,308 @@
+/* ServiceSummary.module.css */
+
+.summaryCard {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.summaryCard:hover {
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Business Information */
+.businessInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.businessImage {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.businessImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.businessPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.businessDetails {
+  flex: 1;
+}
+
+.businessName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.businessAddress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Service Details */
+.serviceDetails {
+  margin-bottom: 1.5rem;
+}
+
+.serviceName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 1rem 0;
+}
+
+.serviceInfo {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.serviceItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.servicePrice {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.serviceDuration {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.serviceDescription {
+  font-size: 0.875rem;
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0;
+  background: #f9fafb;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border-left: 3px solid #e5e7eb;
+}
+
+/* Appointment Details */
+.appointmentDetails {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 12px;
+  border: 1px solid #bae6fd;
+}
+
+.appointmentTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.75rem 0;
+}
+
+.appointmentInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.appointmentItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.appointmentDate,
+.appointmentTime {
+  font-size: 0.875rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Status Indicator */
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.statusDot.incomplete {
+  background: #fbbf24;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
+}
+
+.statusDot.complete {
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.statusText {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Icon Styles */
+.icon {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.serviceItem .icon {
+  color: #059669;
+}
+
+.appointmentItem .icon {
+  color: #0ea5e9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .summaryCard {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+  }
+  
+  .businessInfo {
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .businessImage {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .businessName {
+    font-size: 1.125rem;
+  }
+  
+  .serviceInfo {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .appointmentDetails {
+    padding: 0.75rem;
+  }
+  
+  .appointmentInfo {
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .summaryCard {
+    padding: 0.75rem;
+    margin: 0 0 1rem 0;
+  }
+  
+  .businessInfo {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .businessImage {
+    margin: 0 auto;
+  }
+  
+  .serviceDescription {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .summaryCard,
+  .statusDot {
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .summaryCard {
+    border: 2px solid #000;
+  }
+  
+  .businessPlaceholder {
+    background: #000;
+  }
+  
+  .statusDot {
+    border: 1px solid #000;
+  }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .summaryCard {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .businessName,
+  .serviceName,
+  .appointmentTitle {
+    color: #f9fafb;
+  }
+  
+  .serviceDescription {
+    background: #374151;
+    border-left-color: #4b5563;
+  }
+  
+  .appointmentDetails {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+}

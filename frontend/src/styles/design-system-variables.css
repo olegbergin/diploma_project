@@ -1,0 +1,201 @@
+/* Design System Variables - CSS Custom Properties */
+
+:root {
+  /* ==================== ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ ==================== */
+  
+  /* Основные цвета бренда */
+  --primary-blue: #2563eb;
+  --primary-blue-light: #3b82f6;
+  --primary-blue-dark: #1d4ed8;
+  
+  /* Цвета состояний */
+  --success-green: #059669;
+  --success-green-light: #10b981;
+  --success-green-dark: #047857;
+  
+  --warning-orange: #ea580c;
+  --warning-orange-light: #f97316;
+  --warning-orange-dark: #c2410c;
+  
+  --error-red: #dc2626;
+  --error-red-light: #ef4444;
+  --error-red-dark: #b91c1c;
+  
+  /* Функциональные цвета */
+  --business-purple: #7c3aed;
+  --business-purple-light: #8b5cf6;
+  --business-purple-dark: #6d28d9;
+  
+  --reviews-yellow: #eab308;
+  --reviews-yellow-light: #facc15;
+  --reviews-yellow-dark: #ca8a04;
+  
+  --stats-cyan: #0891b2;
+  --stats-cyan-light: #06b6d4;
+  --stats-cyan-dark: #0e7490;
+  
+  /* Нейтральные цвета */
+  --neutral-gray: #6b7280;
+  --neutral-gray-light: #9ca3af;
+  --neutral-gray-dark: #4b5563;
+  
+  /* ==================== СИСТЕМНЫЕ ЦВЕТА ==================== */
+  
+  /* Фоны (с префиксом ds- для избежания конфликтов) */
+  --ds-bg-primary: #ffffff;
+  --ds-bg-secondary: #f9fafb;
+  --ds-bg-tertiary: #f3f4f6;
+  --ds-bg-overlay: rgba(0, 0, 0, 0.5);
+  
+  /* Границы */
+  --border-light: #e5e7eb;
+  --border-medium: #d1d5db;
+  --border-dark: #9ca3af;
+  
+  /* Тени */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  
+  /* Цвета текста (с префиксом ds- для избежания конфликтов) */
+  --ds-text-primary: #111827;
+  --ds-text-secondary: #6b7280;
+  --ds-text-tertiary: #9ca3af;
+  --ds-text-inverse: #ffffff;
+  
+  /* ==================== ТИПОГРАФИКА ==================== */
+  
+  /* Семейства шрифтов */
+  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 
+                  'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', 
+               Consolas, 'Courier New', monospace;
+  --font-rtl: 'Noto Sans Hebrew', 'Arial Hebrew', sans-serif;
+  
+  /* Размеры шрифтов */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+  --text-4xl: 2.25rem;   /* 36px */
+  
+  /* Высота строк */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  
+  /* Жирность шрифта */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  /* ==================== ОТСТУПЫ (8px grid) ==================== */
+  
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  
+  /* ==================== РАДИУСЫ СКРУГЛЕНИЯ ==================== */
+  
+  --radius-sm: 0.25rem;  /* 4px */
+  --radius-md: 0.5rem;   /* 8px */
+  --radius-lg: 0.75rem;  /* 12px */
+  --radius-xl: 1rem;     /* 16px */
+  --radius-full: 9999px; /* Полное скругление */
+  
+  /* ==================== АНИМАЦИИ И ПЕРЕХОДЫ ==================== */
+  
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
+  
+  /* Easing functions */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ==================== RESPONSIVE BREAKPOINTS ==================== */
+  
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  
+  /* ==================== Z-INDEX LAYERS ==================== */
+  
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+/* ==================== ТЕМНАЯ ТЕМА ==================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Инвертируем основные цвета для темной темы */
+    --bg-primary: #1f2937;
+    --bg-secondary: #111827;
+    --bg-tertiary: #0f172a;
+    --bg-overlay: rgba(255, 255, 255, 0.1);
+    
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-tertiary: #9ca3af;
+    --text-inverse: #111827;
+    
+    --border-light: #374151;
+    --border-medium: #4b5563;
+    --border-dark: #6b7280;
+  }
+}
+
+/* ==================== HIGH CONTRAST MODE ==================== */
+
+@media (prefers-contrast: high) {
+  :root {
+    --border-light: #000000;
+    --border-medium: #000000;
+    --text-secondary: #000000;
+    --primary-blue: #0000ff;
+    --success-green: #008000;
+    --error-red: #ff0000;
+    --warning-orange: #ff8000;
+  }
+}
+
+/* ==================== REDUCED MOTION ==================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0.01ms;
+    --transition-normal: 0.01ms;
+    --transition-slow: 0.01ms;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

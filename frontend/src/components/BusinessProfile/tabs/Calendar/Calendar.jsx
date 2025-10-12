@@ -40,7 +40,7 @@ export default function Calendar({ appointments = [], onDaySelect }) {
     setCurrent(d);
   };
 
-  const handleClick = (iso, d) => {
+  const handleClick = (iso) => {
     // לא לאפשר לבחור תאריך מהעבר
     if (iso < todayIso) return;
     const dayAppts = appointments.filter((a) => a.date === iso);

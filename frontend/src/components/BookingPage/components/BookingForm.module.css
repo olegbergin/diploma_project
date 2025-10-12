@@ -1,0 +1,478 @@
+/* BookingForm.module.css */
+
+.formContainer {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  max-width: 100%;
+}
+
+/* Header */
+.header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 1.5rem 0;
+}
+
+/* Booking Summary */
+.bookingSummary {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+}
+
+.summaryRow:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  font-weight: 600;
+  color: #0c4a6e;
+}
+
+.summaryLabel {
+  font-weight: 500;
+  color: #475569;
+  font-size: 0.875rem;
+}
+
+.summaryValue {
+  font-weight: 600;
+  color: #1e293b;
+  text-align: left;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Sections */
+.section {
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #f1f5f9;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.sectionIcon {
+  width: 20px;
+  height: 20px;
+  color: #2563eb;
+}
+
+/* Input Groups */
+.inputRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.inputRow:last-child {
+  margin-bottom: 0;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.labelIcon {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+}
+
+/* Input Fields */
+.input,
+.textarea {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: white;
+  color: #1f2937;
+  font-family: inherit;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #9ca3af;
+}
+
+.input:disabled,
+.textarea:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.inputError {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.inputError:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Textarea specific */
+.textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+.characterCount {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: left;
+  margin-top: 0.25rem;
+}
+
+/* Error Messages */
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.errorIcon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Submit Section */
+.submitSection {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 200px;
+  min-height: 48px;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+}
+
+.submitButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.35);
+}
+
+.submitButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitButtonDisabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.submitButtonDisabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.loadingSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.disclaimer {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 1rem;
+  line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .formContainer {
+    padding: 1.5rem;
+    margin: 0;
+    border-radius: 12px;
+  }
+  
+  .title {
+    font-size: 1.25rem;
+  }
+  
+  .bookingSummary {
+    padding: 1rem;
+  }
+  
+  .section {
+    padding: 1rem;
+  }
+  
+  .inputRow {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .summaryRow {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  .summaryLabel,
+  .summaryValue {
+    font-size: 0.8rem;
+  }
+  
+  .input,
+  .textarea {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .submitButton {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.875rem;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .formContainer {
+    padding: 1rem;
+  }
+  
+  .header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .bookingSummary {
+    padding: 0.75rem;
+  }
+  
+  .section {
+    padding: 0.75rem;
+  }
+  
+  .form {
+    gap: 1.5rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .inputRow {
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .input,
+  .textarea {
+    padding: 0.625rem 0.75rem;
+  }
+  
+  .textarea {
+    min-height: 80px;
+  }
+  
+  .disclaimer {
+    font-size: 0.7rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .submitButton,
+  .input,
+  .textarea,
+  .loadingSpinner {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .input,
+  .textarea {
+    border: 2px solid #000;
+  }
+  
+  .inputError {
+    border-color: #dc2626;
+    background: #fff;
+  }
+  
+  .submitButton {
+    background: #000;
+    color: #fff;
+  }
+  
+  .submitButtonDisabled {
+    background: #666;
+    color: #ccc;
+  }
+  
+  .section {
+    border: 1px solid #000;
+  }
+}
+
+/* Focus styles */
+.input:focus,
+.textarea:focus,
+.submitButton:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* RTL Support */
+[dir="rtl"] .formContainer {
+  text-align: right;
+}
+
+[dir="rtl"] .summaryRow {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .label {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .errorMessage {
+  flex-direction: row-reverse;
+}
+
+/* Animation for form appearance */
+.formContainer {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Loading message for user data fetch */
+.loadingMessage {
+  background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #92400e;
+  text-align: center;
+  font-weight: 500;
+  animation: pulse 1.5s infinite;
+}
+
+/* Info message for auto-filled data */
+.infoMessage {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 1px solid #60a5fa;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #1e40af;
+  text-align: center;
+  font-weight: 500;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

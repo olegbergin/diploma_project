@@ -1,0 +1,130 @@
+@import url('../../../styles/design-system-variables.css');
+
+.headerContainer {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-8);
+    margin: var(--space-6) 0;
+    border: 1px solid var(--border-light);
+    text-align: center;
+    animation: fadeIn var(--transition-normal) var(--ease-out);
+}
+
+.businessName {
+    font-size: var(--text-4xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-2) 0;
+    line-height: var(--leading-tight);
+}
+
+.businessCategory {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    font-weight: var(--font-medium);
+    margin: 0 0 var(--space-4) 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rating {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.stars {
+    color: var(--reviews-yellow);
+    font-size: var(--text-xl);
+}
+
+.ratingText {
+    color: var(--text-secondary);
+    font-weight: var(--font-medium);
+    font-size: var(--text-base);
+}
+
+.reviewCount {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+}
+
+.favoriteButton {
+    min-height: 44px;
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-medium);
+    font-size: var(--text-base);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-sm);
+}
+
+.favoriteButton:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-blue-dark), var(--primary-blue));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.favoriteActive {
+    background: linear-gradient(135deg, var(--error-red), var(--error-red-dark)) !important;
+    color: var(--text-inverse);
+}
+
+.favoriteActive:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--error-red-dark), var(--error-red)) !important;
+}
+
+.favoriteLoading {
+    opacity: 0.7;
+    cursor: wait !important;
+    transform: none !important;
+}
+
+.favoriteButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none !important;
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 640px) {
+    .headerContainer {
+        margin: var(--space-4) 0;
+        padding: var(--space-6);
+    }
+    
+    .businessName {
+        font-size: var(--text-3xl);
+    }
+    
+    .businessCategory {
+        font-size: var(--text-base);
+    }
+    
+    .rating {
+        font-size: var(--text-base);
+    }
+}

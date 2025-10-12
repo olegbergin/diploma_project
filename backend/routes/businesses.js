@@ -1,136 +1,103 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../dbSingleton").getPromise();
+const businessController = require("../controllers/businessController");
+// const reportController = require("../controllers/reportController");
 
-/* ───────────────────────────────
-   1. Create a new business (POST /api/businesses)
-   ─────────────────────────────── */
-router.post("/", async (req, res) => {
-  let {
-    name,
-    category,
-    description,
-    phone,
-    email,
-    address,
-    image_url = "",
-    schedule = "",
-  } = req.body;
 
-  // אם לא הוזן ערך לשעות פתיחה – נשלח null
-  if (typeof schedule === "string" && schedule.trim() === "") {
-    schedule = null;
-  }
+// Get unique categories (must come before /:id route)
+router.get("/categories", businessController.getCategories);
 
-  const sql = `
-    INSERT INTO businesses (name, category, description, phone, email, address, image_url, schedule)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-  const params = [
-    name,
-    category,
-    description,
-    phone,
-    email,
-    address,
-    image_url,
-    schedule,
-  ];
-
+// Get individual service details (must come before /:id route)
+router.get("/services/:serviceId", async (req, res) => {
   try {
-    const [result] = await db.query(sql, params);
-    res.status(201).json({ id: result.insertId, message: "Business created" });
-  } catch (err) {
-    console.error("DB error creating business:", err);
-    res.status(500).json({ error: "Failed to create business." });
-  }
-});
+    const db = require('../dbSingleton').getPromise();
+    const serviceId = req.params.serviceId;
+    
+    const [rows] = await db.query(
+      'SELECT service_id, business_id, name, description, price, duration_minutes, category, is_active FROM services WHERE service_id = ?',
+      [serviceId]
+    );
 
-/* ───────────────────────────────
-   2. Get all businesses (GET /api/businesses)
-   ─────────────────────────────── */
-router.get("/", async (_req, res) => {
-  try {
-    const [rows] = await db.query("SELECT * FROM businesses");
-    res.json(rows);
-  } catch (err) {
-    console.error("DB error fetching all businesses:", err);
-    res.status(500).json({ error: "Failed to fetch businesses." });
-  }
-});
-
-/* ───────────────────────────────
-   3. Get a single business by ID (GET /api/businesses/:id)
-   ─────────────────────────────── */
-router.get("/:id", async (req, res) => {
-  const sql = "SELECT * FROM businesses WHERE business_id = ?";
-  const params = [req.params.id];
-
-  try {
-    const [rows] = await db.query(sql, params);
     if (rows.length === 0) {
-      return res.status(404).json({ message: "Business not found" });
+      return res.status(404).json({ error: 'Service not found' });
     }
-    res.json(rows[0]);
-  } catch (err) {
-    console.error(`DB error fetching business with id ${req.params.id}:`, err);
-    res.status(500).json({ error: "Failed to fetch business details." });
+
+    const service = rows[0];
+    const response = {
+      serviceId: service.service_id,
+      businessId: service.business_id,
+      name: service.name,
+      description: service.description,
+      price: service.price,
+      duration_minutes: service.duration_minutes,
+      category: service.category,
+      isActive: service.is_active
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching service:', error);
+    res.status(500).json({ error: 'Failed to fetch service details' });
   }
 });
 
-/* ───────────────────────────────
-   4. Update a business (PUT /api/businesses/:id)
-   ─────────────────────────────── */
-router.put("/:id", async (req, res) => {
-  let {
-    name,
-    category,
-    description,
-    phone,
-    email,
-    address,
-    image_url = "",
-    schedule = "",
-  } = req.body;
+// Get all businesses
+router.get("/", businessController.getAllBusinesses);
 
-  // אם לא הוזן ערך לשעות פתיחה – נשלח null
-  if (typeof schedule === "string" && schedule.trim() === "") {
-    schedule = null;
-  }
+// Create a new business
+router.post("/", businessController.createBusiness);
 
-  // אפשרי להוסיף עוד בדיקות/התניות אם רוצים לא לאפשר ריקים או ערכי ברירת מחדל
+// === REPORT ROUTES (must come before generic /:id route) ===
 
-  const sql = `
-    UPDATE businesses SET name = ?, category = ?, description = ?, phone = ?, email = ?,
-    address = ?, image_url = ?, schedule = ?
-    WHERE business_id = ?
-  `;
-  const params = [
-    name,
-    category,
-    description,
-    phone,
-    email,
-    address,
-    image_url,
-    schedule,
-    req.params.id,
-  ];
-
-  try {
-    const [result] = await db.query(sql, params);
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Business not found" });
-    }
-    res.json({ message: "Business updated successfully" });
-  } catch (err) {
-    // שגיאות קונסטריינטים של מסד, כולל null לשדה חובה
-    if (err.code === "ER_BAD_NULL_ERROR") {
-      return res.status(400).json({ error: "יש למלא את כל השדות החובה." });
-    }
-    console.error(`DB error updating business with id ${req.params.id}:`, err);
-    res.status(500).json({ error: "Failed to update business." });
-  }
+// Debug route to test if routes are working
+router.get("/:id/reports/test", (req, res) => {
+  res.json({ message: "Report routes are working!", businessId: req.params.id });
 });
+
+// Generate and download business report
+// router.get("/:id/reports/generate", reportController.generateReport);
+
+// Preview report data (JSON) without generating PDF
+// router.get("/:id/reports/preview", reportController.previewReport);
+
+// Get available report dates for a business
+// router.get("/:id/reports/available-dates", reportController.getAvailableDates);
+
+// Get a single business by ID (with owner contact info, services, and ratings)
+router.get("/:id", businessController.getBusinessById);
+
+// Update a business
+router.put("/:id", businessController.updateBusiness);
+
+// Delete a business
+router.delete("/:id", businessController.deleteBusiness);
+
+// Get services for a specific business
+router.get("/:id/services", businessController.getBusinessServices);
+
+// Get reviews for a specific business
+router.get("/:id/reviews", businessController.getBusinessReviews);
+
+// Get basic dashboard data for a business
+router.get("/:id/dashboard", businessController.getBusinessDashboard);
+
+// Get comprehensive dashboard analytics for a business
+router.get("/:id/analytics", businessController.getBusinessDashboardAnalytics);
+
+// Get calendar availability for a business
+router.get("/:id/calendar", businessController.getBusinessCalendar);
+
+// Get time slot availability for a specific date
+router.get("/:id/availability", businessController.getBusinessAvailability);
+
+// Create a new service for a business
+router.post("/:id/services", businessController.createService);
+
+// Update a service
+router.put("/:id/services/:serviceId", businessController.updateService);
+
+// Delete a service
+router.delete("/:id/services/:serviceId", businessController.deleteService);
+
 
 module.exports = router;
