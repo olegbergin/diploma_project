@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1
--- Время создания: Авг 26 2025 г., 05:58
+-- Время создания: Окт 12 2025 г., 21:33
 -- Версия сервера: 10.4.32-MariaDB
 -- Версия PHP: 8.2.12
 
@@ -30,6 +30,7 @@ USE `project_db`;
 -- Структура таблицы `appointments`
 --
 
+DROP TABLE IF EXISTS `appointments`;
 CREATE TABLE `appointments` (
   `appointment_id` int(11) NOT NULL,
   `customer_id` int(11) NOT NULL,
@@ -103,7 +104,15 @@ INSERT INTO `appointments` (`appointment_id`, `customer_id`, `business_id`, `ser
 (55, 19, 11, 53, '2025-08-25 14:00:00', 'completed', 'Appointment this week (before today)', '2025-08-25 23:26:28'),
 (56, 19, 11, 53, '2025-08-19 09:30:00', 'completed', 'Appointment last week', '2025-08-25 23:26:28'),
 (57, 19, 11, 53, '2025-08-26 11:00:00', 'completed', 'Appointment today)', '2025-08-26 00:33:22'),
-(58, 19, 11, 53, '2025-08-24 13:00:00', 'completed', 'Appointment this week (before today)', '2025-08-26 00:34:02');
+(58, 19, 11, 53, '2025-08-24 13:00:00', 'completed', 'Appointment this week (before today)', '2025-08-26 00:34:02'),
+(59, 19, 11, 53, '2025-09-28 20:29:40', 'completed', 'First appointment with this business', '2025-09-27 17:29:40'),
+(60, 19, 11, 54, '2025-10-02 20:29:40', 'completed', 'Second visit - different service', '2025-10-01 17:29:40'),
+(61, 19, 11, 53, '2025-10-09 20:29:40', 'completed', 'Regular follow-up', '2025-10-08 17:29:40'),
+(62, 19, 11, 54, '2025-10-13 20:29:40', '', 'Upcoming appointment', '2025-10-12 17:29:40'),
+(63, 19, 11, 53, '2025-09-28 20:32:41', 'completed', 'First appointment with this business', '2025-09-27 17:32:41'),
+(64, 19, 11, 54, '2025-10-02 20:32:41', 'completed', 'Second visit - different service', '2025-10-01 17:32:41'),
+(65, 19, 11, 53, '2025-10-09 20:32:41', 'completed', 'Regular follow-up', '2025-10-08 17:32:41'),
+(66, 19, 11, 54, '2025-10-13 20:32:41', '', 'Upcoming appointment', '2025-10-12 17:32:41');
 
 -- --------------------------------------------------------
 
@@ -111,6 +120,7 @@ INSERT INTO `appointments` (`appointment_id`, `customer_id`, `business_id`, `ser
 -- Структура таблицы `businesses`
 --
 
+DROP TABLE IF EXISTS `businesses`;
 CREATE TABLE `businesses` (
   `business_id` int(11) NOT NULL,
   `owner_id` int(11) NOT NULL,
@@ -129,7 +139,6 @@ CREATE TABLE `businesses` (
 --
 
 INSERT INTO `businesses` (`business_id`, `owner_id`, `name`, `category`, `description`, `location`, `city`, `photos`, `schedule`, `created_at`) VALUES
-(1, 1, 'סלון יופי מירי - המקום שלך להיות יפה', 'יופי וטיפוח', 'סלון יופי מוביל בתל אביב המתמחה בתסרוקות מקצועיות, צביעות איכותיות וטיפולי שיער מתקדמים. צוות מקצועי עם 15 שנות ניסיון.', 'תל אביב, דיזנגוף 180', 'תל אביב', '[]', '{\"ראשון\": \"09:00-19:00\", \"שני\": \"09:00-19:00\", \"שלישי\": \"09:00-19:00\", \"רביעי\": \"09:00-19:00\", \"חמישי\": \"09:00-20:00\", \"שישי\": \"08:00-15:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
 (2, 2, 'אמנות הציפורניים - יעל', 'יופי וטיפוח', 'סטודיו מקצועי לעיצוב ציפורניים. מניקור, פדיקור, הדבקת ציפורניים, ג\'ל פוליש ועיצובים אמנותיים. שימוש בחומרים איכותיים ומתקדמים.', 'רמת גן, הרצל 45', 'רמת גן', '[]', '{\"ראשון\": \"10:00-18:00\", \"שני\": \"10:00-18:00\", \"שלישי\": \"10:00-18:00\", \"רביעי\": \"10:00-18:00\", \"חמישי\": \"10:00-19:00\", \"שישי\": \"09:00-14:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
 (3, 3, 'ספא יוקרה דנה - חוויית רגיעה מושלמת', 'יופי וטיפוח', 'ספא יוקרתי המציע מגוון טיפולי פנים מתקדמים, עיסויים טיפוליים ושיטות אנטי אייג\'ינג. אווירה רגועה וטיפול אישי מקצועי.', 'הרצליה, סוקולוב 88', 'הרצליה', '[]', '{\"ראשון\": \"09:00-20:00\", \"שני\": \"09:00-20:00\", \"שלישי\": \"09:00-20:00\", \"רביעי\": \"09:00-20:00\", \"חמישי\": \"09:00-21:00\", \"שישי\": \"09:00-16:00\", \"שבת\": \"10:00-17:00\"}', '2025-08-22 15:54:45'),
 (4, 4, 'הייר סטייל רונית - מעצבי השיער המובילים', 'יופי וטיפוח', 'מעצבי שיער מובילים המתמחים בחתנות, אירועים ומראה יומיומי. תסרוקות מעוצבות, צביעות אופנתיות וטיפולי שיער משקמים.', 'פתח תקווה, רוטשילד 25', 'פתח תקווה', '[]', '{\"ראשון\": \"סגור\", \"שני\": \"09:00-19:00\", \"שלישי\": \"09:00-19:00\", \"רביעי\": \"09:00-19:00\", \"חמישי\": \"09:00-20:00\", \"שישי\": \"08:00-15:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
@@ -137,8 +146,48 @@ INSERT INTO `businesses` (`business_id`, `owner_id`, `name`, `category`, `descri
 (6, 6, 'לאש טיק - הרמת ריסים ועיצוב גבות', 'יופי וטיפוח', 'מתמחים בהרמת ריסים, הדבקת ריסים, צביעה ועיצוב גבות. טכניקות מתקדמות ותוצאות טבעיות לחיזוק המראה הטבעי שלך.', 'תל אביב, אלנבי 65', 'תל אביב', '[]', '{\"ראשון\": \"09:00-18:00\", \"שני\": \"09:00-18:00\", \"שלישי\": \"09:00-18:00\", \"רביעי\": \"09:00-18:00\", \"חמישי\": \"09:00-19:00\", \"שישי\": \"08:00-14:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
 (7, 7, 'גבות פרפקט - תמר', 'יופי וטיפוח', 'מתמחים בעיצוב גבות מקצועי, שעווה, חוטים ופיגמנטציה. יצירת צורת גבות מושלמת הניתנת לפניך ולאישיותך.', 'בת ים, בן גוריון 78', 'בת ים', '[]', '{\"ראשון\": \"10:00-17:00\", \"שני\": \"10:00-18:00\", \"שלישי\": \"10:00-18:00\", \"רביעי\": \"10:00-18:00\", \"חמישי\": \"10:00-19:00\", \"שישי\": \"09:00-14:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
 (8, 8, 'קליניקת העור ליאור - טיפולי פנים מתקדמים', 'יופי וטיפוח', 'קליניקה מתקדמת לטיפולי פנים קוסמטיים. מתמחים בטיפולי לייזר, פילינג כימי, בוטוקס וחומצה היאלורונית. טיפול מקצועי ובטוח.', 'רעננה, אחוזה 95', 'רעננה', '[]', '{\"ראשון\": \"09:00-17:00\", \"שני\": \"09:00-19:00\", \"שלישי\": \"09:00-19:00\", \"רביעי\": \"09:00-19:00\", \"חמישי\": \"09:00-17:00\", \"שישי\": \"09:00-13:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
-(11, 23, 'Test Update 456', 'Hair Salon', 'Test description', 'Test Address', 'New City', '[]', '{}', '2025-08-22 17:14:16'),
+(11, 23, 'Test Update 456', 'Hair Salon', 'Test description', 'Test Address', 'New City', '[\"/uploads/1757440612715-mzzqht0b7je.webp\",\"/uploads/1757439999085-ut3rv00vnm.webp\",\"/uploads/1757440623920-nurn6ym46do.webp\"]', '{\"sunday\":{\"isOpen\":false,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"monday\":{\"isOpen\":true,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"tuesday\":{\"isOpen\":true,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"wednesday\":{\"isOpen\":true,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"thursday\":{\"isOpen\":true,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"friday\":{\"isOpen\":true,\"openTime\":\"09:00\",\"closeTime\":\"14:00\"},\"saturday\":{\"isOpen\":false,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"}}', '2025-08-22 17:14:16'),
 (12, 24, 'New Spa', 'Spa', 'Relaxing spa services.', '200 Old Rd, Old Town', 'Old Town', '[]', '{\"שעות פעילות\": \"Tue-Sun 10 AM - 8 PM\"}', '2025-08-22 17:14:22');
+
+-- --------------------------------------------------------
+
+--
+-- Дублирующая структура для представления `business_review_stats`
+-- (См. Ниже фактическое представление)
+--
+DROP VIEW IF EXISTS `business_review_stats`;
+CREATE TABLE `business_review_stats` (
+`business_id` int(11)
+,`business_name` varchar(255)
+,`total_reviews` bigint(21)
+,`average_rating` decimal(13,2)
+,`five_star_count` bigint(21)
+,`four_star_count` bigint(21)
+,`three_star_count` bigint(21)
+,`two_star_count` bigint(21)
+,`one_star_count` bigint(21)
+,`responses_count` bigint(21)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Дублирующая структура для представления `reviewable_appointments`
+-- (См. Ниже фактическое представление)
+--
+DROP VIEW IF EXISTS `reviewable_appointments`;
+CREATE TABLE `reviewable_appointments` (
+`appointment_id` int(11)
+,`customer_id` int(11)
+,`business_id` int(11)
+,`service_id` int(11)
+,`appointment_datetime` datetime
+,`status` enum('pending','confirmed','completed','cancelled_by_user','cancelled_by_business','not_arrived')
+,`business_name` varchar(255)
+,`service_name` varchar(255)
+,`first_name` varchar(100)
+,`last_name` varchar(100)
+);
 
 -- --------------------------------------------------------
 
@@ -146,28 +195,52 @@ INSERT INTO `businesses` (`business_id`, `owner_id`, `name`, `category`, `descri
 -- Структура таблицы `reviews`
 --
 
+DROP TABLE IF EXISTS `reviews`;
 CREATE TABLE `reviews` (
   `review_id` int(11) NOT NULL,
   `customer_id` int(11) NOT NULL,
   `business_id` int(11) NOT NULL,
-  `rating` tinyint(3) UNSIGNED NOT NULL,
+  `appointment_id` int(11) DEFAULT NULL,
+  `rating` int(1) NOT NULL,
   `text` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `business_response` text DEFAULT NULL,
+  `response_date` timestamp NULL DEFAULT NULL,
+  `is_hidden` tinyint(1) DEFAULT 0,
+  `hidden_reason` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ;
 
 --
 -- Дамп данных таблицы `reviews`
 --
 
-INSERT INTO `reviews` (`review_id`, `customer_id`, `business_id`, `rating`, `text`, `created_at`) VALUES
-(1, 15, 1, 5, 'מירי מעצבת שיער מדהימה! התסרוקת שלה החזיקה מעמד כל החתונה', '2024-12-21 07:30:00'),
-(2, 16, 2, 5, 'יעל עושה קסמים עם הציפורניים! המניקור הכי יפה שעשיתי', '2024-12-19 14:20:00'),
-(3, 17, 3, 5, 'הספא של דנה פשוט מושלם. יצאתי משם מחודשת לגמרי', '2024-12-23 09:45:00'),
-(4, 18, 4, 5, 'רונית תמיד יודעת בדיוק מה שמתאים לי. מומלצת ביותר!', '2024-12-20 12:10:00'),
-(5, 19, 5, 5, 'נועה האמנית הכי טובה! האיפור שלה החזיק 12 שעות ברציפות', '2024-12-26 08:15:00'),
-(6, 20, 6, 4, 'הרמת הריסים מעולה, רק זמן הטיפול קצת ארוך', '2025-01-05 13:30:00'),
-(7, 9, 7, 5, 'תמר המקצועית ביותר בעיצוב גבות! תוצאה מושלמת', '2025-01-11 10:40:00'),
-(8, 10, 8, 5, 'קליניקה רפואית ברמה הגבוהה ביותר. מומלץ מאוד!', '2025-01-09 15:25:00');
+INSERT INTO `reviews` (`review_id`, `customer_id`, `business_id`, `appointment_id`, `rating`, `text`, `business_response`, `response_date`, `is_hidden`, `hidden_reason`, `created_at`, `updated_at`) VALUES
+(1, 19, 11, 56, 5, 'Excellent service! Very professional and friendly staff. The appointment was on time and exceeded my expectations. Highly recommend!', 'Thank you so much for your kind words! We are delighted to hear you had such a positive experience. We look forward to serving you again soon!', '2025-10-01 17:32:41', 0, NULL, '2025-09-30 17:32:41', '2025-10-12 17:32:41'),
+(2, 19, 12, NULL, 4, 'Very good service overall. The quality was great but I had to wait a bit longer than expected. Staff was apologetic and the end result was worth it.', 'We sincerely apologize for the wait time. We have taken your feedback seriously and are working on improving our scheduling. Thank you for your patience and understanding!', '2025-10-04 17:32:41', 0, NULL, '2025-10-03 17:32:41', '2025-10-12 17:32:41'),
+(3, 19, 11, 58, 5, 'Another fantastic experience! Consistency is key and this business delivers every time. The different service I tried today was just as excellent as the first one.', 'We truly appreciate your continued support and loyalty! It means the world to us that you trust us with your needs. Thank you for being such a wonderful customer!', '2025-10-07 17:32:41', 0, NULL, '2025-10-06 17:32:41', '2025-10-12 17:32:41'),
+(4, 19, 12, NULL, 5, 'I am impressed! They clearly took my previous feedback to heart. No wait time this visit and the service was impeccable. This is the level of quality I was hoping for!', 'Your feedback helped us improve! We are thrilled to hear about your positive experience this time. Thank you for giving us another chance and for helping us grow!', '2025-10-11 17:32:41', 0, NULL, '2025-10-10 17:32:41', '2025-10-12 17:32:41'),
+(5, 19, 11, 65, 5, 'cxascdfsadf', NULL, NULL, 0, NULL, '2025-10-12 17:34:11', NULL),
+(6, 19, 11, 61, 1, 'sfasf', NULL, NULL, 0, NULL, '2025-10-12 17:34:50', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `review_complaints`
+--
+
+DROP TABLE IF EXISTS `review_complaints`;
+CREATE TABLE `review_complaints` (
+  `complaint_id` int(11) NOT NULL,
+  `review_id` int(11) NOT NULL,
+  `reporter_id` int(11) NOT NULL,
+  `complaint_type` enum('inappropriate','fake','offensive','spam','other') NOT NULL,
+  `complaint_text` text DEFAULT NULL,
+  `status` enum('pending','reviewed','resolved','dismissed') DEFAULT 'pending',
+  `admin_notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -175,6 +248,7 @@ INSERT INTO `reviews` (`review_id`, `customer_id`, `business_id`, `rating`, `tex
 -- Структура таблицы `services`
 --
 
+DROP TABLE IF EXISTS `services`;
 CREATE TABLE `services` (
   `service_id` int(11) NOT NULL,
   `business_id` int(11) NOT NULL,
@@ -247,7 +321,10 @@ INSERT INTO `services` (`service_id`, `business_id`, `name`, `price`, `duration_
 (53, 11, 'Basic Haircut', 40.00, 30, 'A standard haircut service.', '2025-08-22 17:16:03', 'Services', 1),
 (54, 11, 'Deluxe Hair Coloring', 150.00, 120, 'Premium hair coloring with deep conditioning.', '2025-08-22 17:16:03', 'Services', 1),
 (55, 11, 'Manicure & Pedicure', 75.00, 90, 'Complete nail care for hands and feet.', '2025-08-22 17:17:28', 'Services', 1),
-(56, 11, 'long hair', 100.00, 45, 'blablablalba', '2025-08-25 22:57:48', 'Services', 1);
+(56, 11, 'long hair', 100.00, 45, 'blablablalba', '2025-08-25 22:57:48', 'Services', 1),
+(57, 12, 'Relaxing Massage', 120.00, 60, 'Full body relaxation massage with essential oils', '2025-10-12 17:33:11', 'Services', 1),
+(58, 12, 'Facial Treatment', 85.00, 45, 'Deep cleansing facial with moisturizing treatment', '2025-10-12 17:33:11', 'Services', 1),
+(59, 12, 'Spa Package', 180.00, 90, 'Complete spa experience with massage and facial', '2025-10-12 17:33:11', 'Services', 1);
 
 -- --------------------------------------------------------
 
@@ -255,6 +332,7 @@ INSERT INTO `services` (`service_id`, `business_id`, `name`, `price`, `duration_
 -- Структура таблицы `users`
 --
 
+DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
   `first_name` varchar(100) NOT NULL,
@@ -271,7 +349,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `email`, `phone`, `password_hash`, `role`, `created_at`) VALUES
-(1, 'מירי', 'כהן', 'miri.cohen@beautysalon.co.il', '052-1234567', '$2b$10$example1hash', 'business', '2025-08-22 15:54:45'),
+(1, 'מירי', 'כהן', 'info@mirysalon.co.il', '03-1234567', '$2b$10$example1hash', 'business', '2025-08-22 15:54:45'),
 (2, 'יעל', 'לוי', 'yael.levy@nailstudio.co.il', '054-7654321', '$2b$10$example2hash', 'business', '2025-08-22 15:54:45'),
 (3, 'דנה', 'אברהם', 'dana.avraham@spaluxury.co.il', '053-9876543', '$2b$10$example3hash', 'business', '2025-08-22 15:54:45'),
 (4, 'רונית', 'שמיר', 'ronit.shamir@hairstyle.co.il', '050-5555555', '$2b$10$example4hash', 'business', '2025-08-22 15:54:45'),
@@ -300,6 +378,7 @@ INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `email`, `phone`, `pa
 -- Структура таблицы `user_favorites`
 --
 
+DROP TABLE IF EXISTS `user_favorites`;
 CREATE TABLE `user_favorites` (
   `user_id` int(11) NOT NULL,
   `business_id` int(11) NOT NULL,
@@ -314,6 +393,26 @@ INSERT INTO `user_favorites` (`user_id`, `business_id`, `created_at`) VALUES
 (19, 11, '2025-08-25 18:45:01'),
 (19, 12, '2025-08-25 18:45:02'),
 (23, 11, '2025-08-25 21:22:52');
+
+-- --------------------------------------------------------
+
+--
+-- Структура для представления `business_review_stats`
+--
+DROP TABLE IF EXISTS `business_review_stats`;
+
+DROP VIEW IF EXISTS `business_review_stats`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `business_review_stats`  AS SELECT `b`.`business_id` AS `business_id`, `b`.`name` AS `business_name`, count(`r`.`review_id`) AS `total_reviews`, round(avg(`r`.`rating`),2) AS `average_rating`, count(case when `r`.`rating` = 5 then 1 end) AS `five_star_count`, count(case when `r`.`rating` = 4 then 1 end) AS `four_star_count`, count(case when `r`.`rating` = 3 then 1 end) AS `three_star_count`, count(case when `r`.`rating` = 2 then 1 end) AS `two_star_count`, count(case when `r`.`rating` = 1 then 1 end) AS `one_star_count`, count(case when `r`.`business_response` is not null then 1 end) AS `responses_count` FROM (`businesses` `b` left join `reviews` `r` on(`b`.`business_id` = `r`.`business_id` and `r`.`is_hidden` = 0)) GROUP BY `b`.`business_id`, `b`.`name` ;
+
+-- --------------------------------------------------------
+
+--
+-- Структура для представления `reviewable_appointments`
+--
+DROP TABLE IF EXISTS `reviewable_appointments`;
+
+DROP VIEW IF EXISTS `reviewable_appointments`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `reviewable_appointments`  AS SELECT `a`.`appointment_id` AS `appointment_id`, `a`.`customer_id` AS `customer_id`, `a`.`business_id` AS `business_id`, `a`.`service_id` AS `service_id`, `a`.`appointment_datetime` AS `appointment_datetime`, `a`.`status` AS `status`, `b`.`name` AS `business_name`, `s`.`name` AS `service_name`, `u`.`first_name` AS `first_name`, `u`.`last_name` AS `last_name` FROM ((((`appointments` `a` join `businesses` `b` on(`a`.`business_id` = `b`.`business_id`)) join `services` `s` on(`a`.`service_id` = `s`.`service_id`)) join `users` `u` on(`a`.`customer_id` = `u`.`user_id`)) left join `reviews` `r` on(`a`.`appointment_id` = `r`.`appointment_id`)) WHERE `a`.`status` = 'completed' AND `r`.`review_id` is null AND `a`.`appointment_datetime` >= current_timestamp() - interval 30 day ;
 
 --
 -- Индексы сохранённых таблиц
@@ -340,8 +439,19 @@ ALTER TABLE `businesses`
 --
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`review_id`),
-  ADD KEY `customer_id` (`customer_id`),
-  ADD KEY `business_id` (`business_id`);
+  ADD KEY `idx_reviews_business_id` (`business_id`),
+  ADD KEY `idx_reviews_customer_id` (`customer_id`),
+  ADD KEY `idx_reviews_appointment_id` (`appointment_id`),
+  ADD KEY `idx_reviews_created_at` (`created_at`);
+
+--
+-- Индексы таблицы `review_complaints`
+--
+ALTER TABLE `review_complaints`
+  ADD PRIMARY KEY (`complaint_id`),
+  ADD KEY `reporter_id` (`reporter_id`),
+  ADD KEY `idx_review_complaints_review_id` (`review_id`),
+  ADD KEY `idx_review_complaints_status` (`status`);
 
 --
 -- Индексы таблицы `services`
@@ -373,7 +483,7 @@ ALTER TABLE `user_favorites`
 -- AUTO_INCREMENT для таблицы `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `appointment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
+  MODIFY `appointment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT для таблицы `businesses`
@@ -388,10 +498,16 @@ ALTER TABLE `reviews`
   MODIFY `review_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT для таблицы `review_complaints`
+--
+ALTER TABLE `review_complaints`
+  MODIFY `complaint_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT для таблицы `services`
 --
 ALTER TABLE `services`
-  MODIFY `service_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+  MODIFY `service_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
 
 --
 -- AUTO_INCREMENT для таблицы `users`
@@ -402,6 +518,21 @@ ALTER TABLE `users`
 --
 -- Ограничения внешнего ключа сохраненных таблиц
 --
+
+--
+-- Ограничения внешнего ключа таблицы `reviews`
+--
+ALTER TABLE `reviews`
+  ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`business_id`) REFERENCES `businesses` (`business_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `reviews_ibfk_3` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`) ON DELETE SET NULL;
+
+--
+-- Ограничения внешнего ключа таблицы `review_complaints`
+--
+ALTER TABLE `review_complaints`
+  ADD CONSTRAINT `review_complaints_ibfk_1` FOREIGN KEY (`review_id`) REFERENCES `reviews` (`review_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `review_complaints_ibfk_2` FOREIGN KEY (`reporter_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
 -- Ограничения внешнего ключа таблицы `user_favorites`
