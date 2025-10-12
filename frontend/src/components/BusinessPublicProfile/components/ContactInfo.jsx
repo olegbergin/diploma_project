@@ -2,9 +2,6 @@ import React from 'react';
 import styles from './ContactInfo.module.css';
 
 const ContactInfo = ({ business }) => {
-    // Debug log to see what business data we're receiving
-    console.log('ContactInfo - business data:', business);
-
     const handleCall = () => {
         if (business.phone) {
             window.location.href = `tel:${business.phone}`;
