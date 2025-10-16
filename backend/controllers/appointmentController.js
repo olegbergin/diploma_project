@@ -84,7 +84,7 @@ const createAppointment = async (req, res) => {
         status,
         notes,
         created_at
-      ) VALUES (?, ?, ?, ?, 'scheduled', ?, NOW())
+      ) VALUES (?, ?, ?, ?, 'pending', ?, NOW())
     `;
 
     const [result] = await connection.query(query, [
@@ -108,7 +108,7 @@ const createAppointment = async (req, res) => {
         serviceName,
         servicePrice,
         serviceDuration,
-        status: 'scheduled'
+        status: 'pending'
       }
     });
 
