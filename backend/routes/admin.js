@@ -1,41 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../dbSingleton").getPromise();
-
-/**
- * Middleware to check if user is admin
- * This should be properly implemented with JWT token verification
- */
-const requireAdmin = async (req, res, next) => {
-  try {
-    const { adminId } = req.body;
-    
-    if (!adminId) {
-      return res.status(401).json({ error: "Admin authentication required" });
-    }
-
-    // Verify admin role
-    const [admin] = await db.query(`
-      SELECT user_id, role FROM users WHERE user_id = ? AND role = 'admin'
-    `, [adminId]);
-
-    if (admin.length === 0) {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-
-    req.adminId = adminId;
-    next();
-  } catch (error) {
-    console.error("Admin auth error:", error);
-    res.status(500).json({ error: "Authentication error" });
-  }
-};
+const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
 
 /**
  * GET /api/admin/reviews/complaints
  * Get all review complaints for admin moderation
  */
-router.get("/reviews/complaints", async (req, res) => {
+router.get("/reviews/complaints", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { status = 'pending', limit = 50, offset = 0 } = req.query;
 
@@ -101,7 +73,7 @@ router.get("/reviews/complaints", async (req, res) => {
  * PUT /api/admin/reviews/:reviewId/moderate
  * Moderate a review (hide/unhide)
  */
-router.put("/reviews/:reviewId/moderate", requireAdmin, async (req, res) => {
+router.put("/reviews/:reviewId/moderate", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { reviewId } = req.params;
     const { action, reason } = req.body; // action: 'hide' or 'unhide'
@@ -146,7 +118,7 @@ router.put("/reviews/:reviewId/moderate", requireAdmin, async (req, res) => {
  * PUT /api/admin/complaints/:complaintId/resolve
  * Resolve a review complaint
  */
-router.put("/complaints/:complaintId/resolve", requireAdmin, async (req, res) => {
+router.put("/complaints/:complaintId/resolve", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { complaintId } = req.params;
     const { resolution, adminNotes } = req.body; // resolution: 'resolved' or 'dismissed'
@@ -182,7 +154,7 @@ router.put("/complaints/:complaintId/resolve", requireAdmin, async (req, res) =>
  * GET /api/admin/reviews/stats
  * Get review system statistics for admin dashboard
  */
-router.get("/reviews/stats", async (req, res) => {
+router.get("/reviews/stats", authenticateToken, requireAdmin, async (req, res) => {
   try {
     // Get various statistics
     const [reviewStats] = await db.query(`
@@ -242,7 +214,7 @@ router.get("/reviews/stats", async (req, res) => {
  * GET /api/admin/reviews
  * Get all reviews with filtering options
  */
-router.get("/reviews", async (req, res) => {
+router.get("/reviews", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { 
       businessId, 

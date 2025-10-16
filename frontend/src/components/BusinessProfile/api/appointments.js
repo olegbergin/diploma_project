@@ -1,8 +1,12 @@
 // src/components/BusinessProfile/api/appointments.js
+import axiosInstance from '../../../utils/axiosInstance';
+
 export async function fetchAppointments(businessId, monthIso) {
-  const res = await fetch(
-    `/api/appointments?businessId=${businessId}&month=${monthIso}`
-  );
-  if (!res.ok) throw new Error("Network error");
-  return res.json(); // [{ date:"YYYY-MM-DD", time:"HH:MM", ... }]
+  const response = await axiosInstance.get('/appointments', {
+    params: {
+      businessId,
+      month: monthIso
+    }
+  });
+  return response.data; // [{ date:"YYYY-MM-DD", time:"HH:MM", ... }]
 }

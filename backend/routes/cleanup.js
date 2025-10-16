@@ -4,9 +4,11 @@
 // --------------------------------------------------------------
 
 const express = require("express");
-const fs = require("fs");
+const fs = require("fs").promises;
+const fsSync = require("fs");
 const path = require("path");
 const db = require('../dbSingleton');
+const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 const uploadsDir = path.join(__dirname, "../uploads/");
@@ -59,39 +61,43 @@ const findOrphanedFiles = async () => {
   try {
     const referencedImages = await getReferencedImages();
     const referencedSet = new Set(referencedImages);
-    
+
     const orphanedFiles = [];
-    
+
     // Check main uploads directory
-    if (fs.existsSync(uploadsDir)) {
-      const uploadedFiles = fs.readdirSync(uploadsDir);
-      uploadedFiles.forEach(file => {
+    if (fsSync.existsSync(uploadsDir)) {
+      const uploadedFiles = await fs.readdir(uploadsDir);
+      for (const file of uploadedFiles) {
         if (!referencedSet.has(file)) {
+          const filePath = path.join(uploadsDir, file);
+          const stats = await fs.stat(filePath);
           orphanedFiles.push({
-            path: path.join(uploadsDir, file),
+            path: filePath,
             filename: file,
             type: 'main',
-            size: fs.statSync(path.join(uploadsDir, file)).size
+            size: stats.size
           });
         }
-      });
+      }
     }
-    
+
     // Check thumbnails directory
-    if (fs.existsSync(thumbnailsDir)) {
-      const thumbnailFiles = fs.readdirSync(thumbnailsDir);
-      thumbnailFiles.forEach(file => {
+    if (fsSync.existsSync(thumbnailsDir)) {
+      const thumbnailFiles = await fs.readdir(thumbnailsDir);
+      for (const file of thumbnailFiles) {
         if (!referencedSet.has(file)) {
+          const filePath = path.join(thumbnailsDir, file);
+          const stats = await fs.stat(filePath);
           orphanedFiles.push({
-            path: path.join(thumbnailsDir, file),
+            path: filePath,
             filename: file,
             type: 'thumbnail',
-            size: fs.statSync(path.join(thumbnailsDir, file)).size
+            size: stats.size
           });
         }
-      });
+      }
     }
-    
+
     return orphanedFiles;
   } catch (error) {
     console.error('Error finding orphaned files:', error);
@@ -100,10 +106,8 @@ const findOrphanedFiles = async () => {
 };
 
 // GET /api/cleanup/orphaned - List orphaned files (admin only)
-router.get('/orphaned', async (req, res) => {
+router.get('/orphaned', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    // TODO: Add authentication check for admin role
-    
     const orphanedFiles = await findOrphanedFiles();
     const totalSize = orphanedFiles.reduce((sum, file) => sum + file.size, 0);
     
@@ -127,17 +131,15 @@ router.get('/orphaned', async (req, res) => {
 });
 
 // DELETE /api/cleanup/orphaned - Clean up orphaned files (admin only)
-router.delete('/orphaned', async (req, res) => {
+router.delete('/orphaned', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    // TODO: Add authentication check for admin role
-    
     const orphanedFiles = await findOrphanedFiles();
     let deletedCount = 0;
     let errors = [];
-    
-    orphanedFiles.forEach(file => {
+
+    for (const file of orphanedFiles) {
       try {
-        fs.unlinkSync(file.path);
+        await fs.unlink(file.path);
         deletedCount++;
       } catch (deleteError) {
         console.error(`Failed to delete ${file.filename}:`, deleteError);
@@ -146,7 +148,7 @@ router.delete('/orphaned', async (req, res) => {
           error: deleteError.message
         });
       }
-    });
+    }
     
     res.json({
       deleted: deletedCount,
@@ -162,28 +164,26 @@ router.delete('/orphaned', async (req, res) => {
 });
 
 // DELETE /api/cleanup/old - Clean up old files (older than specified days)
-router.delete('/old/:days', async (req, res) => {
+router.delete('/old/:days', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    // TODO: Add authentication check for admin role
-    
     const days = parseInt(req.params.days) || 30;
     const cutoffDate = new Date(Date.now() - (days * 24 * 60 * 60 * 1000));
-    
+
     let deletedCount = 0;
     let errors = [];
-    
+
     // Function to clean directory
-    const cleanDirectory = (dirPath) => {
-      if (!fs.existsSync(dirPath)) return;
-      
-      const files = fs.readdirSync(dirPath);
-      files.forEach(file => {
+    const cleanDirectory = async (dirPath) => {
+      if (!fsSync.existsSync(dirPath)) return;
+
+      const files = await fs.readdir(dirPath);
+      for (const file of files) {
         const filePath = path.join(dirPath, file);
-        const stats = fs.statSync(filePath);
-        
+        const stats = await fs.stat(filePath);
+
         if (stats.mtime < cutoffDate) {
           try {
-            fs.unlinkSync(filePath);
+            await fs.unlink(filePath);
             deletedCount++;
           } catch (deleteError) {
             console.error(`Failed to delete old file ${file}:`, deleteError);
@@ -193,11 +193,11 @@ router.delete('/old/:days', async (req, res) => {
             });
           }
         }
-      });
+      }
     };
-    
-    cleanDirectory(uploadsDir);
-    cleanDirectory(thumbnailsDir);
+
+    await cleanDirectory(uploadsDir);
+    await cleanDirectory(thumbnailsDir);
     
     res.json({
       cutoffDate: cutoffDate.toISOString(),
@@ -214,28 +214,28 @@ router.delete('/old/:days', async (req, res) => {
 });
 
 // GET /api/cleanup/stats - Get storage statistics
-router.get('/stats', async (req, res) => {
+router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const getDirectorySize = (dirPath) => {
-      if (!fs.existsSync(dirPath)) return { count: 0, size: 0 };
-      
-      const files = fs.readdirSync(dirPath);
+    const getDirectorySize = async (dirPath) => {
+      if (!fsSync.existsSync(dirPath)) return { count: 0, size: 0 };
+
+      const files = await fs.readdir(dirPath);
       let totalSize = 0;
-      
-      files.forEach(file => {
+
+      for (const file of files) {
         const filePath = path.join(dirPath, file);
-        const stats = fs.statSync(filePath);
+        const stats = await fs.stat(filePath);
         totalSize += stats.size;
-      });
-      
+      }
+
       return {
         count: files.length,
         size: totalSize
       };
     };
     
-    const uploadsStats = getDirectorySize(uploadsDir);
-    const thumbnailsStats = getDirectorySize(thumbnailsDir);
+    const uploadsStats = await getDirectorySize(uploadsDir);
+    const thumbnailsStats = await getDirectorySize(thumbnailsDir);
     const referencedImages = await getReferencedImages();
     const orphanedFiles = await findOrphanedFiles();
     

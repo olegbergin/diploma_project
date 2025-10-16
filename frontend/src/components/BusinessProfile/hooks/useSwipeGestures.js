@@ -7,6 +7,11 @@ export function useSwipeGestures({ onSwipeLeft, onSwipeRight, threshold = 50 }) 
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
+    // Check if we're in a browser environment
+    if (typeof document === 'undefined') {
+      return;
+    }
+
     const element = elementRef.current;
     if (!element) return;
 

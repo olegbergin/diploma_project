@@ -8,6 +8,11 @@ export function usePullToRefresh({ onRefresh, threshold = 80 }) {
   const currentY = useRef(0);
 
   useEffect(() => {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
     let isTouching = false;
 
     const handleTouchStart = (e) => {

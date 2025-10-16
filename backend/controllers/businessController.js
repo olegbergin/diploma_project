@@ -11,20 +11,6 @@ exports.getAllBusinesses = async (req, res) => {
   }
 };
 
-exports.getBusinessById = async (req, res) => {
-  try {
-   const connection = db.getPromise();
-    const [rows] = await connection.query('SELECT * FROM businesses WHERE business_id = ?', [req.params.id]);
-    if (rows.length > 0) {
-      res.json(rows[0]);
-    } else {
-      res.status(404).json({ message: 'Business not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 exports.createBusiness = async (req, res) => {
   const {
     name, category, description, address = "", opening_hours = "",

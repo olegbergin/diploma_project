@@ -27,10 +27,17 @@ describe('Database Singleton', () => {
   let dbSingleton;
 
   beforeEach(() => {
-    // Reset all mocks
+    // Reset all mocks BEFORE reimporting
     jest.clearAllMocks();
     mockConnection.state = 'authenticated';
-    
+
+    // Setup connection mock to call callback immediately
+    mockConnection.connect.mockImplementation((callback) => {
+      if (callback) callback(null);
+    });
+
+    mockMysql.createConnection.mockReturnValue(mockConnection);
+
     // Clear require cache and reimport to get fresh instance
     delete require.cache[require.resolve('../dbSingleton')];
     dbSingleton = require('../dbSingleton');
