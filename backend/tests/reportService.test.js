@@ -233,6 +233,11 @@ describe('Report Service', () => {
       const result = await reportService.generateDailyReport(1, '2025-09-10');
 
       expect(result.summary.newCustomers).toBe(5);
+      expect(mockDb.query).toHaveBeenNthCalledWith(
+        3,
+        expect.stringContaining('SELECT COUNT(*) as new_customers_count'),
+        [1, '2025-09-10']
+      );
     });
   });
 
