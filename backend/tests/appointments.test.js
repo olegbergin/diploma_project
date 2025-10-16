@@ -73,12 +73,14 @@ describe('Appointment Controller', () => {
         expect.stringContaining('INSERT INTO appointments'),
         expect.arrayContaining([123, 1, 1, '2025-09-10 10:00:00'])
       );
+      expect(mockDb.query.mock.calls[1][0]).toContain("'pending'");
 
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Appointment created successfully',
-          appointmentId: 456
+          appointmentId: 456,
+          appointment: expect.objectContaining({ status: 'pending' })
         })
       );
     });
@@ -107,8 +109,16 @@ describe('Appointment Controller', () => {
         expect.stringContaining('INSERT INTO appointments'),
         expect.arrayContaining([789, 1, 1, '2025-09-10 10:00:00'])
       );
+      expect(mockDb.query.mock.calls[2][0]).toContain("'pending'");
 
       expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Appointment created successfully',
+          appointmentId: 456,
+          appointment: expect.objectContaining({ status: 'pending' })
+        })
+      );
     });
 
     test('should handle missing required fields', async () => {
@@ -169,7 +179,7 @@ describe('Appointment Controller', () => {
 
       // Mock no existing customer, then error during customer creation
       mockDb.query
-        .mockResolvedValueOnce([]) // No existing customer
+        .mockResolvedValueOnce([[]]) // No existing customer
         .mockRejectedValueOnce(new Error('Customer creation failed'));
 
       await appointmentController.createAppointment(req, res);
@@ -187,7 +197,7 @@ describe('Appointment Controller', () => {
 
       // Mock existing customer, then error during appointment creation
       mockDb.query
-        .mockResolvedValueOnce([{ user_id: 123 }]) // Customer exists
+        .mockResolvedValueOnce([[{ user_id: 123 }]]) // Customer exists
         .mockRejectedValueOnce(new Error('Appointment creation failed'));
 
       await appointmentController.createAppointment(req, res);
