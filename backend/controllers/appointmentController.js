@@ -134,13 +134,22 @@ const getAppointmentsForUser = async (req, res) => {
 
     const query = `
       SELECT
-        a.*,
-        b.business_name,
-        b.address as business_address,
-        b.phone as business_phone,
-        s.service_name,
-        s.price as service_price,
-        s.duration as service_duration
+        a.appointment_id,
+        a.customer_id,
+        a.business_id,
+        a.service_id,
+        a.appointment_datetime,
+        a.status,
+        a.notes,
+        a.created_at,
+        b.name AS business_name,
+        b.location AS business_address,
+        b.city AS business_city,
+        b.category AS business_category,
+        s.name AS service_name,
+        s.price AS service_price,
+        s.duration_minutes AS service_duration,
+        s.description AS service_description
       FROM appointments a
       LEFT JOIN businesses b ON a.business_id = b.business_id
       LEFT JOIN services s ON a.service_id = s.service_id
