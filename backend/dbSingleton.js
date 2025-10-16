@@ -35,33 +35,46 @@ function handleConnect() {
   // Create new connection instance
   connection = mysql.createConnection(dbConfig);
 
+  if (!connection || typeof connection.connect !== "function") {
+    console.error("Invalid database connection object received from mysql2");
+    console.log("Retrying connection in 2 seconds...");
+
+    connection = null;
+    setTimeout(handleConnect, 2000);
+    return;
+  }
+
   // Attempt initial connection
   connection.connect((err) => {
     if (err) {
       console.error("Failed to connect to database:", err.message);
       console.log("Retrying connection in 2 seconds...");
-      
+
       // Retry connection after 2 seconds
       setTimeout(handleConnect, 2000);
       return;
     }
-    
+
     console.log(`Successfully connected to MySQL database (ID: ${connection.threadId})`);
   });
 
-  // Handle connection errors after successful connection
-  connection.on("error", (err) => {
-    console.error("Database connection error:", err.message);
-    
-    // Handle connection loss
-    if (err.code === "PROTOCOL_CONNECTION_LOST" || err.code === "ECONNRESET") {
-      console.log("Database connection lost. Attempting to reconnect...");
-      handleConnect();
-    } else {
-      console.error("Fatal database error:", err);
-      throw err;
-    }
-  });
+  if (typeof connection.on === "function") {
+    // Handle connection errors after successful connection
+    connection.on("error", (err) => {
+      console.error("Database connection error:", err.message);
+
+      // Handle connection loss
+      if (err.code === "PROTOCOL_CONNECTION_LOST" || err.code === "ECONNRESET") {
+        console.log("Database connection lost. Attempting to reconnect...");
+        handleConnect();
+      } else {
+        console.error("Fatal database error:", err);
+        throw err;
+      }
+    });
+  } else {
+    console.error("Database connection object is missing error handling support");
+  }
 }
 
 // Initialize database connection on module load
@@ -90,7 +103,11 @@ const dbSingleton = {
    * @returns {mysql.Connection.promise|null} Promisified MySQL connection
    */
   getPromise: () => {
-    if (!connection) {
+    if (!connection || typeof connection.promise !== "function") {
+      console.warn("Database connection not available for promise operations");
+      return null;
+    }
+    if (!isConnectionActive(connection)) {
       console.warn("Database connection not available for promise operations");
       return null;
     }
@@ -102,9 +119,13 @@ const dbSingleton = {
    * @returns {boolean} True if connection exists and is authenticated
    */
   isConnected: () => {
-    return connection && 
-           (connection.state === "authenticated" || connection.state === "connected");
+    return isConnectionActive(connection);
   }
 };
+
+function isConnectionActive(conn) {
+  return !!(conn &&
+    (conn.state === "authenticated" || conn.state === "connected"));
+}
 
 module.exports = dbSingleton;
