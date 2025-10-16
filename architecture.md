@@ -2,6 +2,64 @@
 
 Этот документ автоматически сгенерирован как отправная точка и дополняется ручными наблюдениями.
 
+## История изменений
+
+### Phase 1: Срочная стабилизация (Январь 2025)
+
+Все критические проблемы из раздела "Потенциальные баги и зоны риска" были исправлены:
+
+#### Backend - Исправления контроллеров
+- ✅ **appointmentController.js** - Удалены все дублированные определения функций (`createAppointment`, `getAppointmentsForUser`)
+  - Исправлена консистентность статусов (теперь всегда `'scheduled'`)
+  - Убран повторный `require('../dbSingleton')` внутри функций
+  - Используется только `db.getPromise()` для работы с БД
+- ✅ **businessController.js** - Удалена дублированная простая версия `getBusinessById` (строки 14-26)
+  - Оставлена полная версия с JOIN'ами для owner_info, services и reviews
+
+#### Безопасность и авторизация
+- ✅ **Создан middleware/authMiddleware.js**
+  - `authenticateToken` - верификация JWT токенов
+  - `requireAdmin` - проверка админских прав
+  - `requireBusiness` - проверка прав бизнес-владельца
+  - `requireBusinessOwner` - проверка владения конкретным бизнесом
+  - Обработка истекших токенов и ошибок валидации
+
+- ✅ **routes/cleanup.js** - Добавлена авторизация и async операции
+  - Все эндпоинты (`/orphaned`, `/old/:days`, `/stats`) требуют админ-доступ
+  - Конвертированы синхронные операции `fs` в async (`fs.promises`)
+  - Защищены опасные операции удаления файлов
+
+- ✅ **routes/admin.js** - Замена кастомного middleware на JWT-авторизацию
+  - Все роуты защищены через `authenticateToken + requireAdmin`
+  - Эндпоинты: `/reviews/complaints`, `/reviews/:reviewId/moderate`, `/complaints/:complaintId/resolve`, `/reviews/stats`, `/reviews`
+
+#### Frontend - Стандартизация и совместимость
+- ✅ **BusinessProfile/api/appointments.js** - Переход с `fetch` на `axiosInstance`
+  - Автоматическое включение JWT токенов
+  - Использование глобальных обработчиков ошибок
+  - Правильная обработка CORS
+
+- ✅ **BookingConfirmation.jsx** - Код валиден
+  - Импорты полные и корректные (проблема была устаревшей)
+
+- ✅ **usePullToRefresh.js** - Добавлена проверка окружения
+  - Guard: `typeof window === 'undefined' || typeof document === 'undefined'`
+  - Совместимость с SSR и тестовыми средами
+
+- ✅ **useSwipeGestures.js** - Добавлена проверка окружения
+  - Guard: `typeof document === 'undefined'`
+  - Предотвращение ошибок в non-browser окружениях
+
+#### Система отзывов
+- ✅ **routes/reviews.js** - Полная реализация уже существовала
+  - Эндпоинты: создание, получение, обновление, ответ бизнеса, жалобы
+  - `reviewController.js` не требуется - вся логика в роутах
+
+#### Тестирование
+- ✅ **tests/dbSingleton.test.js** - Улучшена настройка моков
+  - Исправлен `beforeEach` с правильным `mockImplementation`
+  - 6 из 13 тестов проходят успешно
+
 ## Общий обзор
 
 - **Backend (Node.js + Express + MySQL)**: точка входа `backend/src/app.js` и набор роутов, которые проксируют запросы к контроллерам. Основные зависимости: `express`, `mysql2`, `cors`, а также собственный синглтон `dbSingleton.js`, предоставляющий как callback-, так и promise-ориентированные подключения к базе.
@@ -20,14 +78,20 @@
 
 ## Потенциальные баги и зоны риска
 
-- `backend/controllers/appointmentController.js` содержит дублированные определения функций и повторный `require('../dbSingleton')` внутри тела функции. Вторая половина файла использует `db.execute`, которого нет у экспортируемого объекта, что может приводить к ошибкам при вызове. Реальные роуты, использующие эти функции, могут получать неконсистентные ответы (`status: 'scheduled'` vs `status: 'pending'`).
-- `backend/controllers/businessController.js` дважды определяет `exports.getBusinessById`. Вторая версия переопределяет первую, что может вводить в заблуждение и ломает единообразие ответов.
+### ✅ ИСПРАВЛЕНО в Phase 1 (Январь 2025)
+- ~~`backend/controllers/appointmentController.js` содержит дублированные определения функций~~ → **ИСПРАВЛЕНО**: удалены все дубликаты
+- ~~`backend/controllers/businessController.js` дважды определяет `exports.getBusinessById`~~ → **ИСПРАВЛЕНО**: оставлена только полная версия
+- ~~`backend/controllers/reviewController.js` пуст~~ → **НЕ ПРОБЛЕМА**: вся логика в `routes/reviews.js`
+- ~~Роуты (`routes/cleanup.js`, часть `routes/admin.js`) не проверяют авторизацию~~ → **ИСПРАВЛЕНО**: добавлен JWT middleware
+- ~~Роуты выполняют опасные операции (удаление файлов) синхронно~~ → **ИСПРАВЛЕНО**: конвертировано в async
+- ~~`frontend/src/components/BusinessProfile/api/appointments.js` использует `fetch`~~ → **ИСПРАВЛЕНО**: переход на `axiosInstance`
+- ~~`BookingConfirmation.jsx` неполный импорт~~ → **НЕ ПРОБЛЕМА**: импорты корректны
+- ~~Хуки используют `window`/`document` без проверок~~ → **ИСПРАВЛЕНО**: добавлены guards
+
+### Текущие зоны риска
 - В `adminController` много логики, завязанной на несуществующие столбцы (`status`, `approved_at`, `rejection_reason` и др.). Сейчас код просто игнорирует обновление статусов или возвращает заглушки — при изменении схемы БД эти места нужно пересмотреть.
-- `backend/controllers/reviewController.js` пуст, тогда как фронтенд импортирует `/api/reviews` — запросы завершатся 404/501.
-- Роуты (`routes/cleanup.js`, часть `routes/admin.js`) не проверяют авторизацию и выполняют опасные операции (удаление файлов) синхронно.
-- `frontend/src/components/BusinessProfile/api/appointments.js` обращается к `/api/appointments` методом `fetch`, минуя `axiosInstance`. Это обходит глобальные обработчики ошибок и токены; при развертывании может возникнуть CORS или 401.
-- В `frontend/src/components/BookingPage/components/BookingConfirmation.jsx` неполный импорт (`import {` без указания символов) — код невалиден и не соберётся.
-- `frontend/src/components/BusinessProfile/hooks/usePullToRefresh.js` и другие хуки напрямую используют `window`/`document`; в SSR или тестовой среде может сломаться без проверок.
+- Сервис очистки файлов (`routes/cleanup.js`) не имеет автоматических тестов
+- Некоторые тесты в `tests/dbSingleton.test.js` все еще не проходят (7 из 13 падают)
 
 ## backend
 
@@ -35,19 +99,20 @@
 | --- | --- | --- |
 | backend/.gitignore |  |  |
 | backend/controllers/adminController.js | const db = require('../dbSingleton'); | exports.getAdminStats = async (req, res) => {<br>exports.getRecentActivity = async (req, res) => {<br>exports.getAllUsers = async (req, res) => {<br>exports.updateUserStatus = async (req, res) => {<br>exports.updateUserRole = async (req, res) => {<br>exports.getAllBusinesses = async (req, res) => {<br>exports.approveBusiness = async (req, res) => {<br>exports.rejectBusiness = async (req, res) => {<br>exports.deleteBusiness = async (req, res) => {<br>exports.getAllAppointments = async (req, res) => {<br>exports.updateAppointmentStatus = async (req, res) => {<br>exports.getUserAnalytics = async (req, res) => {<br>exports.getBusinessAnalytics = async (req, res) => {<br>exports.getAppointmentAnalytics = async (req, res) => { |
-| backend/controllers/appointmentController.js | const db = require('../dbSingleton');<br>const db = require('../dbSingleton'); | module.exports = {<br>module.exports = { |
-| backend/controllers/businessController.js | const db = require('../dbSingleton'); | exports.getAllBusinesses = async (req, res) => {<br>exports.getBusinessById = async (req, res) => {<br>exports.createBusiness = async (req, res) => {<br>exports.updateBusiness = async (req, res) => {<br>exports.deleteBusiness = async (req, res) => {<br>exports.getCategories = async (req, res) => {<br>exports.getBusinessById = async (req, res) => {<br>exports.getBusinessServices = async (req, res) => {<br>exports.getBusinessReviews = async (req, res) => {<br>exports.getBusinessCalendar = async (req, res) => {<br>exports.getBusinessAvailability = async (req, res) => {<br>exports.createService = async (req, res) => {<br>exports.updateService = async (req, res) => {<br>exports.deleteService = async (req, res) => {<br>exports.getBusinessDashboard = async (req, res) => {<br>exports.getBusinessDashboardAnalytics = async (req, res) => { |
+| backend/controllers/appointmentController.js | const db = require('../dbSingleton'); | module.exports = { createAppointment, getAppointmentsForUser } |
+| backend/controllers/businessController.js | const db = require('../dbSingleton'); | exports.getAllBusinesses, exports.createBusiness, exports.updateBusiness, exports.deleteBusiness, exports.getCategories, exports.getBusinessById (полная версия с JOIN), exports.getBusinessServices, exports.getBusinessReviews, exports.getBusinessCalendar, exports.getBusinessAvailability, exports.createService, exports.updateService, exports.deleteService, exports.getBusinessDashboard, exports.getBusinessDashboardAnalytics |
 | backend/controllers/reportController.js | const db = require('../dbSingleton');<br>const reportService = require('../services/reportService');<br>const pdfService = require('../services/pdfService'); | exports.generateReport = async (req, res) => {<br>exports.previewReport = async (req, res) => {<br>exports.getAvailableDates = async (req, res) => { |
 | backend/controllers/reviewController.js |  |  |
 | backend/dbSingleton.js | const mysql = require("mysql2"); | module.exports = dbSingleton; |
+| backend/middleware/authMiddleware.js | const jwt = require('jsonwebtoken'); | module.exports = { authenticateToken, requireAdmin, requireBusiness, requireBusinessOwner } |
 | backend/package-lock.json |  |  |
 | backend/package.json |  |  |
 | backend/README.md |  |  |
-| backend/routes/admin.js | const express = require("express");<br>const db = require("../dbSingleton").getPromise(); | module.exports = router; |
+| backend/routes/admin.js | const express = require("express");<br>const db = require("../dbSingleton").getPromise();<br>const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware'); | module.exports = router; |
 | backend/routes/appointments.js | const express = require("express");<br>const db = require("../dbSingleton").getPromise(); | module.exports = router; |
 | backend/routes/auth.js | const express = require("express");<br>const bcrypt = require("bcrypt");<br>const jwt = require("jsonwebtoken");<br>const db = require("../dbSingleton").getPromise(); | module.exports = router; |
 | backend/routes/businesses.js | const express = require("express");<br>const businessController = require("../controllers/businessController");<br>const db = require('../dbSingleton').getPromise(); | module.exports = router; |
-| backend/routes/cleanup.js | const express = require("express");<br>const fs = require("fs");<br>const path = require("path");<br>const db = require('../dbSingleton'); | module.exports = router; |
+| backend/routes/cleanup.js | const express = require("express");<br>const fs = require("fs").promises;<br>const fsSync = require("fs");<br>const path = require("path");<br>const db = require('../dbSingleton');<br>const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware'); | module.exports = router; |
 | backend/routes/reports.js | const express = require("express");<br>const reportService = require("../services/reportService");<br>const pdfService = require("../services/pdfService");<br>const db = require("../dbSingleton").getPromise(); | module.exports = router; |
 | backend/routes/reviews.js | const express = require("express");<br>const db = require("../dbSingleton").getPromise(); | module.exports = router; |
 | backend/routes/search.js | const express = require("express");<br>const db = require("../dbSingleton").getPromise(); // Use our new method! | module.exports = router; |
@@ -116,7 +181,7 @@
 | frontend/src/components/BusinessEditPage/BusinessEditPage.module.css |  |  |
 | frontend/src/components/BusinessModal/BusinessModal.jsx | import React, { useState, useEffect } from 'react';<br>import { FiX } from 'react-icons/fi';<br>import { useNavigate } from 'react-router-dom';<br>import axiosInstance from '../../api/axiosInstance';<br>import styles from './BusinessModal.module.css'; | export default BusinessModal; |
 | frontend/src/components/BusinessModal/BusinessModal.module.css |  |  |
-| frontend/src/components/BusinessProfile/api/appointments.js |  | export async function fetchAppointments(businessId, monthIso) { |
+| frontend/src/components/BusinessProfile/api/appointments.js | import axiosInstance from '../../../utils/axiosInstance'; | export async function fetchAppointments(businessId, monthIso) { |
 | frontend/src/components/BusinessProfile/AppointmentForm/AppointmentForm.jsx | import { useState } from "react";<br>import styles from "./AppointmentForm.module.css"; | export default function AppointmentForm({ |
 | frontend/src/components/BusinessProfile/AppointmentForm/AppointmentForm.module.css |  |  |
 | frontend/src/components/BusinessProfile/BusinessProfile.jsx | import { useEffect, useState } from "react";<br>import { useNavigate, useParams } from "react-router-dom";<br>import styles from "./BusinessProfile.module.css";<br>import BusinessDetailsForm from "./sideBar/BusinessDetailsForm";<br>import ServicesModal from "./sideBar/ServicesModal";<br>import GalleryEdit from "./sideBar/GalleryEdit";<br>import ExistingAppointments from "./sideBar/ExistingAppointments";<br>import RequestsTab from "./sideBar/RequestsTab";<br>import Calendar from "./tabs/Calendar/Calendar";<br>import GalleryView from "./tabs/GalleryView/GalleryView";<br>import MobileNavigation from "./components/MobileNavigation";<br>import FloatingActionButton from "./components/FloatingActionButton";<br>import PullToRefresh from "./components/PullToRefresh";<br>import LazyImage from "./components/LazyImage";<br>import { useSwipeGestures } from "./hooks/useSwipeGestures"; | export default function BusinessProfile() { |
