@@ -27,6 +27,7 @@ describe('Database Singleton', () => {
   let dbSingleton;
 
   beforeEach(() => {
+    jest.useRealTimers();
     // Reset all mocks BEFORE reimporting
     jest.clearAllMocks();
     mockConnection.state = 'authenticated';
@@ -36,9 +37,10 @@ describe('Database Singleton', () => {
       if (callback) callback(null);
     });
 
-    mockMysql.createConnection.mockReturnValue(mockConnection);
+    mockMysql.createConnection.mockImplementation(() => mockConnection);
 
     // Clear require cache and reimport to get fresh instance
+    jest.resetModules();
     delete require.cache[require.resolve('../dbSingleton')];
     dbSingleton = require('../dbSingleton');
   });
@@ -82,7 +84,7 @@ describe('Database Singleton', () => {
     test('should handle successful connection', () => {
       // Verify connection was attempted
       expect(mockConnection.connect).toHaveBeenCalled();
-      
+
       // Simulate successful connection
       if (mockConnection.connect.mock.calls.length > 0) {
         const connectCallback = mockConnection.connect.mock.calls[0][0];
@@ -93,26 +95,31 @@ describe('Database Singleton', () => {
       expect(mockConnection.connect).toHaveBeenCalled();
     });
 
-    test('should retry connection on initial failure', (done) => {
-      // Mock setTimeout to control timing
-      jest.spyOn(global, 'setTimeout').mockImplementation((callback) => {
-        // Execute callback immediately for test
+    test('should retry connection on initial failure', () => {
+      mockMysql.createConnection.mockClear();
+      mockConnection.connect.mockClear();
+
+      const timeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation((callback) => {
         callback();
-        done();
+        return 0;
       });
 
-      // Simulate connection failure
-      if (mockConnection.connect.mock.calls.length > 0) {
-        const connectCallback = mockConnection.connect.mock.calls[0][0];
-        const error = new Error('Connection failed');
-        connectCallback(error);
-      }
+      mockConnection.connect
+        .mockImplementationOnce((callback) => {
+          if (callback) {
+            callback(new Error('Connection failed'));
+          }
+        });
 
-      // Should attempt to reconnect
-      setTimeout(() => {
-        expect(mockMysql.createConnection).toHaveBeenCalled();
-        global.setTimeout.mockRestore();
-      }, 0);
+      jest.resetModules();
+      delete require.cache[require.resolve('../dbSingleton')];
+      dbSingleton = require('../dbSingleton');
+
+      expect(timeoutSpy).toHaveBeenCalledWith(expect.any(Function), 2000);
+      expect(mockMysql.createConnection).toHaveBeenCalledTimes(2);
+      expect(mockConnection.connect).toHaveBeenCalledTimes(2);
+
+      timeoutSpy.mockRestore();
     });
 
     test('should handle connection lost error', () => {
@@ -178,29 +185,69 @@ describe('Database Singleton', () => {
   });
 
   describe('Edge Cases', () => {
-    test('should handle null connection gracefully', () => {
-      // Mock a scenario where connection is null
-      mockMysql.createConnection.mockReturnValue(null);
-      
-      // Clear require cache and reimport
-      delete require.cache[require.resolve('../dbSingleton')];
-      const dbSingletonWithNull = require('../dbSingleton');
+    test('should handle failing connection object gracefully', () => {
+      jest.useFakeTimers();
 
-      expect(dbSingletonWithNull.getConnection()).toBe(null);
-      expect(dbSingletonWithNull.getPromise()).toBe(null);
-      expect(dbSingletonWithNull.isConnected()).toBe(false);
+      const failingConnection = {
+        connect: jest.fn((callback) => {
+          if (callback) callback(new Error('Connection refused'));
+        }),
+        promise: jest.fn(),
+        on: jest.fn(),
+        state: 'disconnected',
+        end: jest.fn()
+      };
+
+      mockMysql.createConnection.mockClear();
+      mockConnection.connect.mockClear();
+      console.error.mockClear();
+      console.log.mockClear();
+
+      mockMysql.createConnection.mockImplementationOnce(() => failingConnection);
+
+      jest.resetModules();
+      delete require.cache[require.resolve('../dbSingleton')];
+      dbSingleton = require('../dbSingleton');
+
+      expect(failingConnection.connect).toHaveBeenCalled();
+      expect(console.error).toHaveBeenCalledWith('Failed to connect to database:', 'Connection refused');
+      expect(console.log).toHaveBeenCalledWith('Retrying connection in 2 seconds...');
+
+      jest.advanceTimersByTime(2000);
+
+      expect(mockMysql.createConnection).toHaveBeenCalledTimes(2);
+
+      jest.useRealTimers();
     });
 
     test('should warn when connection not available for promise operations', () => {
-      // Mock connection as null
-      mockMysql.createConnection.mockReturnValue(null);
-      
-      // Clear require cache and reimport
-      delete require.cache[require.resolve('../dbSingleton')];
-      const dbSingletonWithNull = require('../dbSingleton');
+      jest.useFakeTimers();
 
-      // Should return null and log warning (warning is mocked in setup)
-      expect(dbSingletonWithNull.getPromise()).toBe(null);
+      const failingConnection = {
+        connect: jest.fn((callback) => {
+          if (callback) callback(new Error('Connection refused'));
+        }),
+        promise: jest.fn(),
+        on: jest.fn(),
+        state: 'disconnected',
+        end: jest.fn()
+      };
+
+      mockMysql.createConnection.mockClear();
+      mockConnection.connect.mockClear();
+      console.warn.mockClear();
+
+      mockMysql.createConnection.mockImplementation(() => failingConnection);
+
+      jest.resetModules();
+      delete require.cache[require.resolve('../dbSingleton')];
+      const dbSingletonWithFailure = require('../dbSingleton');
+
+      expect(dbSingletonWithFailure.getPromise()).toBe(null);
+      expect(console.warn).toHaveBeenCalledWith('Database connection not available for promise operations');
+
+      jest.clearAllTimers();
+      jest.useRealTimers();
     });
   });
 
@@ -211,12 +258,14 @@ describe('Database Singleton', () => {
       process.env = {
         ...originalEnv,
         DB_HOST: 'test-host',
-        DB_USER: 'test-user', 
+        DB_USER: 'test-user',
         DB_PASSWORD: 'test-password',
         DB_NAME: 'test-db'
       };
 
       // Clear require cache and reimport
+      mockMysql.createConnection.mockClear();
+      jest.resetModules();
       delete require.cache[require.resolve('../dbSingleton')];
       require('../dbSingleton');
 
@@ -238,6 +287,8 @@ describe('Database Singleton', () => {
       process.env = {};
 
       // Clear require cache and reimport
+      mockMysql.createConnection.mockClear();
+      jest.resetModules();
       delete require.cache[require.resolve('../dbSingleton')];
       require('../dbSingleton');
 
