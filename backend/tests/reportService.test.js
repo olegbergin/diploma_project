@@ -77,7 +77,7 @@ describe('Report Service', () => {
       mockDb.query
         .mockResolvedValueOnce([[mockBusiness]]) // Business info
         .mockResolvedValueOnce([mockAppointments]) // Appointments
-        .mockResolvedValueOnce([{ count: 1 }]); // New customers (mocked)
+        .mockResolvedValueOnce([[{ new_customers_count: 1 }]]); // New customers (mocked)
 
       const result = await reportService.generateDailyReport(1, '2025-09-10');
 
@@ -105,7 +105,7 @@ describe('Report Service', () => {
       mockDb.query
         .mockResolvedValueOnce([[mockBusiness]])
         .mockResolvedValueOnce([mockAppointments])
-        .mockResolvedValueOnce([{ count: 1 }]);
+        .mockResolvedValueOnce([[{ new_customers_count: 1 }]]);
 
       const result = await reportService.generateDailyReport(1, '2025-09-10');
 
@@ -119,7 +119,7 @@ describe('Report Service', () => {
       mockDb.query
         .mockResolvedValueOnce([[mockBusiness]])
         .mockResolvedValueOnce([mockAppointments])
-        .mockResolvedValueOnce([{ count: 1 }]);
+        .mockResolvedValueOnce([[{ new_customers_count: 1 }]]);
 
       const result = await reportService.generateDailyReport(1, '2025-09-10');
 
@@ -141,7 +141,7 @@ describe('Report Service', () => {
       mockDb.query
         .mockResolvedValueOnce([[mockBusiness]])
         .mockResolvedValueOnce([[]]) // No appointments
-        .mockResolvedValueOnce([{ count: 0 }]);
+        .mockResolvedValueOnce([[{ new_customers_count: 0 }]]);
 
       const result = await reportService.generateDailyReport(1, '2025-09-10');
 
@@ -173,7 +173,7 @@ describe('Report Service', () => {
       mockDb.query
         .mockResolvedValueOnce([[mockBusiness]])
         .mockResolvedValueOnce([appointmentsWithMissingService])
-        .mockResolvedValueOnce([{ count: 1 }]);
+        .mockResolvedValueOnce([[{ new_customers_count: 1 }]]);
 
       const result = await reportService.generateDailyReport(1, '2025-09-10');
 
@@ -194,7 +194,7 @@ describe('Report Service', () => {
       mockDb.query
         .mockResolvedValueOnce([[mockBusiness]])
         .mockResolvedValueOnce([appointmentsWithNullPrice])
-        .mockResolvedValueOnce([{ count: 1 }]);
+        .mockResolvedValueOnce([[{ new_customers_count: 1 }]]);
 
       const result = await reportService.generateDailyReport(1, '2025-09-10');
 
@@ -206,7 +206,7 @@ describe('Report Service', () => {
       mockDb.query
         .mockResolvedValueOnce([[mockBusiness]])
         .mockResolvedValueOnce([[]])
-        .mockResolvedValueOnce([{ count: 0 }]);
+        .mockResolvedValueOnce([[{ new_customers_count: 0 }]]);
 
       const result = await reportService.generateDailyReport(1, '2025-09-10');
 
@@ -228,11 +228,16 @@ describe('Report Service', () => {
       mockDb.query
         .mockResolvedValueOnce([[mockBusiness]])
         .mockResolvedValueOnce([[]])
-        .mockResolvedValueOnce([{ count: 5 }]); // New customers count
+        .mockResolvedValueOnce([[{ new_customers_count: 5 }]]); // New customers count
 
       const result = await reportService.generateDailyReport(1, '2025-09-10');
 
       expect(result.summary.newCustomers).toBe(5);
+      expect(mockDb.query).toHaveBeenNthCalledWith(
+        3,
+        expect.stringContaining('SELECT COUNT(*) as new_customers_count'),
+        [1, '2025-09-10']
+      );
     });
   });
 
@@ -292,7 +297,7 @@ describe('Report Service', () => {
       mockDb.query
         .mockResolvedValueOnce([[mockBusiness]])
         .mockResolvedValueOnce([appointmentsWithDifferentStatuses])
-        .mockResolvedValueOnce([{ count: 1 }]);
+        .mockResolvedValueOnce([[{ new_customers_count: 1 }]]);
 
       const result = await reportService.generateDailyReport(1, '2025-09-10');
 
@@ -318,7 +323,7 @@ describe('Report Service', () => {
       mockDb.query
         .mockResolvedValueOnce([[mockBusiness]])
         .mockResolvedValueOnce([mixedStatusAppointments])
-        .mockResolvedValueOnce([{ count: 1 }]);
+        .mockResolvedValueOnce([[{ new_customers_count: 1 }]]);
 
       const result = await reportService.generateDailyReport(1, '2025-09-10');
 
@@ -353,7 +358,7 @@ describe('Report Service', () => {
       mockDb.query
         .mockResolvedValueOnce([[mockBusiness]])
         .mockResolvedValueOnce([appointmentWithBadDate])
-        .mockResolvedValueOnce([{ count: 1 }]);
+        .mockResolvedValueOnce([[{ new_customers_count: 1 }]]);
 
       // Should not throw error, but hour might be NaN
       const result = await reportService.generateDailyReport(1, '2025-09-10');
