@@ -19,7 +19,8 @@ describe('Appointment Controller', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+    mockDb.query.mockReset();
+
     // Mock request and response objects
     req = {
       body: {},
@@ -55,7 +56,7 @@ describe('Appointment Controller', () => {
 
       // Mock existing customer lookup
       mockDb.query
-        .mockResolvedValueOnce([{ user_id: 123 }]) // Customer exists
+        .mockResolvedValueOnce([[{ user_id: 123 }]]) // Customer exists
         .mockResolvedValueOnce([{ insertId: 456 }]); // Appointment created
 
       await appointmentController.createAppointment(req, res);
@@ -74,10 +75,12 @@ describe('Appointment Controller', () => {
       );
 
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith({
-        message: 'Appointment created successfully',
-        appointmentId: 456
-      });
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Appointment created successfully',
+          appointmentId: 456
+        })
+      );
     });
 
     test('should create appointment with new customer', async () => {
@@ -85,7 +88,7 @@ describe('Appointment Controller', () => {
 
       // Mock no existing customer, then customer creation, then appointment creation
       mockDb.query
-        .mockResolvedValueOnce([]) // No existing customer
+        .mockResolvedValueOnce([[]]) // No existing customer
         .mockResolvedValueOnce([{ insertId: 789 }]) // New customer created
         .mockResolvedValueOnce([{ insertId: 456 }]); // Appointment created
 
@@ -205,7 +208,7 @@ describe('Appointment Controller', () => {
       };
 
       mockDb.query
-        .mockResolvedValueOnce([{ user_id: 123 }]) // Customer exists
+        .mockResolvedValueOnce([[{ user_id: 123 }]]) // Customer exists
         .mockResolvedValueOnce([{ insertId: 456 }]); // Appointment created
 
       await appointmentController.createAppointment(req, res);
@@ -230,7 +233,7 @@ describe('Appointment Controller', () => {
       };
 
       mockDb.query
-        .mockResolvedValueOnce([]) // No existing customer
+        .mockResolvedValueOnce([[]]) // No existing customer
         .mockResolvedValueOnce([{ insertId: 789 }]) // New customer created
         .mockResolvedValueOnce([{ insertId: 456 }]); // Appointment created
 
@@ -242,6 +245,52 @@ describe('Appointment Controller', () => {
         expect.stringContaining('INSERT INTO users'),
         ['John', 'Doe', '123-456-7890', null]
       );
+    });
+  });
+
+  describe('getAppointmentsForUser', () => {
+    test('should fetch appointments with correct field aliases', async () => {
+      req.params.userId = '42';
+
+      const appointmentRows = [
+        {
+          appointment_id: 1,
+          customer_id: 42,
+          business_id: 7,
+          service_id: 3,
+          appointment_datetime: '2025-01-01 10:00:00',
+          status: 'confirmed',
+          notes: 'Bring reference photos',
+          created_at: '2024-12-31 09:00:00',
+          business_name: 'Test Business',
+          business_address: '123 Test St',
+          business_city: 'Tel Aviv',
+          business_category: 'Spa',
+          service_name: 'Test Service',
+          service_price: 180,
+          service_duration: 75,
+          service_description: 'Relaxing massage'
+        }
+      ];
+
+      mockDb.query.mockResolvedValueOnce([appointmentRows]);
+
+      await appointmentController.getAppointmentsForUser(req, res);
+
+      expect(mockDb.query).toHaveBeenCalledWith(expect.any(String), ['42']);
+      const executedQuery = mockDb.query.mock.calls[0][0];
+
+      expect(executedQuery).toContain('b.name AS business_name');
+      expect(executedQuery).toContain('b.location AS business_address');
+      expect(executedQuery).toContain('s.name AS service_name');
+      expect(executedQuery).toContain('s.duration_minutes AS service_duration');
+      expect(executedQuery).not.toContain('b.business_name');
+      expect(executedQuery).not.toContain('s.duration as service_duration');
+
+      expect(res.json).toHaveBeenCalledWith({
+        appointments: appointmentRows,
+        count: appointmentRows.length
+      });
     });
   });
 
