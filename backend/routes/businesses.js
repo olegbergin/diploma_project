@@ -84,6 +84,9 @@ router.get("/:id/dashboard", businessController.getBusinessDashboard);
 // Get comprehensive dashboard analytics for a business
 router.get("/:id/analytics", businessController.getBusinessDashboardAnalytics);
 
+// Get all appointments for a business (for history page)
+router.get("/:id/appointments", businessController.getBusinessAppointments);
+
 // Get calendar availability for a business
 router.get("/:id/calendar", businessController.getBusinessCalendar);
 

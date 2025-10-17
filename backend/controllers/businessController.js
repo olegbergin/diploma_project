@@ -554,19 +554,6 @@ exports.getBusinessDashboard = async (req, res) => {
     const business = businessDetails[0];
 
     // Query 2: Today's appointments
-    console.log(`Searching for today's appointments for business ID: ${id}`);
-    console.log(`Current date (CURDATE()): ${new Date().toISOString().split('T')[0]}`);
-    
-    // First, let's see what appointments exist for this business
-    const [allAppointments] = await connection.query(
-      `SELECT appointment_id, business_id, DATE(appointment_datetime) as apt_date, appointment_datetime, status
-       FROM appointments 
-       WHERE business_id = ? 
-       ORDER BY appointment_datetime DESC LIMIT 10`,
-      [id]
-    );
-    console.log(`All recent appointments for business ${id}:`, allAppointments);
-    
     const [today_appointments] = await connection.query(
       `SELECT a.*, 
               COALESCE(u.first_name, 'לקוח') as first_name, 
@@ -580,12 +567,7 @@ exports.getBusinessDashboard = async (req, res) => {
        ORDER BY a.appointment_datetime ASC`,
       [id]
     );
-    
-    console.log(`Today's appointments found: ${today_appointments.length}`);
-    if (today_appointments.length > 0) {
-      console.log('Sample today appointment:', today_appointments[0]);
-    }
-    
+
     // If no appointments today, let's get upcoming appointments within 7 days as fallback
     let upcoming_appointments = [];
     if (today_appointments.length === 0) {
@@ -607,7 +589,6 @@ exports.getBusinessDashboard = async (req, res) => {
         [id]
       );
       upcoming_appointments = upcoming;
-      console.log(`Upcoming appointments in next 7 days: ${upcoming_appointments.length}`);
     }
 
     // Query 3: Pending appointments
@@ -647,7 +628,7 @@ exports.getBusinessDashboard = async (req, res) => {
     );
 
     // Query 6: Analytics - Daily revenue for the last 7 days
-    const [dailyRevenueLast7Days] = await connection.query(
+    const [dailyRevenueLast7DaysRaw] = await connection.query(
       `SELECT DATE(a.appointment_datetime) as date, SUM(s.price) as revenue
        FROM appointments a
        JOIN services s ON a.service_id = s.service_id
@@ -656,6 +637,14 @@ exports.getBusinessDashboard = async (req, res) => {
        ORDER BY date ASC`,
       [id]
     );
+
+    // Convert revenue from Decimal string to number
+    const dailyRevenueLast7Days = dailyRevenueLast7DaysRaw.map(row => ({
+      date: row.date,
+      revenue: parseFloat(row.revenue) || 0
+    }));
+
+    console.log('Daily Revenue Query Result:', dailyRevenueLast7Days);
 
     // Query 7: Service Performance (existing logic, slightly adapted)
     const [servicePerformance] = await connection.query(
@@ -888,5 +877,48 @@ exports.getBusinessDashboardAnalytics = async (req, res) => {
   } catch (error) {
     console.error(`DB error fetching dashboard data for business ${req.params.id}:`, error);
     res.status(500).json({ error: "Failed to fetch dashboard data." });
+  }
+};
+
+exports.getBusinessAppointments = async (req, res) => {
+  try {
+    const connection = db.getPromise();
+    const businessId = req.params.id;
+
+    // Verify business exists
+    const [businessRows] = await connection.query(
+      'SELECT business_id FROM businesses WHERE business_id = ?',
+      [businessId]
+    );
+
+    if (businessRows.length === 0) {
+      return res.status(404).json({ error: 'Business not found' });
+    }
+
+    // Get all appointments with customer and service details
+    const [appointments] = await connection.query(
+      `SELECT
+        a.appointment_id,
+        a.appointment_datetime,
+        a.status,
+        a.notes,
+        COALESCE(u.first_name, 'לקוח') as first_name,
+        COALESCE(u.last_name, 'לא ידוע') as last_name,
+        COALESCE(u.phone, '') as customer_phone,
+        COALESCE(s.name, 'שירות לא ידוע') as service_name,
+        COALESCE(s.price, 0) as price,
+        COALESCE(s.duration_minutes, 0) as duration_minutes
+      FROM appointments a
+      LEFT JOIN users u ON a.customer_id = u.user_id
+      LEFT JOIN services s ON a.service_id = s.service_id AND s.business_id = a.business_id
+      WHERE a.business_id = ?
+      ORDER BY a.appointment_datetime DESC`,
+      [businessId]
+    );
+
+    res.json(appointments);
+  } catch (error) {
+    console.error(`Error fetching appointments for business ${req.params.id}:`, error);
+    res.status(500).json({ error: 'Failed to fetch appointments.' });
   }
 };

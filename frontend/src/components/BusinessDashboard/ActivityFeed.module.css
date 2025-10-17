@@ -14,44 +14,198 @@
   margin-bottom: var(--space-4);
 }
 
-.activityList {
+/* Section Styles */
+.section {
+  margin-bottom: var(--space-4);
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.sectionCount {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-normal);
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: var(--space-4) 0;
+}
+
+/* Appointment List */
+.appointmentList {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-2);
 }
 
-.activityItem {
+.appointmentItem {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  transition: all var(--transition-base) var(--ease-in-out);
+}
+
+.appointmentItem:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-medium);
+  transform: translateX(-2px);
+}
+
+.itemContent {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: var(--space-3);
 }
 
-.iconWrapper {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--bg-tertiary);
-}
-
-.contentWrapper {
+/* Customer Info */
+.customerInfo {
   display: flex;
   flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
 }
 
-.activityText {
-  margin: 0;
+.customerName {
   font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
   color: var(--text-primary);
-  font-weight: var(--font-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.activityTime {
+.serviceName {
   font-size: var(--text-xs);
   color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Appointment Meta */
+.appointmentMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.appointmentTime {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.appointmentStatus {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+/* Status Colors */
+.statusCompleted {
+  background: var(--bg-success-light);
+  color: var(--stats-green);
+}
+
+.statusConfirmed {
+  background: var(--bg-info-light);
+  color: var(--stats-cyan);
+}
+
+.statusPending {
+  background: var(--bg-warning-light);
+  color: var(--stats-orange);
+}
+
+.statusCancelled {
+  background: var(--bg-error-light);
+  color: var(--stats-red);
+}
+
+.statusDefault {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+/* Toggle Button */
+.toggleButton {
+  width: 100%;
+  margin-top: var(--space-3);
+  padding: var(--space-2);
+  background: transparent;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-base) var(--ease-in-out);
+}
+
+.toggleButton:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-medium);
+  color: var(--text-primary);
+}
+
+.toggleButton:active {
+  transform: scale(0.98);
+}
+
+/* Empty State */
+.emptyMessage {
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+  font-style: italic;
+  padding: var(--space-4);
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card {
+    padding: var(--space-3);
+  }
+
+  .itemContent {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .appointmentMeta {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 }

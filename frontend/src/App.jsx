@@ -18,6 +18,7 @@ import BusinessPublicProfile from "./components/BusinessPublicProfile/BusinessPu
 import NewBusinessDashboard from "./components/BusinessDashboard/NewBusinessDashboard";
 import ServiceManagement from "./components/ServiceManagement/ServiceManagement";
 import CalendarPage from "./components/CalendarPage/CalendarPage";
+import AppointmentHistory from "./components/AppointmentHistory/AppointmentHistory";
 import UserDashboard from "./components/UserDashboard/UserDashboard";
 import FavoritesPage from "./components/FavoritesPage/FavoritesPage";
 import SearchPage from "./components/SearchPage/SearchPage";
@@ -257,6 +258,17 @@ function App() {
               element={
                 currentUser && currentUser.role === "business" ? (
                   <CalendarPage />
+                ) : (
+                  <Navigate replace to="/login" />
+                )
+              }
+            />
+            {/* Appointment History for businesses */}
+            <Route
+              path="/appointments/history"
+              element={
+                currentUser && currentUser.role === "business" ? (
+                  <AppointmentHistory user={currentUser} />
                 ) : (
                   <Navigate replace to="/login" />
                 )

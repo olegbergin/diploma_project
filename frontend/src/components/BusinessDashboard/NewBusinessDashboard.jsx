@@ -7,7 +7,6 @@ import axiosInstance from '../../api/axiosInstance';
 import KpiCards from './KpiCards';
 import PerformanceChart from './PerformanceChart';
 import PopularServices from './PopularServices';
-import ActivityFeed from './ActivityFeed';
 import ReportGenerator from './ReportGenerator/ReportGenerator';
 
 export default function NewBusinessDashboard({ user }) {
@@ -58,10 +57,24 @@ export default function NewBusinessDashboard({ user }) {
   
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('he-IL', {
+    return date.toLocaleDateString('he-IL', {
+      month: 'short',
+      day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const translateStatus = (status) => {
+    const statusMap = {
+      'pending': 'ממתין',
+      'confirmed': 'מאושר',
+      'completed': 'הושלם',
+      'cancelled_by_user': 'בוטל ע"י לקוח',
+      'cancelled_by_business': 'בוטל ע"י בית עסק',
+      'not_arrived': 'לא הגיע'
+    };
+    return statusMap[status] || status;
   };
 
   if (loading) {
@@ -82,6 +95,7 @@ export default function NewBusinessDashboard({ user }) {
         <h1>שלום, {dashboardData.business.name}</h1>
         <div className={styles.headerActions}>
           <ReportGenerator businessId={user?.businessId || user?.id} />
+          <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate('/appointments/history')}>📋 היסטוריית תורים</button>
           <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate('/calendar')}>📅 הצג לוח שנה</button>
           <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate('/services')}>🔧 ניהול שירותים</button>
           <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate(`/business/${user?.businessId || user?.id}/edit`)}>✏️ עריכת פרופיל</button>
@@ -136,7 +150,7 @@ export default function NewBusinessDashboard({ user }) {
                       <span className={styles.serviceName}>{apt.service_name}</span>
                       <span className={styles.price}>₪{apt.price}</span>
                     </div>
-                    <span className={`${styles.status} ${styles.statusConfirmed}`}>{apt.status}</span>
+                    <span className={`${styles.status} ${styles.statusConfirmed}`}>{translateStatus(apt.status)}</span>
                   </li>
                 ))}
               </ul>
@@ -151,7 +165,6 @@ export default function NewBusinessDashboard({ user }) {
         <div className={styles.rightColumn}>
           <PerformanceChart data={dashboardData.analytics.dailyRevenueLast7Days} />
           <PopularServices services={dashboardData.analytics.servicePerformance} />
-          <ActivityFeed activities={dashboardData.activityFeed} />
         </div>
       </main>
     </div>

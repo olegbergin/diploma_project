@@ -5,6 +5,7 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: var(--space-4);
+  min-height: 300px;
 }
 
 .cardTitle {
@@ -14,55 +15,57 @@
   margin-bottom: var(--space-4);
 }
 
-.chartWrapper {
-  display: flex;
-  gap: var(--space-4);
-  height: 200px;
-}
-
-.yAxis {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  text-align: right;
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-}
-
-.chart {
-  flex-grow: 1;
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-end;
-  border-left: 1px solid var(--border-light);
-  padding-left: var(--space-2);
-}
-
-.barWrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.bar {
-  width: 70%;
-  background-color: var(--stats-cyan);
-  border-radius: var(--radius-sm);
-  transition: height var(--transition-slow) var(--ease-in-out);
-}
-
-.xLabel {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+.chartContainer {
+  width: 100%;
+  height: 250px;
+  direction: ltr; /* Ensure chart renders left-to-right */
 }
 
 .emptyState {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 150px;
+  height: 200px;
   color: var(--text-tertiary);
   font-style: italic;
+  text-align: center;
+  padding: var(--space-4);
+}
+
+/* Custom Tooltip Styles */
+.customTooltip {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-lg);
+}
+
+.tooltipDate {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-1) 0;
+  font-weight: var(--font-medium);
+}
+
+.tooltipRevenue {
+  font-size: var(--text-lg);
+  color: var(--stats-green);
+  margin: 0;
+  font-weight: var(--font-bold);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .chartCard {
+    padding: var(--space-3);
+  }
+
+  .chartContainer {
+    height: 200px;
+  }
+
+  .cardTitle {
+    font-size: var(--text-base);
+  }
 }
