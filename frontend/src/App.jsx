@@ -19,6 +19,7 @@ import NewBusinessDashboard from "./components/BusinessDashboard/NewBusinessDash
 import ServiceManagement from "./components/ServiceManagement/ServiceManagement";
 import CalendarPage from "./components/CalendarPage/CalendarPage";
 import AppointmentHistory from "./components/AppointmentHistory/AppointmentHistory";
+import ReportsPage from "./components/ReportsPage/ReportsPage";
 import UserDashboard from "./components/UserDashboard/UserDashboard";
 import FavoritesPage from "./components/FavoritesPage/FavoritesPage";
 import SearchPage from "./components/SearchPage/SearchPage";
@@ -269,6 +270,17 @@ function App() {
               element={
                 currentUser && currentUser.role === "business" ? (
                   <AppointmentHistory user={currentUser} />
+                ) : (
+                  <Navigate replace to="/login" />
+                )
+              }
+            />
+            {/* Reports page for businesses */}
+            <Route
+              path="/reports"
+              element={
+                currentUser && currentUser.role === "business" ? (
+                  <ReportsPage user={currentUser} />
                 ) : (
                   <Navigate replace to="/login" />
                 )

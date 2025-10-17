@@ -7,7 +7,6 @@ import axiosInstance from '../../api/axiosInstance';
 import KpiCards from './KpiCards';
 import PerformanceChart from './PerformanceChart';
 import PopularServices from './PopularServices';
-import ReportGenerator from './ReportGenerator/ReportGenerator';
 
 export default function NewBusinessDashboard({ user }) {
   const [dashboardData, setDashboardData] = useState(null);
@@ -94,7 +93,7 @@ export default function NewBusinessDashboard({ user }) {
       <header className={styles.header}>
         <h1>שלום, {dashboardData.business.name}</h1>
         <div className={styles.headerActions}>
-          <ReportGenerator businessId={user?.businessId || user?.id} />
+          <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate('/reports')}>📊 דוחות</button>
           <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate('/appointments/history')}>📋 היסטוריית תורים</button>
           <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate('/calendar')}>📅 הצג לוח שנה</button>
           <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => navigate('/services')}>🔧 ניהול שירותים</button>

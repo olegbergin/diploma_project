@@ -1,60 +1,156 @@
-/* סידור כללי */
+@import url('../../../../styles/design-system-variables.css');
+
+/* Header Bar */
 .headerBar {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 8px;
-}
-.headerBar button {
-  background: #0077cc;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-}
-.headerBar span {
-  font-weight: 600;
-  font-size: 18px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-2);
 }
 
-/* גריד */
+.headerBar button {
+  background: var(--primary-blue);
+  color: var(--ds-text-inverse);
+  border: none;
+  border-radius: var(--radius-sm);
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  font-weight: var(--font-semibold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headerBar button:hover {
+  background: var(--primary-blue-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.headerBar span {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-lg);
+  color: var(--ds-text-primary);
+}
+
+/* Calendar Grid */
 .calendar {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: var(--space-1);
   direction: rtl;
 }
+
 .weekday {
   text-align: center;
-  font-weight: 600;
-  padding: 4px 0;
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
+  font-weight: var(--font-semibold);
+  padding: var(--space-2) 0;
+  background: var(--ds-bg-tertiary);
+  border: 1px solid var(--border-light);
+  color: var(--ds-text-secondary);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
 }
+
 .day {
   aspect-ratio: 1;
-  border: 1px solid #e0e0e0;
-  background: #fff;
+  min-height: 44px;
+  border: 1px solid var(--border-light);
+  background: var(--ds-bg-primary);
   position: relative;
   cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-normal);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--ds-text-primary);
 }
-.day:hover {
-  background: #f1f6ff;
+
+.day:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.05);
+  border-color: var(--primary-blue-light);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
 }
+
+.day:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  color: var(--ds-text-tertiary);
+}
+
 .out {
-  color: #bbb;
-  background: #fafafa;
+  color: var(--ds-text-tertiary);
+  background: var(--ds-bg-secondary);
 }
+
 .busy::after {
   content: "";
   position: absolute;
   width: 6px;
   height: 6px;
-  background: #0077cc;
+  background: var(--primary-blue);
+  border-radius: var(--radius-full);
+  bottom: var(--space-1);
+  left: var(--space-1);
+}
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-light);
+  border-top-color: var(--primary-blue);
   border-radius: 50%;
-  bottom: 4px;
-  left: 4px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.emptyText {
+  text-align: center;
+  color: var(--ds-text-secondary);
+  padding: var(--space-4);
+  font-size: var(--text-base);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .headerBar {
+    gap: var(--space-3);
+  }
+
+  .headerBar button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .headerBar span {
+    font-size: var(--text-base);
+  }
+
+  .day {
+    font-size: var(--text-xs);
+    min-height: 40px;
+  }
+
+  .weekday {
+    font-size: var(--text-xs);
+    padding: var(--space-1) 0;
+  }
 }

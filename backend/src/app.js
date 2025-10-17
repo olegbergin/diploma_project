@@ -11,7 +11,7 @@ const userRoutes = require("../routes/users");
 const appointmentRoutes = require("../routes/appointments");
 const adminRoutes = require("../routes/admin");
 const reviewRoutes = require("../routes/reviews");
-// Reports routes are now integrated into businesses.js
+const reportsRoutes = require("../routes/reports");
 const cleanupRoutes = require("../routes/cleanup");
 
 app.use(cors());
@@ -28,6 +28,7 @@ app.use("/api/search", searchRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api", reportsRoutes); // Reports routes (handles /api/businesses/:id/reports/*)
 app.use("/api/upload", require("../routes/upload"));
 app.use("/api/cleanup", cleanupRoutes);
 

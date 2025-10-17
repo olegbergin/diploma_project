@@ -2,7 +2,7 @@ import { useState } from "react";
 import styles from "./Calendar.module.css";
 
 // נוספה ברירת מחדל ל־appointments
-export default function Calendar({ appointments = [], onDaySelect }) {
+export default function Calendar({ appointments = [], onDaySelect, loading = false }) {
   const [current, setCurrent] = useState(() => {
     const d = new Date();
     d.setDate(1);
@@ -53,6 +53,16 @@ export default function Calendar({ appointments = [], onDaySelect }) {
     month: "long",
     year: "numeric",
   });
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingSpinner}></div>
+        <p>טוען לוח שנה...</p>
+      </div>
+    );
+  }
 
   return (
     <div>

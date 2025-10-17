@@ -644,8 +644,6 @@ exports.getBusinessDashboard = async (req, res) => {
       revenue: parseFloat(row.revenue) || 0
     }));
 
-    console.log('Daily Revenue Query Result:', dailyRevenueLast7Days);
-
     // Query 7: Service Performance (existing logic, slightly adapted)
     const [servicePerformance] = await connection.query(
         `SELECT s.name, COUNT(a.appointment_id) as bookingCount, SUM(s.price) as serviceRevenue
