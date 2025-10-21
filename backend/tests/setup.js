@@ -3,16 +3,20 @@
  * Global configuration for all tests
  */
 
-// Set test timeout to 10 seconds
-jest.setTimeout(10000);
+// Load environment variables from .env file
+require('dotenv').config();
 
-// Mock console.log and console.error to reduce noise during tests
-global.console = {
-  ...console,
-  log: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn()
-};
+// Set test timeout to 30 seconds (for email tests)
+jest.setTimeout(30000);
+
+// Keep console output for email tests (useful for debugging)
+// If you want to suppress console output, uncomment the lines below:
+// global.console = {
+//   ...console,
+//   log: jest.fn(),
+//   error: jest.fn(),
+//   warn: jest.fn()
+// };
 
 // Global test helpers
 global.testHelpers = {

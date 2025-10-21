@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../dbSingleton").getPromise();
+const emailService = require("../services/emailService");
 
 /* GET /api/appointments?businessId=1&month=2025-05&status=pending */
 router.get("/", async (req, res) => {
@@ -199,11 +200,68 @@ router.post("/", async (req, res) => {
 
     // Create appointment
     const [result] = await db.query(
-      `INSERT INTO appointments (customer_id, business_id, service_id, appointment_datetime, status, notes, created_at) 
+      `INSERT INTO appointments (customer_id, business_id, service_id, appointment_datetime, status, notes, created_at)
        VALUES (?, ?, ?, ?, 'pending', ?, NOW())`,
       [customerId, parseInt(businessId), parseInt(serviceId), datetime, notes || null]
     );
-    
+
+    // Send email notifications
+    try {
+      // Fetch business and service details for email
+      const [businessDetails] = await db.query(
+        `SELECT b.name, b.location, u.email as owner_email, u.phone as owner_phone, u.first_name, u.last_name
+         FROM businesses b
+         LEFT JOIN users u ON b.owner_id = u.user_id
+         WHERE b.business_id = ?`,
+        [parseInt(businessId)]
+      );
+
+      const [serviceDetails] = await db.query(
+        `SELECT name, price FROM services WHERE service_id = ?`,
+        [parseInt(serviceId)]
+      );
+
+      if (businessDetails.length > 0 && serviceDetails.length > 0) {
+        const business = businessDetails[0];
+        const service = serviceDetails[0];
+
+        // Send confirmation email to customer
+        if (email) {
+          await emailService.sendBookingConfirmation({
+            customerEmail: email,
+            customerName: `${firstName} ${lastName}`,
+            businessName: business.name,
+            serviceName: service.name,
+            appointmentDate: date,
+            appointmentTime: time,
+            price: service.price,
+            businessPhone: business.owner_phone || '',
+            businessAddress: business.location || '',
+            notes: notes || ''
+          });
+        }
+
+        // Send notification to business owner
+        if (business.owner_email) {
+          await emailService.sendBusinessNotification({
+            businessEmail: business.owner_email,
+            businessName: business.name,
+            customerName: `${firstName} ${lastName}`,
+            customerPhone: phone,
+            customerEmail: email || '',
+            serviceName: service.name,
+            appointmentDate: date,
+            appointmentTime: time,
+            price: service.price,
+            notes: notes || ''
+          });
+        }
+      }
+    } catch (emailError) {
+      // Log email errors but don't fail the appointment creation
+      console.error('Error sending booking emails:', emailError);
+    }
+
     res.status(201).json({
       message: "Appointment created successfully / תור נוצר בהצלחה",
       appointmentId: result.insertId,
@@ -229,6 +287,17 @@ router.put("/:id", async (req, res) => {
   }
 
   try {
+    // Fetch old appointment details before update
+    const [oldAppointment] = await db.query(
+      `SELECT a.appointment_datetime, u.email, u.first_name, u.last_name, b.name as business_name, s.name as service_name
+       FROM appointments a
+       LEFT JOIN users u ON a.customer_id = u.user_id
+       LEFT JOIN businesses b ON a.business_id = b.business_id
+       LEFT JOIN services s ON a.service_id = s.service_id
+       WHERE a.appointment_id = ?`,
+      [req.params.id]
+    );
+
     // בדיקה אם קיים תור באותו זמן לאותו עסק (למעט התור הנוכחי)
     const [existing] = await db.query(
       `SELECT * FROM appointments
@@ -253,6 +322,28 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
+    // Send reschedule email
+    if (oldAppointment.length > 0 && oldAppointment[0].email) {
+      try {
+        const old = oldAppointment[0];
+        const oldDate = new Date(old.appointment_datetime);
+        const newDate = new Date(appointment_datetime);
+
+        await emailService.sendRescheduleEmail({
+          customerEmail: old.email,
+          customerName: `${old.first_name} ${old.last_name}`,
+          businessName: old.business_name,
+          serviceName: old.service_name,
+          oldDate: oldDate.toISOString().split('T')[0],
+          oldTime: oldDate.toTimeString().split(' ')[0].substring(0, 5),
+          newDate: newDate.toISOString().split('T')[0],
+          newTime: newDate.toTimeString().split(' ')[0].substring(0, 5)
+        });
+      } catch (emailError) {
+        console.error('Error sending reschedule email:', emailError);
+      }
+    }
+
     res.json({ message: "Appointment updated successfully" });
   } catch (e) {
     console.error(e);
@@ -263,6 +354,18 @@ router.put("/:id", async (req, res) => {
 /* POST /api/appointments/:id/cancel – ביטול תור */
 router.post("/:id/cancel", async (req, res) => {
   try {
+    // Fetch appointment details before cancellation
+    const [appointmentDetails] = await db.query(
+      `SELECT a.appointment_datetime, a.status, u.email, u.first_name, u.last_name,
+              b.name as business_name, s.name as service_name
+       FROM appointments a
+       LEFT JOIN users u ON a.customer_id = u.user_id
+       LEFT JOIN businesses b ON a.business_id = b.business_id
+       LEFT JOIN services s ON a.service_id = s.service_id
+       WHERE a.appointment_id = ?`,
+      [req.params.id]
+    );
+
     const [result] = await db.query(
       `UPDATE appointments SET status = 'cancelled' WHERE appointment_id = ?`,
       [req.params.id]
@@ -271,6 +374,27 @@ router.post("/:id/cancel", async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Appointment not found" });
     }
+
+    // Send cancellation email
+    if (appointmentDetails.length > 0 && appointmentDetails[0].email) {
+      try {
+        const appointment = appointmentDetails[0];
+        const appointmentDate = new Date(appointment.appointment_datetime);
+
+        await emailService.sendCancellationEmail({
+          customerEmail: appointment.email,
+          customerName: `${appointment.first_name} ${appointment.last_name}`,
+          businessName: appointment.business_name,
+          serviceName: appointment.service_name,
+          appointmentDate: appointmentDate.toISOString().split('T')[0],
+          appointmentTime: appointmentDate.toTimeString().split(' ')[0].substring(0, 5),
+          cancelledBy: 'הלקוח' // This is customer-initiated cancellation
+        });
+      } catch (emailError) {
+        console.error('Error sending cancellation email:', emailError);
+      }
+    }
+
     res.json({ message: "Appointment cancelled successfully" });
   } catch (e) {
     console.error(e);
@@ -341,13 +465,62 @@ router.put("/:id/status", async (req, res) => {
     return res.status(400).json({ message: "status is required" });
   }
   try {
+    // Fetch appointment details before status update
+    const [appointmentDetails] = await db.query(
+      `SELECT a.appointment_datetime, a.status as old_status, u.email, u.first_name, u.last_name,
+              b.name as business_name, s.name as service_name
+       FROM appointments a
+       LEFT JOIN users u ON a.customer_id = u.user_id
+       LEFT JOIN businesses b ON a.business_id = b.business_id
+       LEFT JOIN services s ON a.service_id = s.service_id
+       WHERE a.appointment_id = ?`,
+      [req.params.id]
+    );
+
     const [result] = await db.query(
       "UPDATE appointments SET status = ? WHERE appointment_id = ?",
       [status, req.params.id]
     );
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Appointment not found" });
     }
+
+    // Send status change email
+    if (appointmentDetails.length > 0 && appointmentDetails[0].email) {
+      try {
+        const appointment = appointmentDetails[0];
+        const appointmentDate = new Date(appointment.appointment_datetime);
+        const oldStatus = appointment.old_status;
+
+        // Send appropriate email based on status change
+        if (status === 'cancelled' || status === 'cancelled_by_business' || status === 'cancelled_by_user') {
+          await emailService.sendCancellationEmail({
+            customerEmail: appointment.email,
+            customerName: `${appointment.first_name} ${appointment.last_name}`,
+            businessName: appointment.business_name,
+            serviceName: appointment.service_name,
+            appointmentDate: appointmentDate.toISOString().split('T')[0],
+            appointmentTime: appointmentDate.toTimeString().split(' ')[0].substring(0, 5),
+            cancelledBy: status === 'cancelled_by_business' ? 'העסק' : 'הלקוח'
+          });
+        } else {
+          await emailService.sendStatusChangeEmail({
+            customerEmail: appointment.email,
+            customerName: `${appointment.first_name} ${appointment.last_name}`,
+            businessName: appointment.business_name,
+            serviceName: appointment.service_name,
+            appointmentDate: appointmentDate.toISOString().split('T')[0],
+            appointmentTime: appointmentDate.toTimeString().split(' ')[0].substring(0, 5),
+            oldStatus: oldStatus,
+            newStatus: status
+          });
+        }
+      } catch (emailError) {
+        console.error('Error sending status change email:', emailError);
+      }
+    }
+
     res.json({ message: "Appointment status updated" });
   } catch (e) {
     console.error(e);

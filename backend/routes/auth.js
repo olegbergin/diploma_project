@@ -1,7 +1,7 @@
 /**
  * Authentication Routes Module
  * Handles user registration and login with JWT token generation
- * 
+ *
  * @module routes/auth
  */
 
@@ -10,6 +10,7 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("../dbSingleton").getPromise();
+const emailService = require("../services/emailService");
 
 /**
  * JWT Secret key for token signing
@@ -53,7 +54,19 @@ router.post("/register", async (req, res) => {
 
     const [result] = await db.query(sql, params);
 
-    // 3. Return success (החזרת מזהה משתמש)
+    // 3. Send welcome email
+    try {
+      await emailService.sendWelcomeEmail({
+        email: email,
+        firstName: first_name,
+        lastName: last_name
+      });
+    } catch (emailError) {
+      // Log email errors but don't fail the registration
+      console.error('Error sending welcome email:', emailError);
+    }
+
+    // 4. Return success (החזרת מזהה משתמש)
     res.status(201).json({
       message: "User registered successfully",
       userId: result.insertId,
@@ -197,7 +210,19 @@ router.post("/register-business", async (req, res) => {
     // Commit transaction
     await db.query('COMMIT');
 
-    // 4. Return success
+    // 4. Send welcome email to business
+    try {
+      await emailService.sendBusinessWelcomeEmail({
+        email: email,
+        businessName: businessName,
+        ownerName: `${first_name} ${last_name}`
+      });
+    } catch (emailError) {
+      // Log email errors but don't fail the registration
+      console.error('Error sending business welcome email:', emailError);
+    }
+
+    // 5. Return success
     res.status(201).json({
       message: "Business registered successfully",
       userId: userId,

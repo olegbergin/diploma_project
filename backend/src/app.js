@@ -13,6 +13,7 @@ const adminRoutes = require("../routes/admin");
 const reviewRoutes = require("../routes/reviews");
 const reportsRoutes = require("../routes/reports");
 const cleanupRoutes = require("../routes/cleanup");
+const reminderService = require("../services/reminderService");
 
 app.use(cors());
 app.use(express.json());
@@ -33,4 +34,14 @@ app.use("/api/upload", require("../routes/upload"));
 app.use("/api/cleanup", cleanupRoutes);
 
 const PORT = process.env.PORT || 3031;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT} and accessible from external connections`));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT} and accessible from external connections`);
+
+  // Initialize reminder service for appointment notifications
+  try {
+    reminderService.start();
+    console.log('✅ Reminder service initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to start reminder service:', error.message);
+  }
+});

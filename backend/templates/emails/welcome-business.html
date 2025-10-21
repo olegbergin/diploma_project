@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ברוכים הבאים - עסק חדש</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .step-box {
+            background-color: #f9f9f9;
+            border-right: 4px solid #11998e;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 ברוכים הבאים לפלטפורמה!</h1>
+        </div>
+        <div class="content">
+            <p>שלום {{ownerName}},</p>
+            <p>אנחנו שמחים לקבל את <strong>{{businessName}}</strong> לפלטפורמת ההזמנות שלנו!</p>
+
+            <h2 style="color: #11998e;">הצעדים הבאים:</h2>
+
+            <div class="step-box">
+                <strong>1️⃣ השלם את פרטי העסק</strong>
+                <p style="margin: 5px 0 0 0;">הוסף תמונות, תיאור מפורט ושעות פעילות</p>
+            </div>
+
+            <div class="step-box">
+                <strong>2️⃣ הוסף שירותים</strong>
+                <p style="margin: 5px 0 0 0;">הגדר את השירותים שלך, מחירים ומשך טיפולים</p>
+            </div>
+
+            <div class="step-box">
+                <strong>3️⃣ קבע זמינות</strong>
+                <p style="margin: 5px 0 0 0;">הגדר את לוח הזמנים השבועי שלך</p>
+            </div>
+
+            <div class="step-box">
+                <strong>4️⃣ התחל לקבל הזמנות!</strong>
+                <p style="margin: 5px 0 0 0;">לקוחות יוכלו למצוא אותך ולהזמין תורים אונליין</p>
+            </div>
+
+            <h2 style="color: #11998e;">מה כלול בשירות?</h2>
+            <ul>
+                <li>מערכת הזמנות אוטומטית 24/7</li>
+                <li>לוח ניהול מתקדם</li>
+                <li>התראות ותזכורות ללקוחות</li>
+                <li>דוחות וניתוחים</li>
+                <li>מערכת ביקורות ודירוגים</li>
+            </ul>
+
+            <p style="margin-top: 30px;">בהצלחה בדרך להצלחה!</p>
+
+            <p>בברכה,<br>צוות פלטפורמת ההזמנות</p>
+        </div>
+        <div class="footer">
+            <p>© {{currentYear}} פלטפורמת הזמנות. כל הזכויות שמורות.</p>
+            <p>לתמיכה, צרו קשר בכל עת.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -6,14 +6,22 @@
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
     "test": "jest --verbose",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:email": "jest emailService.test.js --verbose",
+    "test:email-integration": "jest emailIntegration.test.js --verbose",
+    "test:send-emails": "node tests/sendTestEmails.js",
+    "verify:email": "node tests/verifyEmailConfig.js"
   },
   "jest": {
     "testEnvironment": "node",
     "collectCoverage": true,
     "coverageDirectory": "coverage",
-    "testMatch": ["**/tests/**/*.test.js"],
-    "setupFilesAfterEnv": ["./tests/setup.js"]
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "setupFilesAfterEnv": [
+      "./tests/setup.js"
+    ]
   },
   "author": "",
   "license": "ISC",
@@ -27,6 +35,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.1",
     "mysql2": "^3.14.1",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.9",
     "nodemon": "^3.1.10",
     "pdfkit": "^0.17.2",
     "puppeteer": "^24.19.0",

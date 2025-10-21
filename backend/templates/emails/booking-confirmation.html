@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>אישור הזמנה</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .info-box {
+            background-color: #f9f9f9;
+            border-right: 4px solid #4CAF50;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-row {
+            margin: 10px 0;
+        }
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+        .value {
+            color: #333;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ ההזמנה שלך אושרה!</h1>
+        </div>
+        <div class="content">
+            <p>שלום {{customerName}},</p>
+            <p>ההזמנה שלך ב<strong>{{businessName}}</strong> התקבלה בהצלחה!</p>
+
+            <div class="info-box">
+                <h2 style="margin-top: 0; color: #4CAF50;">פרטי ההזמנה</h2>
+                <div class="info-row">
+                    <span class="label">עסק:</span>
+                    <span class="value">{{businessName}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">שירות:</span>
+                    <span class="value">{{serviceName}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">תאריך:</span>
+                    <span class="value">{{appointmentDate}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">שעה:</span>
+                    <span class="value">{{appointmentTime}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">מחיר:</span>
+                    <span class="value">₪{{price}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">הערות:</span>
+                    <span class="value">{{notes}}</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h2 style="margin-top: 0; color: #4CAF50;">פרטי העסק</h2>
+                <div class="info-row">
+                    <span class="label">טלפון:</span>
+                    <span class="value">{{businessPhone}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">כתובת:</span>
+                    <span class="value">{{businessAddress}}</span>
+                </div>
+            </div>
+
+            <p><strong>שים לב:</strong> אנא הגע/הגיעי 5 דקות לפני מועד הפגישה.</p>
+            <p>במקרה של צורך לביטול או שינוי, אנא צור/צרי קשר עם העסק בהקדם.</p>
+        </div>
+        <div class="footer">
+            <p>© {{currentYear}} פלטפורמת הזמנות. כל הזכויות שמורות.</p>
+            <p>דוא"ל זה נשלח אוטומטית, אנא אל תשיבו לדוא"ל זה.</p>
+        </div>
+    </div>
+</body>
+</html>
