@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1
--- Время создания: Окт 12 2025 г., 21:33
+-- Время создания: Окт 29 2025 г., 21:07
 -- Версия сервера: 10.4.32-MariaDB
 -- Версия PHP: 8.2.12
 
@@ -30,7 +30,6 @@ USE `project_db`;
 -- Структура таблицы `appointments`
 --
 
-DROP TABLE IF EXISTS `appointments`;
 CREATE TABLE `appointments` (
   `appointment_id` int(11) NOT NULL,
   `customer_id` int(11) NOT NULL,
@@ -112,7 +111,54 @@ INSERT INTO `appointments` (`appointment_id`, `customer_id`, `business_id`, `ser
 (63, 19, 11, 53, '2025-09-28 20:32:41', 'completed', 'First appointment with this business', '2025-09-27 17:32:41'),
 (64, 19, 11, 54, '2025-10-02 20:32:41', 'completed', 'Second visit - different service', '2025-10-01 17:32:41'),
 (65, 19, 11, 53, '2025-10-09 20:32:41', 'completed', 'Regular follow-up', '2025-10-08 17:32:41'),
-(66, 19, 11, 54, '2025-10-13 20:32:41', '', 'Upcoming appointment', '2025-10-12 17:32:41');
+(66, 19, 11, 54, '2025-10-13 20:32:41', '', 'Upcoming appointment', '2025-10-12 17:32:41'),
+(67, 9, 11, 53, '2025-10-18 09:00:00', 'confirmed', 'Morning haircut appointment', '2025-10-15 07:00:00'),
+(68, 10, 11, 54, '2025-10-18 10:30:00', 'confirmed', 'Hair coloring session', '2025-10-15 08:30:00'),
+(69, 11, 11, 55, '2025-10-18 14:00:00', 'confirmed', 'Manicure and pedicure', '2025-10-16 05:20:00'),
+(70, 12, 11, 53, '2025-10-18 16:00:00', 'confirmed', 'Evening haircut', '2025-10-16 11:45:00'),
+(71, 13, 11, 54, '2025-10-19 10:00:00', 'confirmed', 'Weekend hair coloring', '2025-10-16 13:30:00'),
+(72, 14, 11, 53, '2025-10-19 11:30:00', 'confirmed', 'Basic haircut', '2025-10-17 06:15:00'),
+(73, 15, 11, 56, '2025-10-19 13:00:00', 'confirmed', 'Long hair treatment', '2025-10-17 09:00:00'),
+(74, 16, 11, 55, '2025-10-19 15:30:00', 'confirmed', 'Nail care treatment', '2025-10-17 11:20:00'),
+(75, 17, 11, 53, '2025-10-20 09:30:00', 'confirmed', 'Sunday morning haircut', '2025-10-17 14:00:00'),
+(76, 18, 11, 54, '2025-10-20 11:00:00', 'confirmed', 'Deluxe coloring treatment', '2025-10-18 05:30:00'),
+(77, 20, 11, 55, '2025-10-20 14:30:00', 'confirmed', 'Complete nail care', '2025-10-18 07:45:00'),
+(78, 19, 11, 56, '2025-10-20 16:00:00', 'confirmed', 'Long hair styling', '2025-10-18 10:20:00'),
+(79, 9, 11, 55, '2025-10-21 09:00:00', 'confirmed', 'Manicure and pedicure combo', '2025-10-18 12:00:00'),
+(80, 10, 11, 53, '2025-10-21 11:00:00', 'pending', 'Regular haircut', '2025-10-19 06:00:00'),
+(81, 11, 11, 54, '2025-10-21 13:30:00', 'confirmed', 'Premium hair coloring', '2025-10-19 08:30:00'),
+(82, 12, 11, 56, '2025-10-21 15:00:00', 'confirmed', 'Long hair care', '2025-10-19 11:00:00'),
+(83, 13, 11, 53, '2025-10-22 09:30:00', 'confirmed', 'Haircut before weekend', '2025-10-19 13:30:00'),
+(84, 14, 11, 55, '2025-10-22 11:00:00', 'confirmed', 'Nail care session', '2025-10-20 05:45:00'),
+(85, 15, 11, 54, '2025-10-22 13:00:00', 'pending', 'Hair coloring and treatment', '2025-10-20 07:30:00'),
+(86, 16, 11, 56, '2025-10-22 15:30:00', 'confirmed', 'Long hair styling session', '2025-10-20 09:15:00'),
+(87, 17, 11, 53, '2025-10-22 17:00:00', 'pending', 'Evening haircut appointment', '2025-10-20 12:00:00'),
+(88, 9, 11, 53, '2025-10-15 09:00:00', 'completed', 'Morning haircut - excellent service', '2025-10-12 07:00:00'),
+(89, 10, 11, 54, '2025-10-15 10:30:00', 'completed', 'Hair coloring session', '2025-10-12 08:30:00'),
+(90, 11, 11, 55, '2025-10-15 13:00:00', 'completed', 'Manicure and pedicure', '2025-10-13 05:20:00'),
+(91, 12, 11, 56, '2025-10-15 15:00:00', 'completed', 'Long hair treatment - very satisfied', '2025-10-13 11:45:00'),
+(92, 13, 11, 53, '2025-10-15 16:30:00', 'completed', 'Evening haircut', '2025-10-13 13:00:00'),
+(93, 14, 11, 54, '2025-10-16 09:30:00', 'completed', 'Deluxe hair coloring', '2025-10-13 14:30:00'),
+(94, 15, 11, 53, '2025-10-16 11:00:00', 'completed', 'Basic haircut', '2025-10-14 06:15:00'),
+(95, 16, 11, 55, '2025-10-16 13:30:00', 'completed', 'Nail care treatment', '2025-10-14 09:00:00'),
+(96, 17, 11, 56, '2025-10-16 15:00:00', 'completed', 'Long hair styling', '2025-10-14 11:20:00'),
+(97, 18, 11, 53, '2025-10-16 16:30:00', 'completed', 'End of day haircut', '2025-10-14 13:45:00'),
+(98, 20, 11, 54, '2025-10-17 09:00:00', 'completed', 'Friday morning coloring', '2025-10-14 14:00:00'),
+(99, 9, 11, 55, '2025-10-17 11:00:00', 'completed', 'Manicure and pedicure combo', '2025-10-15 05:30:00'),
+(100, 10, 11, 53, '2025-10-17 13:00:00', 'completed', 'Quick haircut before weekend', '2025-10-15 07:45:00'),
+(101, 11, 11, 56, '2025-10-17 14:30:00', 'completed', 'Long hair care session', '2025-10-15 10:20:00'),
+(102, 9, 11, 53, '2025-10-11 15:06:02', 'completed', 'Completed haircut', '2025-10-07 12:06:02'),
+(103, 10, 11, 54, '2025-10-11 15:06:02', 'completed', 'Completed coloring', '2025-10-07 12:06:02'),
+(104, 11, 11, 55, '2025-10-12 15:06:02', 'completed', 'Completed manicure', '2025-10-08 12:06:02'),
+(105, 12, 11, 53, '2025-10-12 15:06:02', 'completed', 'Completed haircut', '2025-10-08 12:06:02'),
+(106, 13, 11, 54, '2025-10-13 15:06:02', 'completed', 'Completed coloring', '2025-10-09 12:06:02'),
+(107, 14, 11, 56, '2025-10-13 15:06:02', 'completed', 'Completed long hair', '2025-10-09 12:06:02'),
+(108, 15, 11, 53, '2025-10-14 15:06:02', 'completed', 'Completed haircut', '2025-10-10 12:06:02'),
+(109, 16, 11, 55, '2025-10-14 15:06:02', 'completed', 'Completed nails', '2025-10-10 12:06:02'),
+(110, 17, 11, 54, '2025-10-15 15:06:02', 'completed', 'Completed coloring', '2025-10-11 12:06:02'),
+(111, 18, 11, 53, '2025-10-15 15:06:02', 'completed', 'Completed haircut', '2025-10-11 12:06:02'),
+(112, 20, 11, 56, '2025-10-16 15:06:02', 'completed', 'Completed long hair treatment', '2025-10-12 12:06:02'),
+(113, 9, 11, 55, '2025-10-16 15:06:02', 'completed', 'Completed manicure', '2025-10-12 12:06:02');
 
 -- --------------------------------------------------------
 
@@ -120,7 +166,6 @@ INSERT INTO `appointments` (`appointment_id`, `customer_id`, `business_id`, `ser
 -- Структура таблицы `businesses`
 --
 
-DROP TABLE IF EXISTS `businesses`;
 CREATE TABLE `businesses` (
   `business_id` int(11) NOT NULL,
   `owner_id` int(11) NOT NULL,
@@ -146,7 +191,7 @@ INSERT INTO `businesses` (`business_id`, `owner_id`, `name`, `category`, `descri
 (6, 6, 'לאש טיק - הרמת ריסים ועיצוב גבות', 'יופי וטיפוח', 'מתמחים בהרמת ריסים, הדבקת ריסים, צביעה ועיצוב גבות. טכניקות מתקדמות ותוצאות טבעיות לחיזוק המראה הטבעי שלך.', 'תל אביב, אלנבי 65', 'תל אביב', '[]', '{\"ראשון\": \"09:00-18:00\", \"שני\": \"09:00-18:00\", \"שלישי\": \"09:00-18:00\", \"רביעי\": \"09:00-18:00\", \"חמישי\": \"09:00-19:00\", \"שישי\": \"08:00-14:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
 (7, 7, 'גבות פרפקט - תמר', 'יופי וטיפוח', 'מתמחים בעיצוב גבות מקצועי, שעווה, חוטים ופיגמנטציה. יצירת צורת גבות מושלמת הניתנת לפניך ולאישיותך.', 'בת ים, בן גוריון 78', 'בת ים', '[]', '{\"ראשון\": \"10:00-17:00\", \"שני\": \"10:00-18:00\", \"שלישי\": \"10:00-18:00\", \"רביעי\": \"10:00-18:00\", \"חמישי\": \"10:00-19:00\", \"שישי\": \"09:00-14:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
 (8, 8, 'קליניקת העור ליאור - טיפולי פנים מתקדמים', 'יופי וטיפוח', 'קליניקה מתקדמת לטיפולי פנים קוסמטיים. מתמחים בטיפולי לייזר, פילינג כימי, בוטוקס וחומצה היאלורונית. טיפול מקצועי ובטוח.', 'רעננה, אחוזה 95', 'רעננה', '[]', '{\"ראשון\": \"09:00-17:00\", \"שני\": \"09:00-19:00\", \"שלישי\": \"09:00-19:00\", \"רביעי\": \"09:00-19:00\", \"חמישי\": \"09:00-17:00\", \"שישי\": \"09:00-13:00\", \"שבת\": \"סגור\"}', '2025-08-22 15:54:45'),
-(11, 23, 'Test Update 456', 'Hair Salon', 'Test description', 'Test Address', 'New City', '[\"/uploads/1757440612715-mzzqht0b7je.webp\",\"/uploads/1757439999085-ut3rv00vnm.webp\",\"/uploads/1757440623920-nurn6ym46do.webp\"]', '{\"sunday\":{\"isOpen\":false,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"monday\":{\"isOpen\":true,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"tuesday\":{\"isOpen\":true,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"wednesday\":{\"isOpen\":true,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"thursday\":{\"isOpen\":true,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"friday\":{\"isOpen\":true,\"openTime\":\"09:00\",\"closeTime\":\"14:00\"},\"saturday\":{\"isOpen\":false,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"}}', '2025-08-22 17:14:16'),
+(11, 23, 'Test Update 456', 'Hair Salon', 'Test description', 'Test Address', 'New City', '[\"/uploads/1760301223161-apn32wdn0qs.webp\",\"/uploads/1760301230912-ooran2j6p8.webp\",\"/uploads/1760301233212-sld936uo0lk.webp\"]', '{\"sunday\":{\"isOpen\":false,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"monday\":{\"isOpen\":false,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"tuesday\":{\"isOpen\":true,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"wednesday\":{\"isOpen\":false,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"thursday\":{\"isOpen\":false,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"},\"friday\":{\"isOpen\":false,\"openTime\":\"09:00\",\"closeTime\":\"14:00\"},\"saturday\":{\"isOpen\":false,\"openTime\":\"09:00\",\"closeTime\":\"17:00\"}}', '2025-08-22 17:14:16'),
 (12, 24, 'New Spa', 'Spa', 'Relaxing spa services.', '200 Old Rd, Old Town', 'Old Town', '[]', '{\"שעות פעילות\": \"Tue-Sun 10 AM - 8 PM\"}', '2025-08-22 17:14:22');
 
 -- --------------------------------------------------------
@@ -155,7 +200,6 @@ INSERT INTO `businesses` (`business_id`, `owner_id`, `name`, `category`, `descri
 -- Дублирующая структура для представления `business_review_stats`
 -- (См. Ниже фактическое представление)
 --
-DROP VIEW IF EXISTS `business_review_stats`;
 CREATE TABLE `business_review_stats` (
 `business_id` int(11)
 ,`business_name` varchar(255)
@@ -175,7 +219,6 @@ CREATE TABLE `business_review_stats` (
 -- Дублирующая структура для представления `reviewable_appointments`
 -- (См. Ниже фактическое представление)
 --
-DROP VIEW IF EXISTS `reviewable_appointments`;
 CREATE TABLE `reviewable_appointments` (
 `appointment_id` int(11)
 ,`customer_id` int(11)
@@ -195,7 +238,6 @@ CREATE TABLE `reviewable_appointments` (
 -- Структура таблицы `reviews`
 --
 
-DROP TABLE IF EXISTS `reviews`;
 CREATE TABLE `reviews` (
   `review_id` int(11) NOT NULL,
   `customer_id` int(11) NOT NULL,
@@ -229,7 +271,6 @@ INSERT INTO `reviews` (`review_id`, `customer_id`, `business_id`, `appointment_i
 -- Структура таблицы `review_complaints`
 --
 
-DROP TABLE IF EXISTS `review_complaints`;
 CREATE TABLE `review_complaints` (
   `complaint_id` int(11) NOT NULL,
   `review_id` int(11) NOT NULL,
@@ -248,7 +289,6 @@ CREATE TABLE `review_complaints` (
 -- Структура таблицы `services`
 --
 
-DROP TABLE IF EXISTS `services`;
 CREATE TABLE `services` (
   `service_id` int(11) NOT NULL,
   `business_id` int(11) NOT NULL,
@@ -332,7 +372,6 @@ INSERT INTO `services` (`service_id`, `business_id`, `name`, `price`, `duration_
 -- Структура таблицы `users`
 --
 
-DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
   `first_name` varchar(100) NOT NULL,
@@ -378,7 +417,6 @@ INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `email`, `phone`, `pa
 -- Структура таблицы `user_favorites`
 --
 
-DROP TABLE IF EXISTS `user_favorites`;
 CREATE TABLE `user_favorites` (
   `user_id` int(11) NOT NULL,
   `business_id` int(11) NOT NULL,
@@ -401,7 +439,6 @@ INSERT INTO `user_favorites` (`user_id`, `business_id`, `created_at`) VALUES
 --
 DROP TABLE IF EXISTS `business_review_stats`;
 
-DROP VIEW IF EXISTS `business_review_stats`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `business_review_stats`  AS SELECT `b`.`business_id` AS `business_id`, `b`.`name` AS `business_name`, count(`r`.`review_id`) AS `total_reviews`, round(avg(`r`.`rating`),2) AS `average_rating`, count(case when `r`.`rating` = 5 then 1 end) AS `five_star_count`, count(case when `r`.`rating` = 4 then 1 end) AS `four_star_count`, count(case when `r`.`rating` = 3 then 1 end) AS `three_star_count`, count(case when `r`.`rating` = 2 then 1 end) AS `two_star_count`, count(case when `r`.`rating` = 1 then 1 end) AS `one_star_count`, count(case when `r`.`business_response` is not null then 1 end) AS `responses_count` FROM (`businesses` `b` left join `reviews` `r` on(`b`.`business_id` = `r`.`business_id` and `r`.`is_hidden` = 0)) GROUP BY `b`.`business_id`, `b`.`name` ;
 
 -- --------------------------------------------------------
@@ -411,7 +448,6 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `reviewable_appointments`;
 
-DROP VIEW IF EXISTS `reviewable_appointments`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `reviewable_appointments`  AS SELECT `a`.`appointment_id` AS `appointment_id`, `a`.`customer_id` AS `customer_id`, `a`.`business_id` AS `business_id`, `a`.`service_id` AS `service_id`, `a`.`appointment_datetime` AS `appointment_datetime`, `a`.`status` AS `status`, `b`.`name` AS `business_name`, `s`.`name` AS `service_name`, `u`.`first_name` AS `first_name`, `u`.`last_name` AS `last_name` FROM ((((`appointments` `a` join `businesses` `b` on(`a`.`business_id` = `b`.`business_id`)) join `services` `s` on(`a`.`service_id` = `s`.`service_id`)) join `users` `u` on(`a`.`customer_id` = `u`.`user_id`)) left join `reviews` `r` on(`a`.`appointment_id` = `r`.`appointment_id`)) WHERE `a`.`status` = 'completed' AND `r`.`review_id` is null AND `a`.`appointment_datetime` >= current_timestamp() - interval 30 day ;
 
 --
@@ -483,7 +519,7 @@ ALTER TABLE `user_favorites`
 -- AUTO_INCREMENT для таблицы `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `appointment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `appointment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=114;
 
 --
 -- AUTO_INCREMENT для таблицы `businesses`
