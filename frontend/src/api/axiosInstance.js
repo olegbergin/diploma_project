@@ -1,37 +1,42 @@
 // src/api/axiosInstance.js
 import axios from "axios";
 
-// Get the base URL from environment variables, with a fallback for development.
-// Vite uses 'import.meta.env.VITE_...' to access environment variables.
-// Use relative URL so it works with both localhost and public IP
+// Use full backend URL during development
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "/api";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3031/api";
 
-// Create a new instance of axios with a custom configuration
+// Create axios instance
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL, // All requests will be prefixed with this URL
-  // You can add other default settings here, like headers or timeouts
-  // headers: { 'Content-Type': 'application/json' }, // Example default header
-  // timeout: 10000, // Example: request will timeout after 10 seconds
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// --- Interceptors (We can add these later) ---
-// This is where you would add logic to automatically include the auth token in every request.
-// For example:
-/*
+// --- AUTH TOKEN INTERCEPTOR ---
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem("authToken");
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
+  (error) => Promise.reject(error)
+);
+
+// Optional: Handle 401 errors globally
+axiosInstance.interceptors.response.use(
+  (response) => response,
   (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userInfo");
+      window.location.href = "/login";
+    }
     return Promise.reject(error);
   }
 );
-*/
 
-// Export the configured instance to be used throughout the application
 export default axiosInstance;

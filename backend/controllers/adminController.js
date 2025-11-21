@@ -1,53 +1,48 @@
-const db = require('../dbSingleton');
+const db = require("../dbSingleton");
 
 // Get overall admin statistics
 exports.getAdminStats = async (req, res) => {
   try {
     const connection = db.getPromise();
-    
-    // Get total users count
-    const [userCount] = await connection.query('SELECT COUNT(*) as total FROM users');
-    
-    // Get total businesses count
-    const [businessCount] = await connection.query('SELECT COUNT(*) as total FROM businesses');
-    
-    // Get pending businesses count - businesses table doesn't have status column
-    // For now, treat all new businesses (created within last 30 days) as pending
+
+    const [userCount] = await connection.query(
+      "SELECT COUNT(*) as total FROM users"
+    );
+
+    const [businessCount] = await connection.query(
+      "SELECT COUNT(*) as total FROM businesses"
+    );
+
     const [pendingCount] = await connection.query(
-      'SELECT COUNT(*) as total FROM businesses WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)'
+      "SELECT COUNT(*) as total FROM businesses WHERE status = 'pending'"
     );
-    
-    // Get total appointments count
-    const [appointmentCount] = await connection.query('SELECT COUNT(*) as total FROM appointments');
-    
-    // Get today's appointments
+
+    const [appointmentCount] = await connection.query(
+      "SELECT COUNT(*) as total FROM appointments"
+    );
+
     const [todayAppointments] = await connection.query(
-      'SELECT COUNT(*) as total FROM appointments WHERE DATE(appointment_datetime) = CURDATE()'
+      "SELECT COUNT(*) as total FROM appointments WHERE DATE(appointment_datetime) = CURDATE()"
     );
-    
-    // Get this week's new users
+
     const [weeklyUsers] = await connection.query(
-      'SELECT COUNT(*) as total FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
+      "SELECT COUNT(*) as total FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
     );
-    
-    // Get this month's new users
+
     const [monthlyUsers] = await connection.query(
-      'SELECT COUNT(*) as total FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)'
+      "SELECT COUNT(*) as total FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
     );
-    
-    // Get this week's new businesses
+
     const [weeklyBusinesses] = await connection.query(
-      'SELECT COUNT(*) as total FROM businesses WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
+      "SELECT COUNT(*) as total FROM businesses WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
     );
-    
-    // Get this month's new businesses
+
     const [monthlyBusinesses] = await connection.query(
-      'SELECT COUNT(*) as total FROM businesses WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)'
+      "SELECT COUNT(*) as total FROM businesses WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
     );
-    
-    // Get pending review deletions (mock data for now since reviews table structure unclear)
-    const pendingReviewDeletions = 0; // TODO: Implement when reviews table is clarified
-    
+
+    const pendingReviewDeletions = 0;
+
     res.json({
       totalUsers: userCount[0].total || 0,
       totalBusinesses: businessCount[0].total || 0,
@@ -58,13 +53,12 @@ exports.getAdminStats = async (req, res) => {
       weeklyNewBusinesses: weeklyBusinesses[0].total || 0,
       monthlyNewUsers: monthlyUsers[0].total || 0,
       monthlyNewBusinesses: monthlyBusinesses[0].total || 0,
-      pendingReviewDeletions: pendingReviewDeletions,
-      systemStatus: 'operational' // Could be calculated based on error logs
+      pendingReviewDeletions,
+      systemStatus: "operational",
     });
-    
   } catch (error) {
-    console.error('Error fetching admin stats:', error);
-    res.status(500).json({ error: 'Failed to fetch admin statistics' });
+    console.error("Error fetching admin stats:", error);
+    res.status(500).json({ error: "Failed to fetch admin statistics" });
   }
 };
 
@@ -73,24 +67,19 @@ exports.getRecentActivity = async (req, res) => {
   try {
     const connection = db.getPromise();
     const limit = parseInt(req.query.limit) || 20;
-    
-    // Get recent activities from multiple tables
-    const activities = [];
-    
-    // Recent user registrations
+
     const [recentUsers] = await connection.query(
       'SELECT user_id, first_name, last_name, created_at, "user_registration" as type FROM users ORDER BY created_at DESC LIMIT ?',
       [limit]
     );
-    
-    // Recent business registrations
+
     const [recentBusinesses] = await connection.query(
       'SELECT business_id, name, created_at, "business_registration" as type FROM businesses ORDER BY created_at DESC LIMIT ?',
       [limit]
     );
-    
-    // Recent appointments
-    const [recentAppointments] = await connection.query(`
+
+    const [recentAppointments] = await connection.query(
+      `
       SELECT 
         a.appointment_id,
         a.created_at,
@@ -102,39 +91,36 @@ exports.getRecentActivity = async (req, res) => {
       JOIN businesses b ON a.business_id = b.business_id
       ORDER BY a.created_at DESC
       LIMIT ?
-    `, [limit]);
-    
-    // Combine and sort all activities by date
+    `,
+      [limit]
+    );
+
     const allActivities = [
-      ...recentUsers.map(u => ({
+      ...recentUsers.map((u) => ({
         id: u.user_id,
-        type: 'user_registration',
+        type: "user_registration",
         message: `משתמש חדש נרשם: ${u.first_name} ${u.last_name}`,
-        timestamp: u.created_at
+        timestamp: u.created_at,
       })),
-      ...recentBusinesses.map(b => ({
+      ...recentBusinesses.map((b) => ({
         id: b.business_id,
-        type: 'business_registration',
+        type: "business_registration",
         message: `עסק חדש נוסף: ${b.name}`,
-        timestamp: b.created_at
+        timestamp: b.created_at,
       })),
-      ...recentAppointments.map(a => ({
+      ...recentAppointments.map((a) => ({
         id: a.appointment_id,
-        type: 'new_appointment',
+        type: "new_appointment",
         message: `תור חדש נקבע: ${a.customer_name} אצל ${a.business_name}`,
-        timestamp: a.created_at
-      }))
+        timestamp: a.created_at,
+      })),
     ];
-    
-    // Sort by timestamp and limit
+
     allActivities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    const limitedActivities = allActivities.slice(0, limit);
-    
-    res.json(limitedActivities);
-    
+    res.json(allActivities.slice(0, limit));
   } catch (error) {
-    console.error('Error fetching recent activity:', error);
-    res.status(500).json({ error: 'Failed to fetch recent activity' });
+    console.error("Error fetching recent activity:", error);
+    res.status(500).json({ error: "Failed to fetch recent activity" });
   }
 };
 
@@ -142,36 +128,29 @@ exports.getRecentActivity = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const connection = db.getPromise();
-    const { page = 1, limit = 20, search = '', role = '', status = '' } = req.query;
+    const { page = 1, limit = 20, search = "", role = "" } = req.query;
     const offset = (page - 1) * limit;
-    
-    let whereClause = 'WHERE 1=1';
+
+    let whereClause = "WHERE 1=1";
     const params = [];
-    
+
     if (search) {
-      whereClause += ' AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)';
+      whereClause +=
+        " AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)";
       const searchPattern = `%${search}%`;
       params.push(searchPattern, searchPattern, searchPattern);
     }
-    
+
     if (role) {
-      whereClause += ' AND role = ?';
+      whereClause += " AND role = ?";
       params.push(role);
     }
-    
-    // Users table doesn't have status column - ignore status filter for now
-    // if (status) {
-    //   whereClause += ' AND status = ?';
-    //   params.push(status);
-    // }
-    
-    // Get total count for pagination
+
     const [countResult] = await connection.query(
       `SELECT COUNT(*) as total FROM users ${whereClause}`,
       params
     );
-    
-    // Get users with limit and offset
+
     params.push(parseInt(limit), parseInt(offset));
     const [users] = await connection.query(
       `SELECT 
@@ -188,43 +167,28 @@ exports.getAllUsers = async (req, res) => {
       LIMIT ? OFFSET ?`,
       params
     );
-    
+
     res.json({
       users,
       pagination: {
         total: countResult[0].total,
         page: parseInt(page),
         limit: parseInt(limit),
-        totalPages: Math.ceil(countResult[0].total / limit)
-      }
+        totalPages: Math.ceil(countResult[0].total / limit),
+      },
     });
-    
   } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ error: 'Failed to fetch users' });
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Failed to fetch users" });
   }
 };
 
-// Update user status (active/suspended/deleted)
+// Update user status (not supported)
 exports.updateUserStatus = async (req, res) => {
-  try {
-    const connection = db.getPromise();
-    const userId = req.params.id;
-    const { status } = req.body;
-    
-    // Users table doesn't have status column - cannot update status
-    return res.status(400).json({ error: 'User status management not available - users table has no status column' });
-    
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    res.json({ message: 'User status updated successfully' });
-    
-  } catch (error) {
-    console.error('Error updating user status:', error);
-    res.status(500).json({ error: 'Failed to update user status' });
-  }
+  return res.status(400).json({
+    error:
+      "User status management not available - users table has no status column",
+  });
 };
 
 // Update user role
@@ -233,25 +197,24 @@ exports.updateUserRole = async (req, res) => {
     const connection = db.getPromise();
     const userId = req.params.id;
     const { role } = req.body;
-    
-    if (!['customer', 'business', 'admin'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role value' });
+
+    if (!["customer", "business", "admin"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role value" });
     }
-    
+
     const [result] = await connection.query(
-      'UPDATE users SET role = ? WHERE user_id = ?',
+      "UPDATE users SET role = ? WHERE user_id = ?",
       [role, userId]
     );
-    
+
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
-    
-    res.json({ message: 'User role updated successfully' });
-    
+
+    res.json({ message: "User role updated successfully" });
   } catch (error) {
-    console.error('Error updating user role:', error);
-    res.status(500).json({ error: 'Failed to update user role' });
+    console.error("Error updating user role:", error);
+    res.status(500).json({ error: "Failed to update user role" });
   }
 };
 
@@ -259,40 +222,39 @@ exports.updateUserRole = async (req, res) => {
 exports.getAllBusinesses = async (req, res) => {
   try {
     const connection = db.getPromise();
-    const { page = 1, limit = 20, search = '', status = '', category = '' } = req.query;
+    const {
+      page = 1,
+      limit = 20,
+      search = "",
+      status = "",
+      category = "",
+    } = req.query;
     const offset = (page - 1) * limit;
-    
-    let whereClause = 'WHERE 1=1';
+
+    let whereClause = "WHERE 1=1";
     const params = [];
-    
+
     if (search) {
-      whereClause += ' AND (b.name LIKE ? OR b.description LIKE ?)';
+      whereClause += " AND (b.name LIKE ? OR b.description LIKE ?)";
       const searchPattern = `%${search}%`;
       params.push(searchPattern, searchPattern);
     }
-    
-    // Businesses table doesn't have status column - ignore status filter
-    // if (status) {
-    //   if (status === 'pending') {
-    //     whereClause += ' AND (b.status = ? OR b.status IS NULL)';
-    //   } else {
-    //     whereClause += ' AND b.status = ?';
-    //   }
-    //   params.push(status);
-    // }
-    
+
+    if (status) {
+      whereClause += " AND b.status = ?";
+      params.push(status);
+    }
+
     if (category) {
-      whereClause += ' AND b.category = ?';
+      whereClause += " AND b.category = ?";
       params.push(category);
     }
-    
-    // Get total count
+
     const [countResult] = await connection.query(
       `SELECT COUNT(*) as total FROM businesses b ${whereClause}`,
       params
     );
-    
-    // Get businesses with owner info
+
     params.push(parseInt(limit), parseInt(offset));
     const [businesses] = await connection.query(
       `SELECT 
@@ -301,6 +263,7 @@ exports.getAllBusinesses = async (req, res) => {
         b.category,
         b.description,
         b.location,
+        b.status,
         b.created_at,
         u.first_name as owner_first_name,
         u.last_name as owner_last_name,
@@ -313,20 +276,19 @@ exports.getAllBusinesses = async (req, res) => {
       LIMIT ? OFFSET ?`,
       params
     );
-    
+
     res.json({
       businesses,
       pagination: {
         total: countResult[0].total,
         page: parseInt(page),
         limit: parseInt(limit),
-        totalPages: Math.ceil(countResult[0].total / limit)
-      }
+        totalPages: Math.ceil(countResult[0].total / limit),
+      },
     });
-    
   } catch (error) {
-    console.error('Error fetching businesses:', error);
-    res.status(500).json({ error: 'Failed to fetch businesses' });
+    console.error("Error fetching businesses:", error);
+    res.status(500).json({ error: "Failed to fetch businesses" });
   }
 };
 
@@ -335,26 +297,20 @@ exports.approveBusiness = async (req, res) => {
   try {
     const connection = db.getPromise();
     const businessId = req.params.id;
-    
-    // Businesses table doesn't have status, approved_at, or approved_by columns
-    // For now, just return success - business approval functionality needs schema update
-    const [business] = await connection.query(
-      'SELECT business_id FROM businesses WHERE business_id = ?',
+
+    const [result] = await connection.query(
+      "UPDATE businesses SET status = 'approved' WHERE business_id = ?",
       [businessId]
     );
-    
-    if (business.length === 0) {
-      return res.status(404).json({ error: 'Business not found' });
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Business not found" });
     }
-    
-    // Optionally, notify the business owner
-    // await sendApprovalNotification(businessId);
-    
-    res.json({ message: 'Business approved successfully' });
-    
+
+    res.json({ message: "Business approved successfully" });
   } catch (error) {
-    console.error('Error approving business:', error);
-    res.status(500).json({ error: 'Failed to approve business' });
+    console.error("Error approving business:", error);
+    res.status(500).json({ error: "Failed to approve business" });
   }
 };
 
@@ -363,52 +319,80 @@ exports.rejectBusiness = async (req, res) => {
   try {
     const connection = db.getPromise();
     const businessId = req.params.id;
-    const { reason } = req.body;
-    
-    // Businesses table doesn't have status, rejection_reason, rejected_at, or rejected_by columns
-    // For now, just return success - business rejection functionality needs schema update
-    const [business] = await connection.query(
-      'SELECT business_id FROM businesses WHERE business_id = ?',
+
+    // ✅ אם לא נשלח body – לא יקרוס
+    const { reason } = req.body || {};
+
+    const [result] = await connection.query(
+      "UPDATE businesses SET status = 'rejected' WHERE business_id = ?",
       [businessId]
     );
-    
-    if (business.length === 0) {
-      return res.status(404).json({ error: 'Business not found' });
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Business not found" });
     }
-    
-    // Optionally, notify the business owner with reason
-    // await sendRejectionNotification(businessId, reason);
-    
-    res.json({ message: 'Business rejected' });
-    
+
+    res.json({ message: "Business rejected", reason: reason || null });
   } catch (error) {
-    console.error('Error rejecting business:', error);
-    res.status(500).json({ error: 'Failed to reject business' });
+    console.error("Error rejecting business:", error);
+    res.status(500).json({ error: "Failed to reject business" });
   }
 };
 
-// Delete a business
+// Delete a business (with dependencies)
 exports.deleteBusiness = async (req, res) => {
+  const connection = db.getPromise();
+  const businessId = req.params.id;
+
   try {
-    const connection = db.getPromise();
-    const businessId = req.params.id;
-    
-    // Businesses table doesn't have status or deleted_at columns
-    // For now, actually delete the business record
-    const [result] = await connection.query(
-      'DELETE FROM businesses WHERE business_id = ?',
+    await connection.beginTransaction();
+
+    // 1) למחוק תלונות על ביקורות של העסק
+    await connection.query(
+      `
+      DELETE rc
+      FROM review_complaints rc
+      JOIN reviews r ON rc.review_id = r.review_id
+      WHERE r.business_id = ?
+      `,
       [businessId]
     );
-    
+
+    // 2) למחוק ביקורות של העסק
+    await connection.query("DELETE FROM reviews WHERE business_id = ?", [
+      businessId,
+    ]);
+
+    // 3) למחוק תורים של העסק
+    await connection.query("DELETE FROM appointments WHERE business_id = ?", [
+      businessId,
+    ]);
+
+    // 4) למחוק שירותים של העסק (אם קיימים)
+    await connection.query("DELETE FROM services WHERE business_id = ?", [
+      businessId,
+    ]);
+
+    // 5) עכשיו אפשר למחוק את העסק עצמו
+    const [result] = await connection.query(
+      "DELETE FROM businesses WHERE business_id = ?",
+      [businessId]
+    );
+
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Business not found' });
+      await connection.rollback();
+      return res.status(404).json({ error: "Business not found" });
     }
-    
-    res.json({ message: 'Business deleted successfully' });
-    
+
+    await connection.commit();
+    res.json({ message: "Business deleted successfully" });
   } catch (error) {
-    console.error('Error deleting business:', error);
-    res.status(500).json({ error: 'Failed to delete business' });
+    await connection.rollback();
+    console.error("Error deleting business:", error);
+    res.status(500).json({
+      error: "Failed to delete business",
+      details: error.message,
+    });
   }
 };
 
@@ -416,29 +400,27 @@ exports.deleteBusiness = async (req, res) => {
 exports.getAllAppointments = async (req, res) => {
   try {
     const connection = db.getPromise();
-    const { page = 1, limit = 20, status = '', date = '' } = req.query;
+    const { page = 1, limit = 20, status = "", date = "" } = req.query;
     const offset = (page - 1) * limit;
-    
-    let whereClause = 'WHERE 1=1';
+
+    let whereClause = "WHERE 1=1";
     const params = [];
-    
+
     if (status) {
-      whereClause += ' AND a.status = ?';
+      whereClause += " AND a.status = ?";
       params.push(status);
     }
-    
+
     if (date) {
-      whereClause += ' AND DATE(a.appointment_datetime) = ?';
+      whereClause += " AND DATE(a.appointment_datetime) = ?";
       params.push(date);
     }
-    
-    // Get total count
+
     const [countResult] = await connection.query(
       `SELECT COUNT(*) as total FROM appointments a ${whereClause}`,
       params
     );
-    
-    // Get appointments with details
+
     params.push(parseInt(limit), parseInt(offset));
     const [appointments] = await connection.query(
       `SELECT 
@@ -465,20 +447,19 @@ exports.getAllAppointments = async (req, res) => {
       LIMIT ? OFFSET ?`,
       params
     );
-    
+
     res.json({
       appointments,
       pagination: {
         total: countResult[0].total,
         page: parseInt(page),
         limit: parseInt(limit),
-        totalPages: Math.ceil(countResult[0].total / limit)
-      }
+        totalPages: Math.ceil(countResult[0].total / limit),
+      },
     });
-    
   } catch (error) {
-    console.error('Error fetching appointments:', error);
-    res.status(500).json({ error: 'Failed to fetch appointments' });
+    console.error("Error fetching appointments:", error);
+    res.status(500).json({ error: "Failed to fetch appointments" });
   }
 };
 
@@ -488,27 +469,32 @@ exports.updateAppointmentStatus = async (req, res) => {
     const connection = db.getPromise();
     const appointmentId = req.params.id;
     const { status } = req.body;
-    
-    const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled_by_user', 'cancelled_by_business', 'not_arrived'];
+
+    const validStatuses = [
+      "pending",
+      "confirmed",
+      "completed",
+      "cancelled_by_user",
+      "cancelled_by_business",
+      "not_arrived",
+    ];
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ error: 'Invalid status value' });
+      return res.status(400).json({ error: "Invalid status value" });
     }
-    
-    // Appointments table doesn't have updated_at column
+
     const [result] = await connection.query(
-      'UPDATE appointments SET status = ? WHERE appointment_id = ?',
+      "UPDATE appointments SET status = ? WHERE appointment_id = ?",
       [status, appointmentId]
     );
-    
+
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Appointment not found' });
+      return res.status(404).json({ error: "Appointment not found" });
     }
-    
-    res.json({ message: 'Appointment status updated successfully' });
-    
+
+    res.json({ message: "Appointment status updated successfully" });
   } catch (error) {
-    console.error('Error updating appointment status:', error);
-    res.status(500).json({ error: 'Failed to update appointment status' });
+    console.error("Error updating appointment status:", error);
+    res.status(500).json({ error: "Failed to update appointment status" });
   }
 };
 
@@ -517,7 +503,7 @@ exports.getUserAnalytics = async (req, res) => {
   try {
     const connection = db.getPromise();
     const { days = 30 } = req.query;
-    
+
     const [dailyData] = await connection.query(
       `SELECT 
         DATE(created_at) as date,
@@ -528,20 +514,19 @@ exports.getUserAnalytics = async (req, res) => {
       ORDER BY date ASC`,
       [parseInt(days)]
     );
-    
+
     const [roleDistribution] = await connection.query(
-      'SELECT role, COUNT(*) as count FROM users GROUP BY role'
+      "SELECT role, COUNT(*) as count FROM users GROUP BY role"
     );
-    
+
     res.json({
       dailyGrowth: dailyData,
       roleDistribution,
-      period: `${days} days`
+      period: `${days} days`,
     });
-    
   } catch (error) {
-    console.error('Error fetching user analytics:', error);
-    res.status(500).json({ error: 'Failed to fetch user analytics' });
+    console.error("Error fetching user analytics:", error);
+    res.status(500).json({ error: "Failed to fetch user analytics" });
   }
 };
 
@@ -550,7 +535,7 @@ exports.getBusinessAnalytics = async (req, res) => {
   try {
     const connection = db.getPromise();
     const { days = 30 } = req.query;
-    
+
     const [dailyData] = await connection.query(
       `SELECT 
         DATE(created_at) as date,
@@ -561,28 +546,24 @@ exports.getBusinessAnalytics = async (req, res) => {
       ORDER BY date ASC`,
       [parseInt(days)]
     );
-    
+
     const [categoryDistribution] = await connection.query(
-      'SELECT category, COUNT(*) as count FROM businesses GROUP BY category'
+      "SELECT category, COUNT(*) as count FROM businesses GROUP BY category"
     );
-    
-    // Businesses table doesn't have status column - get total count for mock status distribution
-    const [totalBusinesses] = await connection.query('SELECT COUNT(*) as total FROM businesses');
-    const statusDistribution = [
-      { status: 'active', count: totalBusinesses[0].total || 0 },
-      { status: 'pending', count: 0 }
-    ];
-    
+
+    const [statusDistribution] = await connection.query(
+      "SELECT status, COUNT(*) as count FROM businesses GROUP BY status"
+    );
+
     res.json({
       dailyGrowth: dailyData,
       categoryDistribution,
       statusDistribution,
-      period: `${days} days`
+      period: `${days} days`,
     });
-    
   } catch (error) {
-    console.error('Error fetching business analytics:', error);
-    res.status(500).json({ error: 'Failed to fetch business analytics' });
+    console.error("Error fetching business analytics:", error);
+    res.status(500).json({ error: "Failed to fetch business analytics" });
   }
 };
 
@@ -591,7 +572,7 @@ exports.getAppointmentAnalytics = async (req, res) => {
   try {
     const connection = db.getPromise();
     const { days = 30 } = req.query;
-    
+
     const [dailyData] = await connection.query(
       `SELECT 
         DATE(appointment_datetime) as date,
@@ -605,11 +586,11 @@ exports.getAppointmentAnalytics = async (req, res) => {
       ORDER BY date ASC`,
       [parseInt(days)]
     );
-    
+
     const [statusDistribution] = await connection.query(
-      'SELECT status, COUNT(*) as count FROM appointments GROUP BY status'
+      "SELECT status, COUNT(*) as count FROM appointments GROUP BY status"
     );
-    
+
     const [topServices] = await connection.query(
       `SELECT 
         s.name as service_name,
@@ -620,16 +601,15 @@ exports.getAppointmentAnalytics = async (req, res) => {
       ORDER BY appointment_count DESC
       LIMIT 10`
     );
-    
+
     res.json({
       dailyAppointments: dailyData,
       statusDistribution,
       topServices,
-      period: `${days} days`
+      period: `${days} days`,
     });
-    
   } catch (error) {
-    console.error('Error fetching appointment analytics:', error);
-    res.status(500).json({ error: 'Failed to fetch appointment analytics' });
+    console.error("Error fetching appointment analytics:", error);
+    res.status(500).json({ error: "Failed to fetch appointment analytics" });
   }
 };

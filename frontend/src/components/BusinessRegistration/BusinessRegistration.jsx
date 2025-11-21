@@ -1,55 +1,61 @@
 /**
  * Business Registration Component
  * Form for registering new businesses similar to AuthPage
- * 
+ *
  * @component
  * @param {Function} onRegistrationSuccess - Callback when registration succeeds
  * @returns {JSX.Element} Business registration form
  */
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../../api/axiosInstance';
-import useErrorHandler from '../../hooks/useErrorHandler';
-import ErrorMessage from '../shared/ErrorMessage/ErrorMessage';
-import LoadingSpinner from '../shared/LoadingSpinner/LoadingSpinner';
-import styles from '../Forms/Form.module.css';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../api/axiosInstance";
+import useErrorHandler from "../../hooks/useErrorHandler";
+import ErrorMessage from "../shared/ErrorMessage/ErrorMessage";
+import LoadingSpinner from "../shared/LoadingSpinner/LoadingSpinner";
+import styles from "../Forms/Form.module.css";
 
 function BusinessRegistration({ onRegistrationSuccess }) {
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useState("");
   const [countdown, setCountdown] = useState(0);
   const navigate = useNavigate();
-  const { error, isLoading, handleError, clearError, executeWithErrorHandling } = useErrorHandler();
+  const {
+    error,
+    isLoading,
+    handleError,
+    clearError,
+    executeWithErrorHandling,
+  } = useErrorHandler();
 
   // Form data state
   const [formData, setFormData] = useState({
     // Owner details
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
     // Business details
-    businessName: '',
-    category: '',
-    description: '',
-    businessPhone: '',
-    businessEmail: '',
-    city: '',
-    address: '',
-    openingHours: ''
+    businessName: "",
+    category: "",
+    description: "",
+    businessPhone: "",
+    businessEmail: "",
+    city: "",
+    address: "",
+    openingHours: "",
   });
 
   // Available business categories
   const businessCategories = [
-    'בריאות ורפואה',
-    'יופי וטיפוח',
-    'חינוך והדרכה',
-    'שירותים מקצועיים',
-    'ספורט וכושר',
-    'מזון ומשקאות',
-    'אחר'
+    "בריאות ורפואה",
+    "יופי וטיפוח",
+    "חינוך והדרכה",
+    "שירותים מקצועיים",
+    "ספורט וכושר",
+    "מזון ומשקאות",
+    "אחר",
   ];
 
   // Validation function
@@ -57,7 +63,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
     clearError();
 
     // Owner details validation
-    // Email validation 
+    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!emailRegex.test(formData.email)) {
       handleError("נא להזין כתובת אימייל תקינה.");
@@ -72,14 +78,24 @@ function BusinessRegistration({ onRegistrationSuccess }) {
     }
 
     // First name validation (minimum 2 letters only)
-    if (formData.firstName.length < 2 || !/^[A-Za-zא-ת]+$/.test(formData.firstName)) {
-      handleError("השם הפרטי חייב להכיל רק אותיות ולהיות באורך מינימום של 2 תווים.");
+    if (
+      formData.firstName.length < 2 ||
+      !/^[A-Za-zא-ת]+$/.test(formData.firstName)
+    ) {
+      handleError(
+        "השם הפרטי חייב להכיל רק אותיות ולהיות באורך מינימום של 2 תווים."
+      );
       return false;
     }
 
     // Last name validation (minimum 2 letters only)
-    if (formData.lastName.length < 2 || !/^[A-Za-zא-ת]+$/.test(formData.lastName)) {
-      handleError("שם המשפחה חייב להכיל רק אותיות ולהיות באורך מינימום של 2 תווים.");
+    if (
+      formData.lastName.length < 2 ||
+      !/^[A-Za-zא-ת]+$/.test(formData.lastName)
+    ) {
+      handleError(
+        "שם המשפחה חייב להכיל רק אותיות ולהיות באורך מינימום של 2 תווים."
+      );
       return false;
     }
 
@@ -137,11 +153,11 @@ function BusinessRegistration({ onRegistrationSuccess }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (error) {
       clearError();
@@ -149,45 +165,47 @@ function BusinessRegistration({ onRegistrationSuccess }) {
   };
 
   const handleQuickFill = (businessType) => {
-    if (businessType === 'yoga') {
-      setFormData(prev => ({
+    if (businessType === "yoga") {
+      setFormData((prev) => ({
         ...prev,
         // Owner details
-        firstName: 'שרה',
-        lastName: 'לוי',
-        email: 'sarah.levy@zenflow.co.il',
-        phone: '052-1234567',
-        password: 'yoga123',
-        confirmPassword: 'yoga123',
+        firstName: "שרה",
+        lastName: "לוי",
+        email: "sarah.levy@zenflow.co.il",
+        phone: "052-1234567",
+        password: "yoga123",
+        confirmPassword: "yoga123",
         // Business details
-        businessName: 'זן פלו יוגה סטודיו',
-        category: 'ספורט וכושר',
-        description: 'סטודיו יוגה מודרני המציע שיעורי ויניאסה, האטה יוגה ומדיטציה בסביבה רגועה ומזמינה.',
-        businessPhone: '03-6677889',
-        businessEmail: 'info@zenflow.co.il',
-        city: 'תל אביב',
-        address: 'רחוב דיזנגוף 145',
-        openingHours: 'ראשון-חמישי 7:00-21:00, שישי 7:00-15:00, שבת 9:00-18:00'
+        businessName: "זן פלו יוגה סטודיו",
+        category: "ספורט וכושר",
+        description:
+          "סטודיו יוגה מודרני המציע שיעורי ויניאסה, האטה יוגה ומדיטציה בסביבה רגועה ומזמינה.",
+        businessPhone: "03-6677889",
+        businessEmail: "info@zenflow.co.il",
+        city: "תל אביב",
+        address: "רחוב דיזנגוף 145",
+        openingHours: "ראשון-חמישי 7:00-21:00, שישי 7:00-15:00, שבת 9:00-18:00",
       }));
-    } else if (businessType === 'cafe') {
-      setFormData(prev => ({
+    } else if (businessType === "cafe") {
+      setFormData((prev) => ({
         ...prev,
         // Owner details
-        firstName: 'דני',
-        lastName: 'כהן',
-        email: 'danny.cohen@cornercafe.co.il',
-        phone: '054-9876543',
-        password: 'cafe456',
-        confirmPassword: 'cafe456',
+        firstName: "דני",
+        lastName: "כהן",
+        email: "danny.cohen@cornercafe.co.il",
+        phone: "054-9876543",
+        password: "cafe456",
+        confirmPassword: "cafe456",
         // Business details
-        businessName: 'קורנר קפה',
-        category: 'מזון ומשקאות',
-        description: 'בית קפה אינטימי עם קפה טרי, מאפים ביתיים וארוחות בוקר מפנקות. אווירה נעימה במרכז העיר.',
-        businessPhone: '09-7788990',
-        businessEmail: 'hello@cornercafe.co.il',
-        city: 'רמת גן',
-        address: 'רחוב הרצל 28',
-        openingHours: 'ראשון-חמישי 7:00-20:00, שישי 7:00-16:00, שבת 8:00-15:00'
+        businessName: "קורנר קפה",
+        category: "מזון ומשקאות",
+        description:
+          "בית קפה אינטימי עם קפה טרי, מאפים ביתיים וארוחות בוקר מפנקות. אווירה נעימה במרכז העיר.",
+        businessPhone: "09-7788990",
+        businessEmail: "hello@cornercafe.co.il",
+        city: "רמת גן",
+        address: "רחוב הרצל 28",
+        openingHours: "ראשון-חמישי 7:00-20:00, שישי 7:00-16:00, שבת 8:00-15:00",
       }));
     }
   };
@@ -201,7 +219,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
 
     const registrationOperation = async () => {
       clearError();
-      setSuccess('');
+      setSuccess("");
 
       const businessData = {
         // Owner details
@@ -220,40 +238,48 @@ function BusinessRegistration({ onRegistrationSuccess }) {
         city: formData.city,
         address: formData.address,
         location: `${formData.city}, ${formData.address}`,
-        openingHours: formData.openingHours
+        openingHours: formData.openingHours,
       };
 
-      const response = await axiosInstance.post('/auth/register-business', businessData);
-      setSuccess('רישום העסק הושלם בהצלחה! מעבר לעמוד ההתחברות בעוד');
+      const response = await axiosInstance.post(
+        "/auth/register-business",
+        businessData
+      );
+
+      // 🔹 הודעת הצלחה מעודכנת – כולל מידע על אישור אדמין
+      setSuccess(
+        "רישום העסק הושלם בהצלחה! העסק ממתין לאישור אדמין. מעבר לעמוד ההתחברות בעוד"
+      );
       setCountdown(3);
-      
-      // Start countdown
+
+      // Start countdown + navigate to login at the end
       const countdownInterval = setInterval(() => {
-        setCountdown(prev => {
+        setCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(countdownInterval);
+            navigate("/login");
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
-      
+
       // Reset form
       setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        password: '',
-        confirmPassword: '',
-        businessName: '',
-        category: '',
-        description: '',
-        businessPhone: '',
-        businessEmail: '',
-        city: '',
-        address: '',
-        openingHours: ''
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+        businessName: "",
+        category: "",
+        description: "",
+        businessPhone: "",
+        businessEmail: "",
+        city: "",
+        address: "",
+        openingHours: "",
       });
 
       // Call success callback if provided
@@ -267,7 +293,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
     try {
       await executeWithErrorHandling(registrationOperation);
     } catch (err) {
-      console.error('Business registration failed:', err);
+      console.error("Business registration failed:", err);
     }
   };
 
@@ -280,20 +306,20 @@ function BusinessRegistration({ onRegistrationSuccess }) {
 
       {/* Error Display */}
       {error && (
-        <ErrorMessage 
-          error={error} 
+        <ErrorMessage
+          error={error}
           onClose={clearError}
           className={styles.errorMessage}
         />
       )}
-      
+
       <form onSubmit={handleSubmit}>
         {/* Quick Fill Buttons */}
         <div className={styles.quickLoginContainer}>
           <button
             type="button"
             className={styles.quickLoginButton}
-            onClick={() => handleQuickFill('yoga')}
+            onClick={() => handleQuickFill("yoga")}
             disabled={isLoading}
           >
             🧘 יוגה סטודיו
@@ -301,7 +327,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
           <button
             type="button"
             className={styles.quickLoginButton}
-            onClick={() => handleQuickFill('cafe')}
+            onClick={() => handleQuickFill("cafe")}
             disabled={isLoading}
           >
             ☕ בית קפה
@@ -312,7 +338,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
         <div className={styles.sectionHeader}>
           <h2>פרטי בעל העסק</h2>
         </div>
-        
+
         <div className={styles.inputGrid}>
           <input
             type="text"
@@ -394,7 +420,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
             required
             disabled={isLoading}
           />
-          
+
           <select
             name="category"
             className={styles.inputField}
@@ -404,13 +430,13 @@ function BusinessRegistration({ onRegistrationSuccess }) {
             disabled={isLoading}
           >
             <option value="">בחר קטגוריה</option>
-            {businessCategories.map(category => (
+            {businessCategories.map((category) => (
               <option key={category} value={category}>
                 {category}
               </option>
             ))}
           </select>
-          
+
           <input
             type="tel"
             name="businessPhone"
@@ -420,7 +446,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
             onChange={handleInputChange}
             disabled={isLoading}
           />
-          
+
           <input
             type="email"
             name="businessEmail"
@@ -430,7 +456,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
             onChange={handleInputChange}
             disabled={isLoading}
           />
-          
+
           <input
             type="text"
             name="city"
@@ -441,7 +467,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
             required
             disabled={isLoading}
           />
-          
+
           <input
             type="text"
             name="address"
@@ -452,7 +478,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
             required
             disabled={isLoading}
           />
-          
+
           <input
             type="text"
             name="openingHours"
@@ -475,18 +501,28 @@ function BusinessRegistration({ onRegistrationSuccess }) {
           rows={4}
         />
 
-        <button type="submit" className={styles.submitButton} disabled={isLoading}>
-          {isLoading && <LoadingSpinner size="small" color="white" className={styles.buttonSpinner} />}
-          {isLoading ? 'רושם עסק...' : 'רשום עסק'}
+        <button
+          type="submit"
+          className={styles.submitButton}
+          disabled={isLoading}
+        >
+          {isLoading && (
+            <LoadingSpinner
+              size="small"
+              color="white"
+              className={styles.buttonSpinner}
+            />
+          )}
+          {isLoading ? "רושם עסק..." : "רשום עסק"}
         </button>
 
         {/* Success Display */}
         {success && (
-          <ErrorMessage 
+          <ErrorMessage
             error={countdown > 0 ? `${success} ${countdown} שניות` : success}
             type="success"
             onClose={() => {
-              setSuccess('');
+              setSuccess("");
               setCountdown(0);
             }}
             className={styles.successMessage}
@@ -497,7 +533,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
         <button
           type="button"
           className={styles.switchLink}
-          onClick={() => navigate('/login')}
+          onClick={() => navigate("/login")}
           disabled={isLoading}
         >
           כבר יש לך חשבון? התחבר כאן

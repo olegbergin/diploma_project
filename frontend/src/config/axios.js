@@ -1,39 +1,45 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Create axios instance with base configuration
 const axiosInstance = axios.create({
-  baseURL: '/api',
+  baseURL: "/api",
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Request interceptor to add auth token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    let token = null;
+
+    try {
+      token =
+        JSON.parse(localStorage.getItem("authToken")) ||
+        JSON.parse(localStorage.getItem("token"));
+    } catch {
+      token =
+        localStorage.getItem("authToken") || localStorage.getItem("token");
+    }
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor to handle common errors
 axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userInfo');
-      window.location.href = '/login';
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("token");
+      localStorage.removeItem("userInfo");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }

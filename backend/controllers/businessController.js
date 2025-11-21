@@ -1,9 +1,12 @@
-const db = require('../dbSingleton');
+const db = require("../dbSingleton");
 
 exports.getAllBusinesses = async (req, res) => {
   try {
     const connection = db.getPromise();
-    const [rows] = await connection.query('SELECT * FROM businesses');
+    // מציגים ללקוחות רק עסקים מאושרים
+    const [rows] = await connection.query(
+      "SELECT * FROM businesses WHERE status = 'approved'"
+    );
     res.json(rows);
   } catch (error) {
     console.error("DB error fetching all businesses:", error);
@@ -11,42 +14,58 @@ exports.getAllBusinesses = async (req, res) => {
   }
 };
 
+// גרסה פשוטה לפי id – נשאיר, אבל נוודא שרק מאושר מוחזר
 exports.getBusinessById = async (req, res) => {
   try {
-   const connection = db.getPromise();
-    const [rows] = await connection.query('SELECT * FROM businesses WHERE business_id = ?', [req.params.id]);
+    const connection = db.getPromise();
+    const [rows] = await connection.query(
+      "SELECT * FROM businesses WHERE business_id = ? AND status = 'approved'",
+      [req.params.id]
+    );
     if (rows.length > 0) {
       res.json(rows[0]);
     } else {
-      res.status(404).json({ message: 'Business not found' });
+      res.status(404).json({ message: "Business not found or not approved" });
     }
   } catch (error) {
+    console.error("DB error fetching business by id:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
 exports.createBusiness = async (req, res) => {
   const {
-    name, category, description, address = "", opening_hours = "",
+    name,
+    category,
+    description,
+    address = "",
+    opening_hours = "",
   } = req.body;
 
+  // העסק ייווצר כ-pending כדי שהאדמין יאשר
   const sql = `
-    INSERT INTO businesses (name, category, description, location, photos, schedule)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO businesses (name, category, description, location, photos, schedule, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
   const params = [
-    name, 
-    category, 
-    description, 
+    name,
+    category,
+    description,
     address, // address maps to location
-    '[]', // empty photos array
-    opening_hours ? JSON.stringify({"opening_hours": opening_hours}) : '{}' // schedule as JSON
+    "[]", // empty photos array
+    opening_hours ? JSON.stringify({ opening_hours: opening_hours }) : "{}", // schedule as JSON
+    "pending", // סטטוס התחלתי – ממתין לאישור אדמין
   ];
 
   try {
     const connection = db.getPromise();
     const [result] = await connection.query(sql, params);
-    res.status(201).json({ id: result.insertId, message: "Business created" });
+    res
+      .status(201)
+      .json({
+        id: result.insertId,
+        message: "Business created, pending admin approval",
+      });
   } catch (error) {
     console.error("DB error creating business:", error);
     res.status(500).json({ error: "Failed to create business." });
@@ -55,24 +74,30 @@ exports.createBusiness = async (req, res) => {
 
 exports.updateBusiness = async (req, res) => {
   const {
-    name, category, description, phone, email, address, 
-    working_hours = "", gallery = []
+    name,
+    category,
+    description,
+    phone,
+    email,
+    address,
+    working_hours = "",
+    gallery = [],
   } = req.body;
 
   try {
     const connection = db.getPromise();
     const businessId = req.params.id;
-    
+
     // Convert gallery array to photos JSON format
-    let photosJson = '[]';
+    let photosJson = "[]";
     if (gallery && Array.isArray(gallery) && gallery.length > 0) {
       // Handle both object format {url: "..."} and direct URL strings
-      const photoUrls = gallery.map(item => 
-        typeof item === 'string' ? item : (item.url || item)
-      ).filter(url => url && typeof url === 'string');
+      const photoUrls = gallery
+        .map((item) => (typeof item === "string" ? item : item.url || item))
+        .filter((url) => url && typeof url === "string");
       photosJson = JSON.stringify(photoUrls);
     }
-    
+
     const businessSql = `
       UPDATE businesses SET 
         name = ?, 
@@ -84,55 +109,62 @@ exports.updateBusiness = async (req, res) => {
       WHERE business_id = ?
     `;
     const businessParams = [
-      name, 
-      category, 
-      description, 
+      name,
+      category,
+      description,
       address,
       photosJson,
-      working_hours || '{}',
-      businessId
+      working_hours || "{}",
+      businessId,
     ];
-    
+
     const [result] = await connection.query(businessSql, businessParams);
-    
+
     // Handle owner contact info update
     if (phone || email) {
       try {
-        const [ownerRows] = await connection.query('SELECT owner_id FROM businesses WHERE business_id = ?', [businessId]);
+        const [ownerRows] = await connection.query(
+          "SELECT owner_id FROM businesses WHERE business_id = ?",
+          [businessId]
+        );
         if (ownerRows.length > 0 && ownerRows[0].owner_id) {
           const ownerId = ownerRows[0].owner_id;
-          
+
           const userUpdates = [];
           const userParams = [];
-          
+
           if (phone) {
-            userUpdates.push('phone = ?');
+            userUpdates.push("phone = ?");
             userParams.push(phone);
           }
           if (email) {
-            userUpdates.push('email = ?');
+            userUpdates.push("email = ?");
             userParams.push(email);
           }
-          
+
           if (userUpdates.length > 0) {
-            const userSql = `UPDATE users SET ${userUpdates.join(', ')} WHERE user_id = ?`;
+            const userSql = `UPDATE users SET ${userUpdates.join(
+              ", "
+            )} WHERE user_id = ?`;
             userParams.push(ownerId);
             await connection.query(userSql, userParams);
           }
         }
       } catch (userError) {
         // Don't fail the whole request if user update fails
-        console.error('Error updating user contact info:', userError);
+        console.error("Error updating user contact info:", userError);
       }
     }
-    
+
     res.json({ message: "Business updated successfully" });
-    
   } catch (error) {
-    console.error(`DB error updating business with id ${req.params.id}:`, error);
-    res.status(500).json({ 
+    console.error(
+      `DB error updating business with id ${req.params.id}:`,
+      error
+    );
+    res.status(500).json({
       error: "Failed to update business.",
-      details: error.message 
+      details: error.message,
     });
   }
 };
@@ -140,36 +172,46 @@ exports.updateBusiness = async (req, res) => {
 exports.deleteBusiness = async (req, res) => {
   try {
     const connection = db.getPromise();
-    const [result] = await connection.query('DELETE FROM businesses WHERE business_id = ?', [req.params.id]);
-    
+    const [result] = await connection.query(
+      "DELETE FROM businesses WHERE business_id = ?",
+      [req.params.id]
+    );
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Business not found" });
     }
-    
-    res.json({ message: 'Business deleted successfully' });
+
+    res.json({ message: "Business deleted successfully" });
   } catch (error) {
-    console.error(`DB error deleting business with id ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to delete business.' });
+    console.error(
+      `DB error deleting business with id ${req.params.id}:`,
+      error
+    );
+    res.status(500).json({ error: "Failed to delete business." });
   }
 };
 
 exports.getCategories = async (req, res) => {
   try {
     const connection = db.getPromise();
-    const [rows] = await connection.query('SELECT DISTINCT category FROM businesses WHERE category IS NOT NULL AND category != "" ORDER BY category');
-    const categories = rows.map(row => row.category);
+    // קטגוריות רק מעסקים מאושרים
+    const [rows] = await connection.query(
+      "SELECT DISTINCT category FROM businesses WHERE category IS NOT NULL AND category != '' AND status = 'approved' ORDER BY category"
+    );
+    const categories = rows.map((row) => row.category);
     res.json(categories);
   } catch (error) {
-    console.error('DB error fetching categories:', error);
-    res.status(500).json({ error: 'Failed to fetch categories.' });
+    console.error("DB error fetching categories:", error);
+    res.status(500).json({ error: "Failed to fetch categories." });
   }
 };
 
+// שימי לב: יש כאן הגדרה שנייה ל-getBusinessById – זו זו שבפועל בשימוש
 exports.getBusinessById = async (req, res) => {
   try {
     const connection = db.getPromise();
     const businessId = req.params.id;
-    
+
     const businessSql = `
       SELECT 
         b.*,
@@ -180,17 +222,21 @@ exports.getBusinessById = async (req, res) => {
       FROM businesses b
       LEFT JOIN users u ON b.owner_id = u.user_id
       WHERE b.business_id = ?
+        AND b.status = 'approved'
     `;
-    
+
     const [businessRows] = await connection.query(businessSql, [businessId]);
-    
+
     if (businessRows.length === 0) {
-      return res.status(404).json({ message: 'Business not found' });
+      return res
+        .status(404)
+        .json({ message: "Business not found or not approved" });
     }
-    
-    const servicesSql = 'SELECT * FROM services WHERE business_id = ? ORDER BY name ASC';
+
+    const servicesSql =
+      "SELECT * FROM services WHERE business_id = ? ORDER BY name ASC";
     const [servicesRows] = await connection.query(servicesSql, [businessId]);
-    
+
     const ratingSql = `
       SELECT 
         AVG(rating) as average_rating,
@@ -199,10 +245,10 @@ exports.getBusinessById = async (req, res) => {
       WHERE business_id = ?
     `;
     const [ratingRows] = await connection.query(ratingSql, [businessId]);
-    
+
     const business = businessRows[0];
     const ratingData = ratingRows[0] || {};
-    
+
     const transformedBusiness = {
       businessId: business.business_id,
       id: business.business_id,
@@ -211,20 +257,25 @@ exports.getBusinessById = async (req, res) => {
       name: business.name,
       category: business.category,
       description: business.description,
-      address: business.location,  // address comes from location field
+      address: business.location, // address comes from location field
       location: business.location,
       photos: business.photos,
       schedule: business.schedule,
       createdAt: business.created_at,
-      phone: business.owner_phone,  // phone from business owner
-      email: business.owner_email,  // email from business owner
-      owner_name: business.owner_first_name && business.owner_last_name 
-        ? `${business.owner_first_name} ${business.owner_last_name}` 
+      phone: business.owner_phone, // phone from business owner
+      email: business.owner_email, // email from business owner
+      owner_name:
+        business.owner_first_name && business.owner_last_name
+          ? `${business.owner_first_name} ${business.owner_last_name}`
+          : null,
+      average_rating: ratingData.average_rating
+        ? parseFloat(ratingData.average_rating).toFixed(1)
         : null,
-      average_rating: ratingData.average_rating ? parseFloat(ratingData.average_rating).toFixed(1) : null,
-      rating: ratingData.average_rating ? parseFloat(ratingData.average_rating).toFixed(1) : null,
+      rating: ratingData.average_rating
+        ? parseFloat(ratingData.average_rating).toFixed(1)
+        : null,
       total_reviews: ratingData.total_reviews || 0,
-      services: servicesRows.map(service => ({
+      services: servicesRows.map((service) => ({
         serviceId: service.service_id,
         businessId: service.business_id,
         name: service.name,
@@ -234,36 +285,41 @@ exports.getBusinessById = async (req, res) => {
         description: service.description,
         createdAt: service.created_at,
         category: service.category,
-        isActive: service.is_active
-      }))
+        isActive: service.is_active,
+      })),
     };
-    
+
     res.json(transformedBusiness);
   } catch (error) {
-    console.error(`DB error fetching business with id ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to fetch business details.' });
+    console.error(
+      `DB error fetching business with id ${req.params.id}:`,
+      error
+    );
+    res.status(500).json({ error: "Failed to fetch business details." });
   }
 };
 
 exports.getBusinessServices = async (req, res) => {
   try {
     const connection = db.getPromise();
-    
+
     const [businessRows] = await connection.query(
-      'SELECT business_id FROM businesses WHERE business_id = ?',
+      'SELECT business_id FROM businesses WHERE business_id = ? AND status = "approved"',
       [req.params.id]
     );
 
     if (businessRows.length === 0) {
-      return res.status(404).json({ error: 'Business not found' });
+      return res
+        .status(404)
+        .json({ error: "Business not found or not approved" });
     }
 
     const [services] = await connection.query(
-      'SELECT service_id, business_id, name, description, price, duration_minutes, category, is_active, created_at FROM services WHERE business_id = ? ORDER BY name ASC',
+      "SELECT service_id, business_id, name, description, price, duration_minutes, category, is_active, created_at FROM services WHERE business_id = ? ORDER BY name ASC",
       [req.params.id]
     );
 
-    const transformedServices = services.map(service => ({
+    const transformedServices = services.map((service) => ({
       serviceId: service.service_id,
       businessId: service.business_id,
       name: service.name,
@@ -273,27 +329,32 @@ exports.getBusinessServices = async (req, res) => {
       durationMinutes: service.duration_minutes,
       category: service.category,
       isActive: service.is_active,
-      createdAt: service.created_at
+      createdAt: service.created_at,
     }));
 
     res.json(transformedServices);
   } catch (error) {
-    console.error(`DB error fetching services for business ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to fetch services.' });
+    console.error(
+      `DB error fetching services for business ${req.params.id}:`,
+      error
+    );
+    res.status(500).json({ error: "Failed to fetch services." });
   }
 };
 
 exports.getBusinessReviews = async (req, res) => {
   try {
     const connection = db.getPromise();
-    
+
     const [businessRows] = await connection.query(
-      'SELECT business_id FROM businesses WHERE business_id = ?',
+      'SELECT business_id FROM businesses WHERE business_id = ? AND status = "approved"',
       [req.params.id]
     );
 
     if (businessRows.length === 0) {
-      return res.status(404).json({ error: 'Business not found' });
+      return res
+        .status(404)
+        .json({ error: "Business not found or not approved" });
     }
 
     const [reviews] = await connection.query(
@@ -305,7 +366,7 @@ exports.getBusinessReviews = async (req, res) => {
       [req.params.id]
     );
 
-    const transformedReviews = reviews.map(review => ({
+    const transformedReviews = reviews.map((review) => ({
       reviewId: review.review_id,
       rating: review.rating,
       comment: review.comment,
@@ -318,8 +379,11 @@ exports.getBusinessReviews = async (req, res) => {
 
     res.json(transformedReviews);
   } catch (error) {
-    console.error(`DB error fetching reviews for business ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to fetch reviews.' });
+    console.error(
+      `DB error fetching reviews for business ${req.params.id}:`,
+      error
+    );
+    res.status(500).json({ error: "Failed to fetch reviews." });
   }
 };
 
@@ -328,29 +392,35 @@ exports.getBusinessCalendar = async (req, res) => {
     const connection = db.getPromise();
     const businessId = req.params.id;
     const { month, serviceId } = req.query;
-    
+
     const [businessRows] = await connection.query(
-      'SELECT business_id FROM businesses WHERE business_id = ?',
+      'SELECT business_id FROM businesses WHERE business_id = ? AND status = "approved"',
       [businessId]
     );
 
     if (businessRows.length === 0) {
-      return res.status(404).json({ error: 'Business not found' });
+      return res
+        .status(404)
+        .json({ error: "Business not found or not approved" });
     }
 
-    const startDate = new Date(month + '-01');
-    const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
-    
+    const startDate = new Date(month + "-01");
+    const endDate = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth() + 1,
+      0
+    );
+
     const availableDates = [];
     for (let day = 1; day <= endDate.getDate(); day++) {
       const date = new Date(startDate.getFullYear(), startDate.getMonth(), day);
       const dayOfWeek = date.getDay();
-      
+
       if (date >= new Date() && dayOfWeek !== 0 && dayOfWeek !== 6) {
         availableDates.push({
-          date: date.toISOString().split('T')[0],
+          date: date.toISOString().split("T")[0],
           available: true,
-          availableSlots: Math.floor(Math.random() * 8) + 2
+          availableSlots: Math.floor(Math.random() * 8) + 2,
         });
       }
     }
@@ -359,11 +429,14 @@ exports.getBusinessCalendar = async (req, res) => {
       businessId: parseInt(businessId),
       serviceId: serviceId ? parseInt(serviceId) : null,
       month,
-      availableDates
+      availableDates,
     });
   } catch (error) {
-    console.error(`Error fetching calendar for business ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to fetch calendar availability.' });
+    console.error(
+      `Error fetching calendar for business ${req.params.id}:`,
+      error
+    );
+    res.status(500).json({ error: "Failed to fetch calendar availability." });
   }
 };
 
@@ -372,18 +445,20 @@ exports.getBusinessAvailability = async (req, res) => {
     const connection = db.getPromise();
     const businessId = req.params.id;
     const { date, serviceId } = req.query;
-    
+
     if (!date) {
-      return res.status(400).json({ error: 'Date parameter is required' });
+      return res.status(400).json({ error: "Date parameter is required" });
     }
 
     const [businessRows] = await connection.query(
-      'SELECT business_id FROM businesses WHERE business_id = ?',
+      'SELECT business_id FROM businesses WHERE business_id = ? AND status = "approved"',
       [businessId]
     );
 
     if (businessRows.length === 0) {
-      return res.status(404).json({ error: 'Business not found' });
+      return res
+        .status(404)
+        .json({ error: "Business not found or not approved" });
     }
 
     const [existingAppointments] = await connection.query(
@@ -391,14 +466,18 @@ exports.getBusinessAvailability = async (req, res) => {
       [businessId, date]
     );
 
-    const bookedTimes = existingAppointments.map(apt => apt.time);
-    
+    const bookedTimes = existingAppointments.map((apt) => apt.time);
+
     const availableSlots = [];
     for (let hour = 8; hour <= 20; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
-        const timeSlot = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`;
-        const displayTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        
+        const timeSlot = `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}:00`;
+        const displayTime = `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}`;
+
         if (!bookedTimes.includes(timeSlot)) {
           availableSlots.push(displayTime);
         }
@@ -409,11 +488,14 @@ exports.getBusinessAvailability = async (req, res) => {
       businessId: parseInt(businessId),
       serviceId: serviceId ? parseInt(serviceId) : null,
       date,
-      availableSlots
+      availableSlots,
     });
   } catch (error) {
-    console.error(`Error fetching availability for business ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to fetch time slot availability.' });
+    console.error(
+      `Error fetching availability for business ${req.params.id}:`,
+      error
+    );
+    res.status(500).json({ error: "Failed to fetch time slot availability." });
   }
 };
 
@@ -424,36 +506,48 @@ exports.createService = async (req, res) => {
     const { name, description, price, duration_minutes } = req.body;
 
     if (!name || !price || !duration_minutes) {
-      return res.status(400).json({ error: 'Name, price, and duration_minutes are required' });
+      return res
+        .status(400)
+        .json({ error: "Name, price, and duration_minutes are required" });
     }
 
     const [businessRows] = await connection.query(
-      'SELECT business_id FROM businesses WHERE business_id = ?',
+      "SELECT business_id, status FROM businesses WHERE business_id = ?",
       [businessId]
     );
 
     if (businessRows.length === 0) {
-      return res.status(404).json({ error: 'Business not found' });
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    if (businessRows[0].status !== "approved") {
+      return res
+        .status(403)
+        .json({
+          error: "Business is not approved yet. Cannot create services.",
+        });
     }
 
     const [result] = await connection.query(
-      'INSERT INTO services (business_id, name, description, price, duration_minutes) VALUES (?, ?, ?, ?, ?)',
-      [businessId, name, description || '', price, duration_minutes]
+      "INSERT INTO services (business_id, name, description, price, duration_minutes) VALUES (?, ?, ?, ?, ?)",
+      [businessId, name, description || "", price, duration_minutes]
     );
 
     res.status(201).json({
       serviceId: result.insertId,
       businessId: parseInt(businessId),
       name,
-      description: description || '',
+      description: description || "",
       price,
       durationMinutes: duration_minutes,
-      message: 'Service created successfully'
+      message: "Service created successfully",
     });
-
   } catch (error) {
-    console.error(`Error creating service for business ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to create service' });
+    console.error(
+      `Error creating service for business ${req.params.id}:`,
+      error
+    );
+    res.status(500).json({ error: "Failed to create service" });
   }
 };
 
@@ -465,36 +559,52 @@ exports.updateService = async (req, res) => {
     const { name, description, price, duration_minutes } = req.body;
 
     if (!name || !price || !duration_minutes) {
-      return res.status(400).json({ error: 'Name, price, and duration_minutes are required' });
+      return res
+        .status(400)
+        .json({ error: "Name, price, and duration_minutes are required" });
     }
 
     const [serviceRows] = await connection.query(
-      'SELECT service_id FROM services WHERE service_id = ? AND business_id = ?',
+      "SELECT s.service_id, b.status FROM services s JOIN businesses b ON s.business_id = b.business_id WHERE s.service_id = ? AND s.business_id = ?",
       [serviceId, businessId]
     );
 
     if (serviceRows.length === 0) {
-      return res.status(404).json({ error: 'Service not found or doesn\'t belong to this business' });
+      return res
+        .status(404)
+        .json({
+          error: "Service not found or doesn't belong to this business",
+        });
+    }
+
+    if (serviceRows[0].status !== "approved") {
+      return res
+        .status(403)
+        .json({
+          error: "Business is not approved yet. Cannot update services.",
+        });
     }
 
     await connection.query(
-      'UPDATE services SET name = ?, description = ?, price = ?, duration_minutes = ? WHERE service_id = ? AND business_id = ?',
-      [name, description || '', price, duration_minutes, serviceId, businessId]
+      "UPDATE services SET name = ?, description = ?, price = ?, duration_minutes = ? WHERE service_id = ? AND business_id = ?",
+      [name, description || "", price, duration_minutes, serviceId, businessId]
     );
 
     res.status(200).json({
       serviceId: parseInt(serviceId),
       businessId: parseInt(businessId),
       name,
-      description: description || '',
+      description: description || "",
       price,
       durationMinutes: duration_minutes,
-      message: 'Service updated successfully'
+      message: "Service updated successfully",
     });
-
   } catch (error) {
-    console.error(`Error updating service ${req.params.serviceId} for business ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to update service' });
+    console.error(
+      `Error updating service ${req.params.serviceId} for business ${req.params.id}:`,
+      error
+    );
+    res.status(500).json({ error: "Failed to update service" });
   }
 };
 
@@ -505,38 +615,53 @@ exports.deleteService = async (req, res) => {
     const serviceId = req.params.serviceId;
 
     const [serviceRows] = await connection.query(
-      'SELECT service_id FROM services WHERE service_id = ? AND business_id = ?',
+      "SELECT s.service_id, b.status FROM services s JOIN businesses b ON s.business_id = b.business_id WHERE s.service_id = ? AND s.business_id = ?",
       [serviceId, businessId]
     );
 
     if (serviceRows.length === 0) {
-      return res.status(404).json({ error: 'Service not found or doesn\'t belong to this business' });
+      return res
+        .status(404)
+        .json({
+          error: "Service not found or doesn't belong to this business",
+        });
+    }
+
+    if (serviceRows[0].status !== "approved") {
+      return res
+        .status(403)
+        .json({
+          error: "Business is not approved yet. Cannot delete services.",
+        });
     }
 
     const [appointmentRows] = await connection.query(
-      'SELECT COUNT(*) as count FROM appointments WHERE service_id = ?',
+      "SELECT COUNT(*) as count FROM appointments WHERE service_id = ?",
       [serviceId]
     );
 
     if (appointmentRows[0].count > 0) {
       return res.status(400).json({
-        error: 'Cannot delete service with existing appointments. Please reschedule or cancel appointments first.' 
+        error:
+          "Cannot delete service with existing appointments. Please reschedule or cancel appointments first.",
       });
     }
 
     await connection.query(
-      'DELETE FROM services WHERE service_id = ? AND business_id = ?',
+      "DELETE FROM services WHERE service_id = ? AND business_id = ?",
       [serviceId, businessId]
     );
 
     res.status(200).json({
-      message: 'Service deleted successfully',
-      service_id: parseInt(serviceId)
+      message: "Service deleted successfully",
+      service_id: parseInt(serviceId),
     });
-
   } catch (error) {
-    console.error(`Error deleting service ${req.params.serviceId} for business ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to delete service' });
+    console.error(
+      `Error deleting service ${req.params.serviceId} for business ${req.params.id}:`,
+      error
+    );
+    res.status(500).json({ error: "Failed to delete service" });
   }
 };
 
@@ -547,11 +672,24 @@ exports.getBusinessDashboard = async (req, res) => {
     const connection = db.getPromise();
 
     // Query 1: Basic business details
-    const [businessDetails] = await connection.query('SELECT * FROM businesses WHERE business_id = ?', [id]);
+    const [businessDetails] = await connection.query(
+      "SELECT * FROM businesses WHERE business_id = ?",
+      [id]
+    );
     if (businessDetails.length === 0) {
-      return res.status(404).json({ message: 'Business not found' });
+      return res.status(404).json({ message: "Business not found" });
     }
     const business = businessDetails[0];
+
+    // חוסמים דשבורד לעסק לא מאושר
+    if (business.status !== "approved") {
+      return res
+        .status(403)
+        .json({
+          error:
+            "Business is not approved yet. Please wait for admin approval.",
+        });
+    }
 
     // Query 2: Today's appointments
     const [today_appointments] = await connection.query(
@@ -593,7 +731,7 @@ exports.getBusinessDashboard = async (req, res) => {
 
     // Query 3: Pending appointments
     const [pending_appointments] = await connection.query(
-        `SELECT a.*, 
+      `SELECT a.*, 
                 COALESCE(u.first_name, 'לקוח') as first_name, 
                 COALESCE(u.last_name, 'לא ידוע') as last_name, 
                 COALESCE(s.name, 'שירות לא ידוע') as service_name, 
@@ -603,7 +741,7 @@ exports.getBusinessDashboard = async (req, res) => {
          LEFT JOIN services s ON a.service_id = s.service_id AND s.business_id = a.business_id
          WHERE a.business_id = ? AND a.status = 'pending'
          ORDER BY a.appointment_datetime ASC`,
-        [id]
+      [id]
     );
 
     // --- NEW QUERIES & LOGIC START ---
@@ -639,43 +777,43 @@ exports.getBusinessDashboard = async (req, res) => {
     );
 
     // Convert revenue from Decimal string to number
-    const dailyRevenueLast7Days = dailyRevenueLast7DaysRaw.map(row => ({
+    const dailyRevenueLast7Days = dailyRevenueLast7DaysRaw.map((row) => ({
       date: row.date,
-      revenue: parseFloat(row.revenue) || 0
+      revenue: parseFloat(row.revenue) || 0,
     }));
 
     // Query 7: Service Performance (existing logic, slightly adapted)
     const [servicePerformance] = await connection.query(
-        `SELECT s.name, COUNT(a.appointment_id) as bookingCount, SUM(s.price) as serviceRevenue
+      `SELECT s.name, COUNT(a.appointment_id) as bookingCount, SUM(s.price) as serviceRevenue
          FROM services s
          LEFT JOIN appointments a ON s.service_id = a.service_id AND a.status = 'completed'
          WHERE s.business_id = ?
          GROUP BY s.service_id
          ORDER BY serviceRevenue DESC`,
-        [id]
+      [id]
     );
-    
+
     // Query 8: Activity Feed - Appointments
     const [appointmentActivities] = await connection.query(
-        `SELECT 'new_appointment' as type, u.first_name as user, s.name as service, a.appointment_datetime as time
+      `SELECT 'new_appointment' as type, u.first_name as user, s.name as service, a.appointment_datetime as time
          FROM appointments a
          JOIN users u ON a.customer_id = u.user_id
          JOIN services s ON a.service_id = s.service_id
          WHERE a.business_id = ?
          ORDER BY a.appointment_datetime DESC
          LIMIT 5`,
-        [id]
+      [id]
     );
 
     // Query 9: Activity Feed - Reviews
     const [reviewActivities] = await connection.query(
-        `SELECT 'new_review' as type, u.first_name as user, r.rating, r.created_at as time
+      `SELECT 'new_review' as type, u.first_name as user, r.rating, r.created_at as time
          FROM reviews r
          JOIN users u ON r.customer_id = u.user_id
          WHERE r.business_id = ?
          ORDER BY r.created_at DESC
          LIMIT 5`,
-        [id]
+      [id]
     );
 
     // Combine and sort activities
@@ -696,20 +834,27 @@ exports.getBusinessDashboard = async (req, res) => {
         pendingAppointments: pending_appointments.length, // Use length of fetched array
       },
       pending_appointments: pending_appointments,
-      today_appointments: today_appointments.length > 0 ? today_appointments : upcoming_appointments,
+      today_appointments:
+        today_appointments.length > 0
+          ? today_appointments
+          : upcoming_appointments,
       upcoming_appointments: upcoming_appointments,
       activityFeed: activityFeed,
       // Debug info
       debug_info: {
         today_count: today_appointments.length,
         upcoming_count: upcoming_appointments.length,
-        using_upcoming_fallback: today_appointments.length === 0 && upcoming_appointments.length > 0
-      }
+        using_upcoming_fallback:
+          today_appointments.length === 0 && upcoming_appointments.length > 0,
+      },
     };
 
     res.json(responseData);
   } catch (error) {
-    console.error(`DB error fetching dashboard data for business ${req.params.id}:`, error);
+    console.error(
+      `DB error fetching dashboard data for business ${req.params.id}:`,
+      error
+    );
     res.status(500).json({ error: "Failed to fetch dashboard data." });
   }
 };
@@ -718,7 +863,7 @@ exports.getBusinessDashboardAnalytics = async (req, res) => {
   try {
     const connection = db.getPromise();
     const businessId = req.params.id;
-    
+
     const [businessRows] = await connection.query(
       "SELECT * FROM businesses WHERE business_id = ?",
       [businessId]
@@ -729,9 +874,20 @@ exports.getBusinessDashboardAnalytics = async (req, res) => {
     }
 
     const business = businessRows[0];
+
+    if (business.status !== "approved") {
+      return res
+        .status(403)
+        .json({
+          error:
+            "Business is not approved yet. Please wait for admin approval.",
+        });
+    }
+
     const currentMonth = new Date().toISOString().slice(0, 7);
-    
-    const [appointmentStats] = await connection.query(`
+
+    const [appointmentStats] = await connection.query(
+      `
       SELECT 
         COUNT(*) as total_appointments,
         COUNT(CASE WHEN status = 'confirmed' THEN 1 END) as approved_appointments,
@@ -741,9 +897,12 @@ exports.getBusinessDashboardAnalytics = async (req, res) => {
         COUNT(CASE WHEN appointment_datetime >= CURDATE() AND appointment_datetime < DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 1 END) as weekly_appointments
       FROM appointments 
       WHERE business_id = ?
-    `, [currentMonth, businessId]);
+    `,
+      [currentMonth, businessId]
+    );
 
-    const [revenueStats] = await connection.query(`
+    const [revenueStats] = await connection.query(
+      `
       SELECT 
         COALESCE(SUM(CASE WHEN a.status = 'completed' THEN s.price END), 0) as total_revenue,
         COALESCE(SUM(CASE WHEN a.status = 'completed' AND DATE_FORMAT(a.appointment_datetime, '%Y-%m') = ? THEN s.price END), 0) as monthly_revenue,
@@ -751,9 +910,12 @@ exports.getBusinessDashboardAnalytics = async (req, res) => {
       FROM appointments a
       LEFT JOIN services s ON a.service_id = s.service_id
       WHERE a.business_id = ?
-    `, [currentMonth, businessId]);
+    `,
+      [currentMonth, businessId]
+    );
 
-    const [recentAppointments] = await connection.query(`
+    const [recentAppointments] = await connection.query(
+      `
       SELECT 
         a.appointment_id,
         a.appointment_datetime,
@@ -771,9 +933,12 @@ exports.getBusinessDashboardAnalytics = async (req, res) => {
       WHERE a.business_id = ?
       ORDER BY a.appointment_datetime DESC
       LIMIT 10
-    `, [businessId]);
+    `,
+      [businessId]
+    );
 
-    const [monthlyTrends] = await connection.query(`
+    const [monthlyTrends] = await connection.query(
+      `
       SELECT 
         DATE_FORMAT(appointment_datetime, '%Y-%m') as month,
         COUNT(*) as appointment_count,
@@ -784,9 +949,12 @@ exports.getBusinessDashboardAnalytics = async (req, res) => {
       AND appointment_datetime >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
       GROUP BY DATE_FORMAT(appointment_datetime, '%Y-%m')
       ORDER BY month ASC
-    `, [businessId]);
+    `,
+      [businessId]
+    );
 
-    const [serviceStats] = await connection.query(`
+    const [serviceStats] = await connection.query(
+      `
       SELECT 
         s.name as service_name,
         s.service_id,
@@ -797,9 +965,12 @@ exports.getBusinessDashboardAnalytics = async (req, res) => {
       WHERE s.business_id = ?
       GROUP BY s.service_id, s.name
       ORDER BY booking_count DESC
-    `, [businessId]);
+    `,
+      [businessId]
+    );
 
-    const [todayAppointments] = await connection.query(`
+    const [todayAppointments] = await connection.query(
+      `
       SELECT 
         a.appointment_id,
         a.appointment_datetime,
@@ -814,7 +985,9 @@ exports.getBusinessDashboardAnalytics = async (req, res) => {
       WHERE a.business_id = ? 
       AND DATE(a.appointment_datetime) = CURDATE()
       ORDER BY a.appointment_datetime ASC
-    `, [businessId]);
+    `,
+      [businessId]
+    );
 
     const dashboardData = {
       business: {
@@ -827,7 +1000,7 @@ exports.getBusinessDashboardAnalytics = async (req, res) => {
         photos: business.photos,
         schedule: business.schedule,
         createdAt: business.created_at,
-        totalServices: serviceStats.length
+        totalServices: serviceStats.length,
       },
       analytics: {
         totalAppointments: appointmentStats[0].total_appointments || 0,
@@ -838,42 +1011,46 @@ exports.getBusinessDashboardAnalytics = async (req, res) => {
         weeklyAppointments: appointmentStats[0].weekly_appointments || 0,
         totalRevenue: parseFloat(revenueStats[0].total_revenue) || 0,
         monthlyRevenue: parseFloat(revenueStats[0].monthly_revenue) || 0,
-        averageServicePrice: parseFloat(revenueStats[0].average_service_price) || 0,
+        averageServicePrice:
+          parseFloat(revenueStats[0].average_service_price) || 0,
         monthlyTrends: monthlyTrends,
-        serviceStats: serviceStats.map(stat => ({
+        serviceStats: serviceStats.map((stat) => ({
           serviceName: stat.service_name,
           serviceId: stat.service_id,
           bookingCount: stat.booking_count,
-          serviceRevenue: stat.service_revenue
-        }))
+          serviceRevenue: stat.service_revenue,
+        })),
       },
-      recentAppointments: recentAppointments.map(apt => ({
+      recentAppointments: recentAppointments.map((apt) => ({
         appointmentId: apt.appointment_id,
         appointmentDatetime: apt.appointment_datetime,
         status: apt.status,
         firstName: apt.first_name,
         lastName: apt.last_name,
         serviceName: apt.service_name,
-        durationMinutes: apt.duration_minutes
+        durationMinutes: apt.duration_minutes,
       })),
-      todayAppointments: todayAppointments.map(apt => ({
+      todayAppointments: todayAppointments.map((apt) => ({
         appointmentId: apt.appointment_id,
         appointmentDatetime: apt.appointment_datetime,
         status: apt.status,
         firstName: apt.first_name,
         lastName: apt.last_name,
         serviceName: apt.service_name,
-        durationMinutes: apt.duration_minutes
+        durationMinutes: apt.duration_minutes,
       })),
       notifications: {
         pendingCount: appointmentStats[0].pending_appointments || 0,
-        todayCount: todayAppointments.length || 0
-      }
+        todayCount: todayAppointments.length || 0,
+      },
     };
 
     res.json(dashboardData);
   } catch (error) {
-    console.error(`DB error fetching dashboard data for business ${req.params.id}:`, error);
+    console.error(
+      `DB error fetching dashboard data for business ${req.params.id}:`,
+      error
+    );
     res.status(500).json({ error: "Failed to fetch dashboard data." });
   }
 };
@@ -883,14 +1060,18 @@ exports.getBusinessAppointments = async (req, res) => {
     const connection = db.getPromise();
     const businessId = req.params.id;
 
-    // Verify business exists
+    // Verify business exists & approved
     const [businessRows] = await connection.query(
-      'SELECT business_id FROM businesses WHERE business_id = ?',
+      "SELECT business_id, status FROM businesses WHERE business_id = ?",
       [businessId]
     );
 
     if (businessRows.length === 0) {
-      return res.status(404).json({ error: 'Business not found' });
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    if (businessRows[0].status !== "approved") {
+      return res.status(403).json({ error: "Business is not approved yet." });
     }
 
     // Get all appointments with customer and service details
@@ -916,7 +1097,10 @@ exports.getBusinessAppointments = async (req, res) => {
 
     res.json(appointments);
   } catch (error) {
-    console.error(`Error fetching appointments for business ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to fetch appointments.' });
+    console.error(
+      `Error fetching appointments for business ${req.params.id}:`,
+      error
+    );
+    res.status(500).json({ error: "Failed to fetch appointments." });
   }
 };

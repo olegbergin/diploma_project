@@ -1,45 +1,59 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../dbSingleton").getPromise();
+const jwt = require("jsonwebtoken");
+const adminController = require("../controllers/adminController");
+
+const JWT_SECRET = process.env.JWT_SECRET || "my_name_is_oleg";
 
 /**
- * Middleware to check if user is admin
- * This should be properly implemented with JWT token verification
+ * Middleware: בדיקה שהמשתמש הוא אדמין לפי ה-JWT
  */
-const requireAdmin = async (req, res, next) => {
+const requireAdmin = (req, res, next) => {
   try {
-    const { adminId } = req.body;
-    
-    if (!adminId) {
-      return res.status(401).json({ error: "Admin authentication required" });
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res.status(401).json({ error: "Missing authorization header" });
     }
 
-    // Verify admin role
-    const [admin] = await db.query(`
-      SELECT user_id, role FROM users WHERE user_id = ? AND role = 'admin'
-    `, [adminId]);
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
 
-    if (admin.length === 0) {
+    if (!decoded || decoded.role !== "admin") {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    req.adminId = adminId;
+    // { userId, role, iat, exp }
+    req.user = decoded;
     next();
-  } catch (error) {
-    console.error("Admin auth error:", error);
-    res.status(500).json({ error: "Authentication error" });
+  } catch (err) {
+    console.error("Admin auth error:", err);
+    return res.status(401).json({ error: "Invalid or expired token" });
   }
 };
+
+// Admin dashboard stats
+router.get("/stats", requireAdmin, adminController.getAdminStats);
+
+// Recent activity feed
+router.get("/activity", requireAdmin, adminController.getRecentActivity);
+
+
+/* =======================================================================
+   חלק 1 – ניהול תלונות וביקורות (Reviews & Complaints)ך
+   ======================================================================= */
 
 /**
  * GET /api/admin/reviews/complaints
  * Get all review complaints for admin moderation
  */
-router.get("/reviews/complaints", async (req, res) => {
+router.get("/reviews/complaints", requireAdmin, async (req, res) => {
   try {
-    const { status = 'pending', limit = 50, offset = 0 } = req.query;
+    const { status = "pending", limit = 50, offset = 0 } = req.query;
 
-    const [complaints] = await db.query(`
+    const [complaints] = await db.query(
+      `
       SELECT 
         rc.complaint_id,
         rc.review_id,
@@ -67,10 +81,12 @@ router.get("/reviews/complaints", async (req, res) => {
       WHERE rc.status = ?
       ORDER BY rc.created_at DESC
       LIMIT ? OFFSET ?
-    `, [status, parseInt(limit), parseInt(offset)]);
+    `,
+      [status, parseInt(limit), parseInt(offset)]
+    );
 
     res.json({
-      complaints: complaints.map(complaint => ({
+      complaints: complaints.map((complaint) => ({
         complaintId: complaint.complaint_id,
         reviewId: complaint.review_id,
         complaintType: complaint.complaint_type,
@@ -86,10 +102,10 @@ router.get("/reviews/complaints", async (req, res) => {
           isHidden: complaint.is_hidden,
           hiddenReason: complaint.hidden_reason,
           customerName: `${complaint.customer_first_name} ${complaint.customer_last_name}`,
-          businessName: complaint.business_name
+          businessName: complaint.business_name,
         },
-        reporterName: `${complaint.reporter_first_name} ${complaint.reporter_last_name}`
-      }))
+        reporterName: `${complaint.reporter_first_name} ${complaint.reporter_last_name}`,
+      })),
     });
   } catch (error) {
     console.error("Error fetching review complaints:", error);
@@ -106,35 +122,38 @@ router.put("/reviews/:reviewId/moderate", requireAdmin, async (req, res) => {
     const { reviewId } = req.params;
     const { action, reason } = req.body; // action: 'hide' or 'unhide'
 
-    if (!action || !['hide', 'unhide'].includes(action)) {
-      return res.status(400).json({ 
-        error: "Action must be 'hide' or 'unhide'" 
+    if (!action || !["hide", "unhide"].includes(action)) {
+      return res.status(400).json({
+        error: "Action must be 'hide' or 'unhide'",
       });
     }
 
-    if (action === 'hide' && !reason) {
-      return res.status(400).json({ 
-        error: "Reason is required when hiding a review" 
+    if (action === "hide" && !reason) {
+      return res.status(400).json({
+        error: "Reason is required when hiding a review",
       });
     }
 
-    const isHidden = action === 'hide';
-    const hiddenReason = action === 'hide' ? reason : null;
+    const isHidden = action === "hide";
+    const hiddenReason = action === "hide" ? reason : null;
 
-    const [result] = await db.query(`
+    const [result] = await db.query(
+      `
       UPDATE reviews 
       SET is_hidden = ?, hidden_reason = ?, updated_at = NOW()
       WHERE review_id = ?
-    `, [isHidden, hiddenReason, reviewId]);
+    `,
+      [isHidden, hiddenReason, reviewId]
+    );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Review not found" });
     }
 
-    res.json({ 
+    res.json({
       message: `Review ${action}d successfully`,
       reviewId,
-      action
+      action,
     });
   } catch (error) {
     console.error("Error moderating review:", error);
@@ -146,43 +165,50 @@ router.put("/reviews/:reviewId/moderate", requireAdmin, async (req, res) => {
  * PUT /api/admin/complaints/:complaintId/resolve
  * Resolve a review complaint
  */
-router.put("/complaints/:complaintId/resolve", requireAdmin, async (req, res) => {
-  try {
-    const { complaintId } = req.params;
-    const { resolution, adminNotes } = req.body; // resolution: 'resolved' or 'dismissed'
+router.put(
+  "/complaints/:complaintId/resolve",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { complaintId } = req.params;
+      const { resolution, adminNotes } = req.body; // resolution: 'resolved' or 'dismissed'
 
-    if (!resolution || !['resolved', 'dismissed'].includes(resolution)) {
-      return res.status(400).json({ 
-        error: "Resolution must be 'resolved' or 'dismissed'" 
-      });
-    }
+      if (!resolution || !["resolved", "dismissed"].includes(resolution)) {
+        return res.status(400).json({
+          error: "Resolution must be 'resolved' or 'dismissed'",
+        });
+      }
 
-    const [result] = await db.query(`
+      const [result] = await db.query(
+        `
       UPDATE review_complaints 
       SET status = ?, admin_notes = ?, updated_at = NOW()
       WHERE complaint_id = ?
-    `, [resolution, adminNotes || null, complaintId]);
+    `,
+        [resolution, adminNotes || null, complaintId]
+      );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Complaint not found" });
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Complaint not found" });
+      }
+
+      res.json({
+        message: `Complaint ${resolution} successfully`,
+        complaintId,
+        resolution,
+      });
+    } catch (error) {
+      console.error("Error resolving complaint:", error);
+      res.status(500).json({ error: "Failed to resolve complaint" });
     }
-
-    res.json({ 
-      message: `Complaint ${resolution} successfully`,
-      complaintId,
-      resolution
-    });
-  } catch (error) {
-    console.error("Error resolving complaint:", error);
-    res.status(500).json({ error: "Failed to resolve complaint" });
   }
-});
+);
 
 /**
  * GET /api/admin/reviews/stats
  * Get review system statistics for admin dashboard
  */
-router.get("/reviews/stats", async (req, res) => {
+router.get("/reviews/stats", requireAdmin, async (req, res) => {
   try {
     // Get various statistics
     const [reviewStats] = await db.query(`
@@ -224,13 +250,13 @@ router.get("/reviews/stats", async (req, res) => {
     res.json({
       reviewStats: reviewStats[0] || {},
       complaintStats: complaintStats[0] || {},
-      topBusinesses: businessStats.map(business => ({
+      topBusinesses: businessStats.map((business) => ({
         businessId: business.business_id,
         name: business.name,
         reviewCount: business.review_count,
         averageRating: business.average_rating,
-        complaintCount: business.complaint_count
-      }))
+        complaintCount: business.complaint_count,
+      })),
     });
   } catch (error) {
     console.error("Error fetching admin review stats:", error);
@@ -242,47 +268,49 @@ router.get("/reviews/stats", async (req, res) => {
  * GET /api/admin/reviews
  * Get all reviews with filtering options
  */
-router.get("/reviews", async (req, res) => {
+router.get("/reviews", requireAdmin, async (req, res) => {
   try {
-    const { 
-      businessId, 
-      rating, 
-      hidden = 'all', 
-      hasComplaints = 'all',
-      limit = 50, 
-      offset = 0 
+    const {
+      businessId,
+      rating,
+      hidden = "all",
+      hasComplaints = "all",
+      limit = 50,
+      offset = 0,
     } = req.query;
 
     let whereConditions = [];
     let params = [];
 
     if (businessId) {
-      whereConditions.push('r.business_id = ?');
+      whereConditions.push("r.business_id = ?");
       params.push(businessId);
     }
 
     if (rating) {
-      whereConditions.push('r.rating = ?');
+      whereConditions.push("r.rating = ?");
       params.push(rating);
     }
 
-    if (hidden === 'true') {
-      whereConditions.push('r.is_hidden = TRUE');
-    } else if (hidden === 'false') {
-      whereConditions.push('r.is_hidden = FALSE');
+    if (hidden === "true") {
+      whereConditions.push("r.is_hidden = TRUE");
+    } else if (hidden === "false") {
+      whereConditions.push("r.is_hidden = FALSE");
     }
 
-    if (hasComplaints === 'true') {
-      whereConditions.push('rc.complaint_id IS NOT NULL');
-    } else if (hasComplaints === 'false') {
-      whereConditions.push('rc.complaint_id IS NULL');
+    if (hasComplaints === "true") {
+      whereConditions.push("rc.complaint_id IS NOT NULL");
+    } else if (hasComplaints === "false") {
+      whereConditions.push("rc.complaint_id IS NULL");
     }
 
-    const whereClause = whereConditions.length > 0 
-      ? 'WHERE ' + whereConditions.join(' AND ') 
-      : '';
+    const whereClause =
+      whereConditions.length > 0
+        ? "WHERE " + whereConditions.join(" AND ")
+        : "";
 
-    const [reviews] = await db.query(`
+    const [reviews] = await db.query(
+      `
       SELECT 
         r.review_id,
         r.rating,
@@ -305,10 +333,12 @@ router.get("/reviews", async (req, res) => {
       GROUP BY r.review_id
       ORDER BY r.created_at DESC
       LIMIT ? OFFSET ?
-    `, [...params, parseInt(limit), parseInt(offset)]);
+    `,
+      [...params, parseInt(limit), parseInt(offset)]
+    );
 
     res.json({
-      reviews: reviews.map(review => ({
+      reviews: reviews.map((review) => ({
         reviewId: review.review_id,
         rating: review.rating,
         text: review.text,
@@ -320,13 +350,42 @@ router.get("/reviews", async (req, res) => {
         updatedAt: review.updated_at,
         customerName: `${review.first_name} ${review.last_name}`,
         businessName: review.business_name,
-        complaintCount: review.complaint_count
-      }))
+        complaintCount: review.complaint_count,
+      })),
     });
   } catch (error) {
     console.error("Error fetching admin reviews:", error);
     res.status(500).json({ error: "Failed to fetch reviews" });
   }
 });
+
+/* =======================================================================
+   חלק 2 – ניהול עסקים (Business Management) – אישור / דחייה / מחיקה
+   משתמש בפונקציות שכבר קיימות אצלך ב-adminController
+   ======================================================================= */
+
+// רשימת עסקים עם פילטרים (status, search, pagination)
+// GET /api/admin/businesses
+router.get("/businesses", requireAdmin, adminController.getAllBusinesses);
+
+// אישור עסק – משנה status ל-'approved'
+// PUT /api/admin/businesses/:id/approve
+router.put(
+  "/businesses/:id/approve",
+  requireAdmin,
+  adminController.approveBusiness
+);
+
+// דחיית עסק – משנה status ל-'rejected'
+// PUT /api/admin/businesses/:id/reject
+router.put(
+  "/businesses/:id/reject",
+  requireAdmin,
+  adminController.rejectBusiness
+);
+
+// מחיקת עסק
+// DELETE /api/admin/businesses/:id
+router.delete("/businesses/:id", requireAdmin, adminController.deleteBusiness);
 
 module.exports = router;

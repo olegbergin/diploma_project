@@ -9,7 +9,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const db = require("../dbSingleton").getPromise();
+const db = require("../dbSingleton"); // 🔹 חשוב: לא getPromise כאן!
 const emailService = require("../services/emailService");
 
 /**
@@ -38,10 +38,15 @@ router.post("/register", async (req, res) => {
   // Password validation (3-8 characters, alphanumeric with at least one letter and one number)
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{3,8}$/;
   if (!passwordRegex.test(password)) {
-    return res.status(400).json({ error: "Password must be 3-8 characters long and contain at least one letter and one number." });
+    return res.status(400).json({
+      error:
+        "Password must be 3-8 characters long and contain at least one letter and one number.",
+    });
   }
 
   try {
+    const connection = db.getPromise();
+
     // 1. Hash the password (הצפנת סיסמה)
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -52,18 +57,18 @@ router.post("/register", async (req, res) => {
     `;
     const params = [first_name, last_name, email, phone, hashedPassword, role];
 
-    const [result] = await db.query(sql, params);
+    const [result] = await connection.query(sql, params);
 
     // 3. Send welcome email
     try {
       await emailService.sendWelcomeEmail({
         email: email,
         firstName: first_name,
-        lastName: last_name
+        lastName: last_name,
       });
     } catch (emailError) {
       // Log email errors but don't fail the registration
-      console.error('Error sending welcome email:', emailError);
+      console.error("Error sending welcome email:", emailError);
     }
 
     // 4. Return success (החזרת מזהה משתמש)
@@ -90,12 +95,14 @@ router.post("/login", async (req, res) => {
   }
 
   try {
+    const connection = db.getPromise();
+
     // 1. Find the user by email (שליפת משתמש לפי אימייל)
     const sql = `
       SELECT user_id, first_name, last_name, email, password_hash, role
       FROM users WHERE email = ?
     `;
-    const [results] = await db.query(sql, [email]);
+    const [results] = await connection.query(sql, [email]);
 
     if (results.length === 0) {
       return res.status(401).json({ error: "Invalid credentials." }); // אימייל לא קיים
@@ -111,7 +118,7 @@ router.post("/login", async (req, res) => {
     // 3. If the user is business, fetch their business_id (אם המשתמש בעל עסק, נשלוף את מזהה העסק)
     let businessId = null;
     if (user.role === "business") {
-      const [businessRows] = await db.query(
+      const [businessRows] = await connection.query(
         "SELECT business_id FROM businesses WHERE owner_id = ? LIMIT 1",
         [user.user_id]
       );
@@ -161,22 +168,36 @@ router.post("/register-business", async (req, res) => {
     city,
     address,
     location, // This will be concatenated city + address from frontend
-    openingHours
+    openingHours,
   } = req.body;
 
-  if (!first_name || !last_name || !email || !password || !businessName || !category || !description || !city) {
+  if (
+    !first_name ||
+    !last_name ||
+    !email ||
+    !password ||
+    !businessName ||
+    !category ||
+    !description ||
+    !city
+  ) {
     return res.status(400).json({ error: "Missing required fields." });
   }
 
   // Password validation (3-8 characters, alphanumeric with at least one letter and one number)
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{3,8}$/;
   if (!passwordRegex.test(password)) {
-    return res.status(400).json({ error: "Password must be 3-8 characters long and contain at least one letter and one number." });
+    return res.status(400).json({
+      error:
+        "Password must be 3-8 characters long and contain at least one letter and one number.",
+    });
   }
+
+  const connection = db.getPromise();
 
   try {
     // Start transaction
-    await db.query('START TRANSACTION');
+    await connection.query("START TRANSACTION");
 
     // 1. Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -187,55 +208,80 @@ router.post("/register-business", async (req, res) => {
       VALUES (?, ?, ?, ?, ?, 'business')
     `;
     const userParams = [first_name, last_name, email, phone, hashedPassword];
-    const [userResult] = await db.query(userSql, userParams);
+    const [userResult] = await connection.query(userSql, userParams);
     const userId = userResult.insertId;
 
     // 3. Insert business to businesses table
+    //    🔹 כאן מכניסים status = 'pending' כדי שיעבור לאישור אדמין
     const businessSql = `
-      INSERT INTO businesses (name, category, description, location, photos, schedule, owner_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO businesses (name, category, description, location, photos, schedule, owner_id, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `;
+    const businessLocation =
+      location || (city && address ? `${city}, ${address}` : address || "");
+    const scheduleJson = openingHours
+      ? JSON.stringify({ opening_hours: openingHours })
+      : JSON.stringify({});
+
     const businessParams = [
       businessName,
       category,
       description,
-      address || '',
-      '[]', // empty photos array
-      openingHours ? `{"שעות פעילות": "${openingHours}"}` : '{}', // schedule as JSON
-      userId
+      businessLocation,
+      JSON.stringify([]), // empty photos array
+      scheduleJson,
+      userId,
+      "pending", // 🔹 סטטוס התחלתי – ממתין לאישור אדמין
     ];
-    const [businessResult] = await db.query(businessSql, businessParams);
+
+    const [businessResult] = await connection.query(
+      businessSql,
+      businessParams
+    );
     const businessId = businessResult.insertId;
 
     // Commit transaction
-    await db.query('COMMIT');
+    await connection.query("COMMIT");
 
-    // 4. Send welcome email to business
+    // 4. Send welcome email to business (לא חובה שהמייל יצליח)
     try {
       await emailService.sendBusinessWelcomeEmail({
         email: email,
         businessName: businessName,
-        ownerName: `${first_name} ${last_name}`
+        ownerName: `${first_name} ${last_name}`,
       });
     } catch (emailError) {
       // Log email errors but don't fail the registration
-      console.error('Error sending business welcome email:', emailError);
+      console.error("Error sending business welcome email:", emailError);
     }
 
     // 5. Return success
     res.status(201).json({
-      message: "Business registered successfully",
+      message:
+        "Business registered successfully. The business is pending admin approval.",
       userId: userId,
       businessId: businessId,
+      status: "pending",
     });
   } catch (err) {
     // Rollback transaction on error
-    await db.query('ROLLBACK');
-    
+    try {
+      await connection.query("ROLLBACK");
+    } catch (rollbackError) {
+      console.error("Error during ROLLBACK:", rollbackError);
+    }
+
     console.error("Error during business registration:", err);
     if (err.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({ error: "Email already exists." });
+      if (err.sqlMessage && err.sqlMessage.includes("phone")) {
+        return res.status(409).json({ error: "Phone number already exists." });
+      }
+      if (err.sqlMessage && err.sqlMessage.includes("email")) {
+        return res.status(409).json({ error: "Email already exists." });
+      }
+      return res.status(409).json({ error: "Duplicate entry." });
     }
+
     res.status(500).json({ error: "Failed to register business." });
   }
 });
