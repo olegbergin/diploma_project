@@ -1,100 +1,146 @@
-import React, { useState } from 'react';
-import styles from './ServiceModal.module.css';
-import axiosInstance from '../../api/axiosInstance';
+import React, { useState } from "react";
+import styles from "./ServiceModal.module.css";
+import axiosInstance from "../../api/axiosInstance";
 
-export default function ServiceModal({ isOpen, onClose, onServiceCreated, businessId }) {
+export default function ServiceModal({
+  isOpen,
+  onClose,
+  onServiceCreated,
+  businessId,
+}) {
+  /* 
+    סטייט של הטופס – שומר את כל שדות השירות החדש 
+    name, description, price, duration_minutes
+  */
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    duration_minutes: ''
+    name: "",
+    description: "",
+    price: "",
+    duration_minutes: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
+  /* סטייט לטעינה (כאשר שולחים לשרת) */
+  const [loading, setLoading] = useState(false);
+
+  /* סטייט לשמירת הודעות שגיאה */
+  const [error, setError] = useState("");
+
+  /* 
+    שינוי ערכים בשדות הטופס — 
+    כל פעם שהמשתמש מקליד, מעדכנים את ה-state המתאים
+  */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    // Clear error when user starts typing
-    if (error) setError('');
+
+    // מנקה הודעת שגיאה אם המשתמש התחיל להקליד מחדש
+    if (error) setError("");
   };
 
+  /* 
+    שליחת הטופס לשרת — יצירת שירות חדש 
+    כולל בדיקות תקינות לפני שליחה (Validation)
+  */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validation
+
+    // בדיקת תקינות: שם שירות חובה
     if (!formData.name.trim()) {
-      setError('שם השירות הוא שדה חובה');
+      setError("שם השירות הוא שדה חובה");
       return;
     }
-    if (!formData.price || isNaN(formData.price) || parseFloat(formData.price) <= 0) {
-      setError('יש להזין מחיר תקין');
+
+    // בדיקת תקינות מחיר
+    if (
+      !formData.price ||
+      isNaN(formData.price) ||
+      parseFloat(formData.price) <= 0
+    ) {
+      setError("יש להזין מחיר תקין");
       return;
     }
-    if (!formData.duration_minutes || isNaN(formData.duration_minutes) || parseInt(formData.duration_minutes) <= 0) {
-      setError('יש להזין זמן תקין בדקות');
+
+    // בדיקת תקינות משך זמן
+    if (
+      !formData.duration_minutes ||
+      isNaN(formData.duration_minutes) ||
+      parseInt(formData.duration_minutes) <= 0
+    ) {
+      setError("יש להזין זמן תקין בדקות");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
+    // בניית אובייקט השירות לשליחה
     try {
       const serviceData = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: parseFloat(formData.price),
-        duration_minutes: parseInt(formData.duration_minutes)
+        duration_minutes: parseInt(formData.duration_minutes),
       };
 
-      const response = await axiosInstance.post(`/businesses/${businessId}/services`, serviceData);
-      
-      // Reset form
+      // שליחת בקשה לשרת
+      const response = await axiosInstance.post(
+        `/businesses/${businessId}/services`,
+        serviceData
+      );
+
+      // איפוס הטופס לאחר יצירה מוצלחת
       setFormData({
-        name: '',
-        description: '',
-        price: '',
-        duration_minutes: ''
+        name: "",
+        description: "",
+        price: "",
+        duration_minutes: "",
       });
-      
-      // Notify parent component
+
+      // עדכון האב שיש שירות חדש (חשוב לרענון רשימת השירותים)
       if (onServiceCreated) {
         onServiceCreated(response.data);
       }
-      
-      onClose();
+
+      onClose(); // סגירת המודאל
     } catch (error) {
-      console.error('Error creating service:', error);
-      setError(error.response?.data?.message || 'שגיאה ביצירת השירות');
+      console.error("Error creating service:", error);
+      setError(error.response?.data?.message || "שגיאה ביצירת השירות");
     } finally {
       setLoading(false);
     }
   };
 
+  /* 
+    סגירת המודאל — 
+    רק אם לא בטעינה, וגם מנקה את השדות והשגיאות
+  */
   const handleClose = () => {
     if (!loading) {
       setFormData({
-        name: '',
-        description: '',
-        price: '',
-        duration_minutes: ''
+        name: "",
+        description: "",
+        price: "",
+        duration_minutes: "",
       });
-      setError('');
+      setError("");
       onClose();
     }
   };
 
+  /* אם המודאל סגור — לא מציגים אותו בכלל */
   if (!isOpen) return null;
 
   return (
     <div className={styles.overlay} onClick={handleClose}>
+      {/* עצירת bubbling כדי שהמודאל לא יסגר בלחיצה פנימית */}
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        {/* כותרת + כפתור סגירה */}
         <div className={styles.header}>
           <h2>שירות חדש</h2>
-          <button 
+          <button
             className={styles.closeButton}
             onClick={handleClose}
             disabled={loading}
@@ -104,13 +150,12 @@ export default function ServiceModal({ isOpen, onClose, onServiceCreated, busine
           </button>
         </div>
 
+        {/* טופס יצירת שירות */}
         <form onSubmit={handleSubmit} className={styles.form}>
-          {error && (
-            <div className={styles.error}>
-              {error}
-            </div>
-          )}
+          {/* תצוגת הודעות שגיאה */}
+          {error && <div className={styles.error}>{error}</div>}
 
+          {/* שדה שם השירות */}
           <div className={styles.inputGroup}>
             <label htmlFor="name">שם השירות *</label>
             <input
@@ -125,6 +170,7 @@ export default function ServiceModal({ isOpen, onClose, onServiceCreated, busine
             />
           </div>
 
+          {/* שדה תיאור השירות */}
           <div className={styles.inputGroup}>
             <label htmlFor="description">תיאור השירות</label>
             <textarea
@@ -138,6 +184,7 @@ export default function ServiceModal({ isOpen, onClose, onServiceCreated, busine
             />
           </div>
 
+          {/* שדה מחיר + משך זמן */}
           <div className={styles.rowInputs}>
             <div className={styles.inputGroup}>
               <label htmlFor="price">מחיר (₪) *</label>
@@ -171,6 +218,7 @@ export default function ServiceModal({ isOpen, onClose, onServiceCreated, busine
             </div>
           </div>
 
+          {/* כפתורי פעולה */}
           <div className={styles.actions}>
             <button
               type="button"
@@ -191,7 +239,7 @@ export default function ServiceModal({ isOpen, onClose, onServiceCreated, busine
                   שומר...
                 </>
               ) : (
-                '✓ צור שירות'
+                "✓ צור שירות"
               )}
             </button>
           </div>

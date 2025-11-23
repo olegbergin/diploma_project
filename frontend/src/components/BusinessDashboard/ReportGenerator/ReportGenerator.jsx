@@ -1,15 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import styles from './ReportGenerator.module.css';
-import axiosInstance from '../../../api/axiosInstance';
+import React, { useState, useEffect } from "react";
+import styles from "./ReportGenerator.module.css";
+import axiosInstance from "../../../api/axiosInstance";
 
+// קומפוננטה להפקת דוחות לעסק (יומי / חודשי / שנתי)
 const ReportGenerator = ({ businessId }) => {
+  // האם המודאל פתוח או לא
   const [isOpen, setIsOpen] = useState(false);
-  const [reportType, setReportType] = useState('month');
-  const [selectedDate, setSelectedDate] = useState('');
+
+  // סוג הדוח שנבחר: day / month / year
+  const [reportType, setReportType] = useState("month");
+
+  // תאריך/חודש/שנה שנבחרו לפי סוג הדוח
+  const [selectedDate, setSelectedDate] = useState("");
+
+  // מצב טעינה בזמן פנייה לשרת
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+
+  // הודעת שגיאה להצגה למשתמש
+  const [error, setError] = useState("");
+
+  // נתוני טווח תאריכים זמינים לדוחות (אם יש נתונים)
   const [availableDates, setAvailableDates] = useState(null);
 
+  // ---------------------------------------------------
+  // אפקט: ברגע שהמודאל נפתח
+  // 1. מביא תאריכים זמינים מהשרת
+  // 2. קובע תאריך ברירת מחדל לפי סוג דוח
+  // ---------------------------------------------------
   useEffect(() => {
     if (isOpen) {
       fetchAvailableDates();
@@ -17,106 +34,133 @@ const ReportGenerator = ({ businessId }) => {
     }
   }, [isOpen, businessId]);
 
+  // ---------------------------------------------------
+  // אפקט: כל שינוי בסוג דוח יעדכן תאריך ברירת מחדל מתאים
+  // ---------------------------------------------------
   useEffect(() => {
     setDefaultDate();
   }, [reportType]);
 
+  // ---------------------------------------------------
+  // מביא מהשרת מידע על טווח התאריכים שיש לגביו נתונים לדוחות
+  // ---------------------------------------------------
   const fetchAvailableDates = async () => {
     try {
-      const response = await axiosInstance.get(`/businesses/${businessId}/reports/available-dates`);
+      const response = await axiosInstance.get(
+        `/businesses/${businessId}/reports/available-dates`
+      );
       setAvailableDates(response.data);
     } catch (error) {
-      console.error('Error fetching available dates:', error);
+      console.error("Error fetching available dates:", error);
     }
   };
 
+  // ---------------------------------------------------
+  // קובע תאריך ברירת מחדל לפי סוג הדוח
+  // ---------------------------------------------------
   const setDefaultDate = () => {
     const today = new Date();
     switch (reportType) {
-      case 'day':
-        setSelectedDate(today.toISOString().split('T')[0]);
+      case "day":
+        // ברירת מחדל לדוח יומי: היום בפורמט YYYY-MM-DD
+        setSelectedDate(today.toISOString().split("T")[0]);
         break;
-      case 'month':
+      case "month":
+        // ברירת מחדל לדוח חודשי: חודש נוכחי בפורמט YYYY-MM
         setSelectedDate(today.toISOString().slice(0, 7));
         break;
-      case 'year':
+      case "year":
+        // ברירת מחדל לדוח שנתי: השנה הנוכחית
         setSelectedDate(today.getFullYear().toString());
         break;
       default:
-        setSelectedDate('');
+        setSelectedDate("");
     }
   };
 
+  // ---------------------------------------------------
+  // הפקת דוח PDF והורדה אוטומטית
+  // ---------------------------------------------------
   const handleGenerateReport = async () => {
+    // אם לא נבחר תאריך -> מציג שגיאה
     if (!selectedDate) {
-      setError('אנא בחר תאריך');
+      setError("אנא בחר תאריך");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       // Generate and download PDF
+      // פנייה לשרת להפקת PDF, מקבלת blob
       const response = await axiosInstance.get(
         `/businesses/${businessId}/reports/generate`,
         {
           params: {
             period: reportType,
-            date: selectedDate
+            date: selectedDate,
           },
-          responseType: 'blob'
+          responseType: "blob",
         }
       );
 
       // Create download link
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      // יצירת קישור הורדה מקומי ל-PDF
+      const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      
+
       // Generate filename
-      const businessName = 'business';
-      const dateStr = selectedDate.replace(/[^0-9]/g, '_');
+      // יצירת שם קובץ לפי סוג הדוח והתאריך
+      const businessName = "business";
+      const dateStr = selectedDate.replace(/[^0-9]/g, "_");
       link.download = `${businessName}_${reportType}_report_${dateStr}.pdf`;
-      
+
+      // הורדה בפועל
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
       // Close modal on success
+      // סגירת המודאל אם הכל הצליח
       setIsOpen(false);
     } catch (error) {
-      console.error('Error generating report:', error);
+      console.error("Error generating report:", error);
       setError(
-        error.response?.data?.error || 
-        'שגיאה ביצירת הדוח. אנא נסה שוב.'
+        error.response?.data?.error || "שגיאה ביצירת הדוח. אנא נסה שוב."
       );
     } finally {
       setLoading(false);
     }
   };
 
+  // ---------------------------------------------------
+  // תצוגה מקדימה של הדוח בחלון חדש (JSON)
+  // ---------------------------------------------------
   const handlePreviewReport = async () => {
     if (!selectedDate) {
-      setError('אנא בחר תאריך');
+      setError("אנא בחר תאריך");
       return;
     }
 
     try {
+      // בקשה לשרת לקבל נתוני תצוגה מקדימה
       const response = await axiosInstance.get(
         `/businesses/${businessId}/reports/preview`,
         {
           params: {
             period: reportType,
-            date: selectedDate
-          }
+            date: selectedDate,
+          },
         }
       );
 
       // Open preview in new window
-      const previewWindow = window.open('', '_blank');
+      // פתיחת חלון חדש והצגת הנתונים בפורמט JSON
+      const previewWindow = window.open("", "_blank");
       previewWindow.document.write(`
         <html>
           <head>
@@ -172,55 +216,79 @@ const ReportGenerator = ({ businessId }) => {
       `);
       previewWindow.document.close();
     } catch (error) {
-      console.error('Error previewing report:', error);
-      setError('שגיאה בתצוגה מקדימה');
+      console.error("Error previewing report:", error);
+      setError("שגיאה בתצוגה מקדימה");
     }
   };
 
+  // ---------------------------------------------------
+  // מחזיר שם בעברית לסוג הדוח שנבחר
+  // ---------------------------------------------------
   const getReportTypeLabel = () => {
     switch (reportType) {
-      case 'day': return 'יומי';
-      case 'month': return 'חודשי';
-      case 'year': return 'שנתי';
-      default: return '';
+      case "day":
+        return "יומי";
+      case "month":
+        return "חודשי";
+      case "year":
+        return "שנתי";
+      default:
+        return "";
     }
   };
 
+  // ---------------------------------------------------
+  // מחזיר סוג input מתאים לפי סוג הדוח
+  // ---------------------------------------------------
   const getDateInputType = () => {
     switch (reportType) {
-      case 'day': return 'date';
-      case 'month': return 'month';
-      case 'year': return 'number';
-      default: return 'text';
+      case "day":
+        return "date";
+      case "month":
+        return "month";
+      case "year":
+        return "number";
+      default:
+        return "text";
     }
   };
 
+  // ---------------------------------------------------
+  // מחזיר placeholder מתאים לשדה תאריך
+  // ---------------------------------------------------
   const getDatePlaceholder = () => {
     switch (reportType) {
-      case 'day': return 'בחר תאריך';
-      case 'month': return 'בחר חודש';
-      case 'year': return 'הכנס שנה (לדוגמה: 2025)';
-      default: return '';
+      case "day":
+        return "בחר תאריך";
+      case "month":
+        return "בחר חודש";
+      case "year":
+        return "הכנס שנה (לדוגמה: 2025)";
+      default:
+        return "";
     }
   };
 
+  // ---------------------------------------------------
+  // אם המודאל לא פתוח – מציג רק כפתור הפקה
+  // ---------------------------------------------------
   if (!isOpen) {
     return (
-      <button
-        className={styles.triggerButton}
-        onClick={() => setIsOpen(true)}
-      >
+      <button className={styles.triggerButton} onClick={() => setIsOpen(true)}>
         📊 הפק דוח
       </button>
     );
   }
 
+  // ---------------------------------------------------
+  // תצוגת מודאל ההפקה
+  // ---------------------------------------------------
   return (
     <div className={styles.overlay} onClick={() => setIsOpen(false)}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2>הפקת דוח עסקי</h2>
-          <button 
+          <button
             className={styles.closeButton}
             onClick={() => setIsOpen(false)}
             disabled={loading}
@@ -230,10 +298,9 @@ const ReportGenerator = ({ businessId }) => {
         </div>
 
         <div className={styles.content}>
+          {/* בחירת סוג דוח */}
           <div className={styles.field}>
-            <label className={styles.label}>
-              סוג דוח *
-            </label>
+            <label className={styles.label}>סוג דוח *</label>
             <select
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
@@ -246,11 +313,10 @@ const ReportGenerator = ({ businessId }) => {
             </select>
           </div>
 
+          {/* שדה תאריך שמתאים לסוג הדוח */}
           <div className={styles.field}>
-            <label className={styles.label}>
-              תאריך *
-            </label>
-            {reportType === 'year' ? (
+            <label className={styles.label}>תאריך *</label>
+            {reportType === "year" ? (
               <input
                 type="number"
                 value={selectedDate}
@@ -269,33 +335,40 @@ const ReportGenerator = ({ businessId }) => {
                 placeholder={getDatePlaceholder()}
                 className={styles.input}
                 disabled={loading}
-                max={reportType === 'day' ? new Date().toISOString().split('T')[0] : undefined}
+                max={
+                  reportType === "day"
+                    ? new Date().toISOString().split("T")[0]
+                    : undefined
+                }
               />
             )}
           </div>
 
+          {/* הצגת הודעה אם אין נתונים */}
           {availableDates && !availableDates.hasData && (
             <div className={styles.warning}>
               <p>אין נתונים זמינים לדוחות עדיין</p>
             </div>
           )}
 
+          {/* הצגת טווח תאריכים אם יש נתונים */}
           {availableDates && availableDates.hasData && (
             <div className={styles.info}>
-              <p>נתונים זמינים מ-{availableDates.earliestDate} עד {availableDates.latestDate}</p>
+              <p>
+                נתונים זמינים מ-{availableDates.earliestDate} עד{" "}
+                {availableDates.latestDate}
+              </p>
             </div>
           )}
 
-          {error && (
-            <div className={styles.error}>
-              {error}
-            </div>
-          )}
+          {/* הצגת שגיאה למשתמש */}
+          {error && <div className={styles.error}>{error}</div>}
 
+          {/* רשימת תכולת הדוח לפי סוג */}
           <div className={styles.reportInfo}>
             <h3>הדוח יכלול:</h3>
             <ul>
-              {reportType === 'day' && (
+              {reportType === "day" && (
                 <>
                   <li>סיכום תורים יומי</li>
                   <li>הכנסות יומיות</li>
@@ -304,7 +377,7 @@ const ReportGenerator = ({ businessId }) => {
                   <li>נתוני לקוחות</li>
                 </>
               )}
-              {reportType === 'month' && (
+              {reportType === "month" && (
                 <>
                   <li>ביצועים חודשיים</li>
                   <li>מגמת הכנסות יומית</li>
@@ -313,7 +386,7 @@ const ReportGenerator = ({ businessId }) => {
                   <li>סיכום ביקורות</li>
                 </>
               )}
-              {reportType === 'year' && (
+              {reportType === "year" && (
                 <>
                   <li>סיכום ביצועים שנתי</li>
                   <li>ביצועים חודשיים</li>
@@ -327,6 +400,7 @@ const ReportGenerator = ({ businessId }) => {
           </div>
         </div>
 
+        {/* כפתורי פעולה תחתונים */}
         <div className={styles.actions}>
           <button
             type="button"
@@ -336,7 +410,7 @@ const ReportGenerator = ({ businessId }) => {
           >
             ביטול
           </button>
-          
+
           <button
             type="button"
             onClick={handlePreviewReport}
@@ -352,7 +426,7 @@ const ReportGenerator = ({ businessId }) => {
             className={styles.generateButton}
             disabled={loading || !selectedDate}
           >
-            {loading ? 'מפיק דוח...' : 'הפק והורד PDF'}
+            {loading ? "מפיק דוח..." : "הפק והורד PDF"}
           </button>
         </div>
       </div>

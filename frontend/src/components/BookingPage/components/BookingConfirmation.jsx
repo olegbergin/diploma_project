@@ -1,35 +1,43 @@
 /**
  * Booking Confirmation Component
  * Displays booking confirmation details and success message
- * 
+ *
  * @component
  * @param {Object} props - Component props
  * @param {Object} props.business - Business information
- * @param {Object} props.service - Service information  
+ * @param {Object} props.service - Service information
  * @param {string} props.date - Selected date
  * @param {string} props.time - Selected time
  * @param {Object} props.customerData - Customer information
  * @param {Function} props.onConfirm - Callback to confirm booking
  * @param {Function} props.onEdit - Callback to edit booking
  * @returns {JSX.Element} Booking confirmation component
+ *
+ * קומפוננטה לאישור סופי של תור:
+ * מציגה סיכום מלא של ההזמנה לפני שליחה,
+ * מאפשרת להוריד אירוע ליומן, לשתף את פרטי התור,
+ * ולאשר או לחזור לעריכה.
  */
 
-import React from 'react';
-import { 
-  FiCheckCircle, 
-  FiCalendar, 
-  FiClock, 
-  FiMapPin, 
-  FiPhone, 
+import React from "react";
+import {
+  FiCheckCircle,
+  FiCalendar,
+  FiClock,
+  FiMapPin,
+  FiPhone,
   FiMail,
   FiEdit,
   FiList,
   FiDownload,
-  FiShare2
-} from 'react-icons/fi';
-import styles from './BookingConfirmation.module.css';
+  FiShare2,
+} from "react-icons/fi";
+import styles from "./BookingConfirmation.module.css";
 
-export default function BookingConfirmation({ 
+// קומפוננטת אישור תור
+// מקבלת מידע על העסק, השירות, תאריך, שעה, פרטי לקוח,
+// ופונקציות לאישור או עריכה
+export default function BookingConfirmation({
   business,
   service,
   date,
@@ -37,25 +45,26 @@ export default function BookingConfirmation({
   customerData,
   onConfirm,
   onEdit,
-  isLoading
+  isLoading,
 }) {
-  
   /**
    * Format date for display
    */
+  // פורמט תאריך לתצוגה בעברית בצורה מלאה (יום בשבוע, יום, חודש, שנה)
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('he-IL', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return date.toLocaleDateString("he-IL", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   /**
    * Format time for display
    */
+  // פורמט שעה לתצוגה (כרגע מחזיר כמו שקיבל)
   const formatTime = (timeString) => {
     return timeString;
   };
@@ -63,33 +72,44 @@ export default function BookingConfirmation({
   /**
    * Calculate end time
    */
+  // חישוב שעת סיום התור לפי שעת התחלה + משך השירות בדקות
   const calculateEndTime = (startTime, duration) => {
-    const [hours, minutes] = startTime.split(':').map(Number);
+    const [hours, minutes] = startTime.split(":").map(Number);
     const totalMinutes = hours * 60 + minutes + duration;
     const endHours = Math.floor(totalMinutes / 60);
     const endMinutes = totalMinutes % 60;
-    return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+    return `${endHours.toString().padStart(2, "0")}:${endMinutes
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   /**
    * Generate calendar event data
    */
+  // יצירת מידע לאירוע יומן (כותרת, תאריך התחלה/סיום, תיאור, מיקום)
   const generateCalendarData = () => {
     const startDate = new Date(`${date}T${time}`);
-    const endDate = new Date(startDate.getTime() + (service?.duration || 0) * 60000);
-    
+    const endDate = new Date(
+      startDate.getTime() + (service?.duration || 0) * 60000
+    );
+
     return {
-      title: `${service?.service_name || service?.name} - ${business?.business_name || business?.name}`,
-      start: startDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z',
-      end: endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z',
-      description: `תור ל${service?.service_name || service?.name} אצל ${business?.business_name || business?.name}`,
-      location: business?.address || business?.business_name || business?.name
+      title: `${service?.service_name || service?.name} - ${
+        business?.business_name || business?.name
+      }`,
+      start: startDate.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z",
+      end: endDate.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z",
+      description: `תור ל${service?.service_name || service?.name} אצל ${
+        business?.business_name || business?.name
+      }`,
+      location: business?.address || business?.business_name || business?.name,
     };
   };
 
   /**
    * Download calendar event
    */
+  // יצירת קובץ ICS והורדה שלו למחשב/טלפון כדי להוסיף ליומן
   const downloadCalendarEvent = () => {
     const event = generateCalendarData();
     const icsContent = `BEGIN:VCALENDAR
@@ -97,7 +117,7 @@ VERSION:2.0
 PRODID:-//Your App//Your App//EN
 BEGIN:VEVENT
 UID:${Date.now()}@yourapp.com
-DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
+DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").split(".")[0]}Z
 DTSTART:${event.start}
 DTEND:${event.end}
 SUMMARY:${event.title}
@@ -106,8 +126,10 @@ LOCATION:${event.location}
 END:VEVENT
 END:VCALENDAR`;
 
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const link = document.createElement('a');
+    const blob = new Blob([icsContent], {
+      type: "text/calendar;charset=utf-8",
+    });
+    const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `appointment-${Date.now()}.ics`;
     document.body.appendChild(link);
@@ -118,11 +140,16 @@ END:VCALENDAR`;
   /**
    * Share booking details
    */
+  // שיתוף פרטי התור:
+  // אם הדפדפן תומך ב-share -> נפתח חלון שיתוף
+  // אחרת -> העתקה ללוח והודעה למשתמש
   const shareBooking = async () => {
     const shareData = {
-      title: 'אישור תור',
-      text: `התור שלי: ${service?.service_name || service?.name} ב-${formatDate(date)} בשעה ${time}`,
-      url: window.location.origin
+      title: "אישור תור",
+      text: `התור שלי: ${service?.service_name || service?.name} ב-${formatDate(
+        date
+      )} בשעה ${time}`,
+      url: window.location.origin,
     };
 
     if (navigator.share) {
@@ -130,19 +157,23 @@ END:VCALENDAR`;
         await navigator.share(shareData);
       } catch (err) {
         // Error sharing - silently fail
+        // אם השיתוף נכשל לא עושים כלום
       }
     } else {
       // Fallback: copy to clipboard
+      // אם אין תמיכה בשיתוף - מעתיקים ללוח
       navigator.clipboard.writeText(shareData.text);
-      alert('פרטי התור הועתקו ללוח');
+      alert("פרטי התור הועתקו ללוח");
     }
   };
 
+  // חישוב שעת הסיום לתצוגה במסך
   const endTime = calculateEndTime(time, service?.duration || 0);
 
   return (
     <div className={styles.confirmationContainer}>
       {/* Confirmation Header */}
+      {/* כותרת מסך אישור עם אייקון הצלחה */}
       <div className={styles.successHeader}>
         <div className={styles.successIcon}>
           <FiCheckCircle />
@@ -154,18 +185,21 @@ END:VCALENDAR`;
       </div>
 
       {/* Booking Details Card */}
+      {/* כרטיס שמציג את כל פרטי התור */}
       <div className={styles.detailsCard}>
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>פרטי התור</h2>
+
+          {/* כפתורים קטנים: הורדה ליומן ושיתוף */}
           <div className={styles.cardActions}>
-            <button 
+            <button
               onClick={downloadCalendarEvent}
               className={styles.actionButton}
               title="הוסף ליומן"
             >
               <FiDownload />
             </button>
-            <button 
+            <button
               onClick={shareBooking}
               className={styles.actionButton}
               title="שתף"
@@ -177,15 +211,20 @@ END:VCALENDAR`;
 
         <div className={styles.detailsGrid}>
           {/* Service Information */}
+          {/* פרטי השירות שנבחר */}
           <div className={styles.detailSection}>
             <h3 className={styles.sectionTitle}>השירות</h3>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>שם השירות:</span>
-              <span className={styles.detailValue}>{service?.service_name || service?.name}</span>
+              <span className={styles.detailValue}>
+                {service?.service_name || service?.name}
+              </span>
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>משך השירות:</span>
-              <span className={styles.detailValue}>{service?.duration || 0} דקות</span>
+              <span className={styles.detailValue}>
+                {service?.duration || 0} דקות
+              </span>
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>מחיר:</span>
@@ -194,6 +233,7 @@ END:VCALENDAR`;
           </div>
 
           {/* Date & Time */}
+          {/* פרטי תאריך ושעת התור */}
           <div className={styles.detailSection}>
             <h3 className={styles.sectionTitle}>
               <FiCalendar className={styles.sectionIcon} />
@@ -214,6 +254,7 @@ END:VCALENDAR`;
           </div>
 
           {/* Business Information */}
+          {/* פרטי העסק שנבחר */}
           <div className={styles.detailSection}>
             <h3 className={styles.sectionTitle}>
               <FiMapPin className={styles.sectionIcon} />
@@ -221,7 +262,9 @@ END:VCALENDAR`;
             </h3>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>שם העסק:</span>
-              <span className={styles.detailValue}>{business?.business_name || business?.name}</span>
+              <span className={styles.detailValue}>
+                {business?.business_name || business?.name}
+              </span>
             </div>
             {business?.address && (
               <div className={styles.detailItem}>
@@ -244,26 +287,35 @@ END:VCALENDAR`;
           </div>
 
           {/* Customer Information */}
+          {/* פרטי הלקוח שמזמין את התור */}
           <div className={styles.detailSection}>
             <h3 className={styles.sectionTitle}>פרטי הלקוח</h3>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>שם מלא:</span>
               <span className={styles.detailValue}>
-                {customerData?.customerInfo?.firstName || customerData?.firstName} {customerData?.customerInfo?.lastName || customerData?.lastName}
+                {customerData?.customerInfo?.firstName ||
+                  customerData?.firstName}{" "}
+                {customerData?.customerInfo?.lastName || customerData?.lastName}
               </span>
             </div>
             <div className={styles.detailItem}>
               <FiPhone className={styles.detailIcon} />
-              <span className={styles.detailValue}>{customerData?.customerInfo?.phone || customerData?.phone}</span>
+              <span className={styles.detailValue}>
+                {customerData?.customerInfo?.phone || customerData?.phone}
+              </span>
             </div>
             <div className={styles.detailItem}>
               <FiMail className={styles.detailIcon} />
-              <span className={styles.detailValue}>{customerData?.customerInfo?.email || customerData?.email}</span>
+              <span className={styles.detailValue}>
+                {customerData?.customerInfo?.email || customerData?.email}
+              </span>
             </div>
             {(customerData?.customerInfo?.notes || customerData?.notes) && (
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>הערות:</span>
-                <span className={styles.detailValue}>{customerData?.customerInfo?.notes || customerData?.notes}</span>
+                <span className={styles.detailValue}>
+                  {customerData?.customerInfo?.notes || customerData?.notes}
+                </span>
               </div>
             )}
           </div>
@@ -271,6 +323,7 @@ END:VCALENDAR`;
       </div>
 
       {/* Important Information */}
+      {/* מידע חשוב ללקוח לפני התור */}
       <div className={styles.infoCard}>
         <h3 className={styles.infoTitle}>מידע חשוב</h3>
         <div className={styles.infoList}>
@@ -290,17 +343,18 @@ END:VCALENDAR`;
       </div>
 
       {/* Action Buttons */}
+      {/* כפתורי פעולה: אישור ושליחה, או חזרה לעריכה */}
       <div className={styles.actionButtons}>
-        <button 
+        <button
           onClick={onConfirm}
           className={styles.primaryButton}
           disabled={isLoading}
         >
           <FiCheckCircle className={styles.buttonIcon} />
-          <span>{isLoading ? 'שולח...' : 'אשר ושלח'}</span>
+          <span>{isLoading ? "שולח..." : "אשר ושלח"}</span>
         </button>
-        
-        <button 
+
+        <button
           onClick={onEdit}
           className={styles.secondaryButton}
           disabled={isLoading}
@@ -311,6 +365,7 @@ END:VCALENDAR`;
       </div>
 
       {/* Footer */}
+      {/* סיום מסך עם הודעת תודה */}
       <div className={styles.footer}>
         <p>תודה שבחרת בשירותים שלנו!</p>
         <p>במידה ויש לך שאלות, אנא צור קשר עם העסק ישירות.</p>
