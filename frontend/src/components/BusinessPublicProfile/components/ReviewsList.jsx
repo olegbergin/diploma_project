@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './ReviewsList.module.css';
 import axiosInstance from '../../../api/axiosInstance';
-import { useContext } from 'react';
-import { UserContext } from '../../../context/UserContext';
-import ReviewReportModal from './ReviewReportModal';
 
 const ReviewsList = ({ businessId }) => {
   const [reviews, setReviews] = useState([]);
@@ -11,9 +8,6 @@ const ReviewsList = ({ businessId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState('newest');
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [selectedReview, setSelectedReview] = useState(null);
-  const { user } = useContext(UserContext);
 
   useEffect(() => {
     fetchReviews();
@@ -37,15 +31,6 @@ const ReviewsList = ({ businessId }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleReportReview = (review) => {
-    if (!user) {
-      alert('יש להתחבר כדי לדווח על ביקורת');
-      return;
-    }
-    setSelectedReview(review);
-    setShowReportModal(true);
   };
 
   const formatDate = (dateString) => {
@@ -202,47 +187,11 @@ const ReviewsList = ({ businessId }) => {
                     {review.text}
                   </div>
                 )}
-
-                {review.businessResponse && (
-                  <div className={styles.businessResponse}>
-                    <div className={styles.responseHeader}>
-                      <strong>תגובת העסק:</strong>
-                      <span className={styles.responseDate}>
-                        {formatDate(review.responseDate)}
-                      </span>
-                    </div>
-                    <div className={styles.responseText}>
-                      {review.businessResponse}
-                    </div>
-                  </div>
-                )}
-
-                <div className={styles.reviewActions}>
-                  <button
-                    onClick={() => handleReportReview(review)}
-                    className={styles.reportButton}
-                  >
-                    דווח על ביקורת
-                  </button>
-                </div>
               </div>
             ))}
           </div>
         </>
       )}
-
-      <ReviewReportModal
-        review={selectedReview}
-        isOpen={showReportModal}
-        onClose={() => {
-          setShowReportModal(false);
-          setSelectedReview(null);
-        }}
-        onSuccess={() => {
-          setShowReportModal(false);
-          setSelectedReview(null);
-        }}
-      />
     </div>
   );
 };

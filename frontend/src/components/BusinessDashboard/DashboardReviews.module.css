@@ -1,0 +1,121 @@
+@import url('../../styles/design-system-variables.css');
+
+.container {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    padding: var(--space-5);
+    border: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2);
+    border-bottom: 2px solid var(--border-light);
+    padding-bottom: var(--space-3);
+}
+
+.title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.viewAllButton {
+    background: none;
+    border: none;
+    color: var(--primary-blue);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-normal);
+}
+
+.viewAllButton:hover {
+    background-color: var(--primary-blue-light-10);
+}
+
+.reviewsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.reviewCard {
+    border: 1px solid var(--border-medium);
+    /* More visible border */
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    background-color: var(--bg-primary);
+    transition: all var(--transition-normal);
+}
+
+.reviewCard:hover {
+    border-color: var(--primary-blue-light);
+    box-shadow: var(--shadow-sm);
+}
+
+.reviewHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-3);
+}
+
+.reviewerInfo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.reviewerName {
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    font-size: var(--text-base);
+    /* Consistent font size */
+    margin: 0;
+}
+
+.stars {
+    color: var(--warning-orange);
+    font-size: var(--text-sm);
+    letter-spacing: 2px;
+}
+
+.reviewDate {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.reviewText {
+    color: var(--text-primary);
+    font-size: var(--text-base);
+    /* Consistent font size */
+    line-height: 1.5;
+    margin: 0;
+}
+
+.emptyState {
+    text-align: center;
+    padding: var(--space-6);
+    color: var(--text-secondary);
+    font-size: var(--text-base);
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-6);
+    color: var(--text-secondary);
+}

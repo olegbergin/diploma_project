@@ -7,6 +7,7 @@ import axiosInstance from "../../api/axiosInstance";
 import KpiCards from "./KpiCards";
 import PerformanceChart from "./PerformanceChart";
 import PopularServices from "./PopularServices";
+import DashboardReviews from "./DashboardReviews";
 
 export default function NewBusinessDashboard({ user }) {
   const [dashboardData, setDashboardData] = useState(null);
@@ -155,44 +156,55 @@ export default function NewBusinessDashboard({ user }) {
     <div className={styles.dashboard}>
       <header className={styles.header}>
         <h1>שלום, {dashboardData.business.name}</h1>
-        <div className={styles.headerActions}>
-          <button
-            className={`${styles.btn} ${styles.btnSecondary}`}
-            onClick={() => navigate("/reports")}
-          >
-            📊 דוחות
-          </button>
-          <button
-            className={`${styles.btn} ${styles.btnSecondary}`}
-            onClick={() => navigate("/appointments/history")}
-          >
-            📋 היסטוריית תורים
-          </button>
-          <button
-            className={`${styles.btn} ${styles.btnSecondary}`}
-            onClick={() => navigate("/calendar")}
-          >
-            📅 הצג לוח שנה
-          </button>
-          <button
-            className={`${styles.btn} ${styles.btnSecondary}`}
-            onClick={() => navigate("/services")}
-          >
-            🔧 ניהול שירותים
-          </button>
-          <button
-            className={`${styles.btn} ${styles.btnSecondary}`}
-            onClick={() =>
-              navigate(`/business/${user?.businessId || user?.id}/edit`)
-            }
-          >
-            ✏️ עריכת פרופיל
-          </button>
-        </div>
       </header>
 
-      <section className={styles.kpis}>
-        <KpiCards analytics={dashboardData.analytics} />
+      <section className={styles.topSection}>
+        <div className={styles.kpis}>
+          <KpiCards analytics={dashboardData.analytics} />
+        </div>
+
+        <div className={styles.actionsSection}>
+          <div className={styles.actionsGrid}>
+            <button
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              onClick={() => navigate(`/business/${user?.businessId || user?.id}`)}
+            >
+              👁️ צפה בדף העסק
+            </button>
+            <button
+              className={`${styles.btn} ${styles.btnSecondary}`}
+              onClick={() => navigate("/reports")}
+            >
+              📊 דוחות
+            </button>
+            <button
+              className={`${styles.btn} ${styles.btnSecondary}`}
+              onClick={() => navigate("/appointments/history")}
+            >
+              📋 היסטוריית תורים
+            </button>
+            <button
+              className={`${styles.btn} ${styles.btnSecondary}`}
+              onClick={() => navigate("/calendar")}
+            >
+              📅 הצג לוח שנה
+            </button>
+            <button
+              className={`${styles.btn} ${styles.btnSecondary}`}
+              onClick={() => navigate("/services")}
+            >
+              🔧 ניהול שירותים
+            </button>
+            <button
+              className={`${styles.btn} ${styles.btnSecondary}`}
+              onClick={() =>
+                navigate(`/business/${user?.businessId || user?.id}/edit`)
+              }
+            >
+              ✏️ עריכת פרופיל
+            </button>
+          </div>
+        </div>
       </section>
 
       <main className={styles.mainContent}>
@@ -292,6 +304,9 @@ export default function NewBusinessDashboard({ user }) {
               </p>
             )}
           </div>
+
+          {/* Reviews Section */}
+          <DashboardReviews businessId={user?.businessId || user?.id} />
         </div>
 
         <div className={styles.rightColumn}>

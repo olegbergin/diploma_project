@@ -25,6 +25,7 @@ import FavoritesPage from "./components/FavoritesPage/FavoritesPage";
 import SearchPage from "./components/SearchPage/SearchPage";
 import BookingPageSingleScreen from "./components/BookingPage/BookingPageSingleScreen";
 import AdminPanel from "./components/AdminPanel/AdminPanel";
+import BusinessReviewsPage from "./pages/BusinessReviewsPage";
 import { UserProvider } from "./context/UserContext";
 import { ToastProvider } from "./context/ToastContext";
 import "./App.css";
@@ -70,13 +71,13 @@ function App() {
       ...userData,
       id: userData.id || userData.userId // Ensure we have an 'id' field
     };
-    
+
     setCurrentUser(normalizedUserData);
     localStorage.setItem("userInfo", JSON.stringify(normalizedUserData));
-    
+
     // Use the normalized id for navigation
     const userId = normalizedUserData.id;
-    
+
     // Redirect to role-specific dashboard
     switch (normalizedUserData.role) {
       case "customer":
@@ -142,178 +143,189 @@ function App() {
         <div className="AppContainer">
           <Header user={currentUser} onLogout={handleLogout} />
           <div className="content">
-          <Routes>
-            {/* Auth (Login/Signup) */}
-            <Route
-              path="/login"
-              element={<AuthPage onLoginSuccess={handleLoginSuccess} />}
-            />
-            {/* Redirect signup to login (now handled by AuthPage) */}
-            <Route path="/signup" element={<Navigate replace to="/login" />} />
-            {/* Business Registration */}
-            <Route
-              path="/register-business"
-              element={<BusinessRegistration onRegistrationSuccess={() => {
-                // Delay navigation to allow user to see success message
-                setTimeout(() => navigate('/login'), 3000);
-              }} />}
-            />
-            {/* Booking page - accessible to logged in users */}
-            <Route
-              path="/booking/:businessId/:serviceId"
-              element={
-                currentUser ? (
-                  <BookingPageSingleScreen />
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* Search page - accessible to all users */}
-            <Route
-              path="/search"
-              element={<SearchPage user={currentUser} />}
-            />
-            {/* Favorites page - accessible to logged in users */}
-            <Route
-              path="/favorites"
-              element={
-                currentUser ? (
-                  <FavoritesPage user={currentUser} />
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* Public business profile - accessible to all users */}
-            <Route
-              path="/business/:id"
-              element={<BusinessPublicProfile />}
-            />
-            {/* Redirect to appropriate dashboard */}
-            <Route
-              path="/"
-              element={
-                currentUser ? (
-                  currentUser.role === "customer" ? (
-                    <Navigate replace to={`/user/${currentUser.id || currentUser.userId}/dashboard`} />
-                  ) : currentUser.role === "business" ? (
-                    <Navigate replace to={`/business/${currentUser.businessId || currentUser.id || currentUser.userId}/dashboard`} />
-                  ) : currentUser.role === "admin" ? (
-                    <Navigate replace to="/admin" />
+            <Routes>
+              {/* Auth (Login/Signup) */}
+              <Route
+                path="/login"
+                element={<AuthPage onLoginSuccess={handleLoginSuccess} />}
+              />
+              {/* Redirect signup to login (now handled by AuthPage) */}
+              <Route path="/signup" element={<Navigate replace to="/login" />} />
+              {/* Business Registration */}
+              <Route
+                path="/register-business"
+                element={<BusinessRegistration onRegistrationSuccess={() => {
+                  // Delay navigation to allow user to see success message
+                  setTimeout(() => navigate('/login'), 3000);
+                }} />}
+              />
+              {/* Booking page - accessible to logged in users */}
+              <Route
+                path="/booking/:businessId/:serviceId"
+                element={
+                  currentUser ? (
+                    <BookingPageSingleScreen />
                   ) : (
-                    <Navigate replace to="/search" />
+                    <Navigate replace to="/login" />
                   )
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* User dashboard */}
-            <Route
-              path="/user/:id/dashboard"
-              element={
-                currentUser && currentUser.role === "customer" ? (
-                  <UserDashboard user={currentUser} />
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* User profile (legacy - redirect to dashboard) */}
-            <Route
-              path="/profile/*"
-              element={
-                currentUser && currentUser.role === "customer" ? (
-                  <Navigate replace to={`/user/${currentUser.id || currentUser.userId}/dashboard`} />
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* Business dashboard (new modern dashboard) */}
-            <Route
-              path="/business/:id/dashboard"
-              element={
-                currentUser && currentUser.role === "business" ? (
-                  <NewBusinessDashboard user={currentUser} />
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* Service management for businesses */}
-            <Route
-              path="/services"
-              element={
-                currentUser && currentUser.role === "business" ? (
-                  <ServiceManagement />
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* Calendar for businesses */}
-            <Route
-              path="/calendar"
-              element={
-                currentUser && currentUser.role === "business" ? (
-                  <CalendarPage />
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* Appointment History for businesses */}
-            <Route
-              path="/appointments/history"
-              element={
-                currentUser && currentUser.role === "business" ? (
-                  <AppointmentHistory user={currentUser} />
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* Reports page for businesses */}
-            <Route
-              path="/reports"
-              element={
-                currentUser && currentUser.role === "business" ? (
-                  <ReportsPage user={currentUser} />
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* Business profile management interface */}
-            <Route
-              path="/business/:id/edit"
-              element={
-                currentUser && currentUser.role === "business" ? (
-                  <BusinessEditPage />
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* Admin panel (for administrators) */}
-            <Route
-              path="/admin/*"
-              element={
-                currentUser && currentUser.role === "admin" ? (
-                  <AdminPanel user={currentUser} />
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              }
-            />
-            {/* 404 */}
-            <Route path="*" element={<div>404 - Page Not Found</div>} />
-          </Routes>
+                }
+              />
+              {/* Search page - accessible to all users */}
+              <Route
+                path="/search"
+                element={<SearchPage user={currentUser} />}
+              />
+              {/* Favorites page - accessible to logged in users */}
+              <Route
+                path="/favorites"
+                element={
+                  currentUser ? (
+                    <FavoritesPage user={currentUser} />
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* Public business profile - accessible to all users */}
+              <Route
+                path="/business/:id"
+                element={<BusinessPublicProfile />}
+              />
+              {/* Redirect to appropriate dashboard */}
+              <Route
+                path="/"
+                element={
+                  currentUser ? (
+                    currentUser.role === "customer" ? (
+                      <Navigate replace to={`/user/${currentUser.id || currentUser.userId}/dashboard`} />
+                    ) : currentUser.role === "business" ? (
+                      <Navigate replace to={`/business/${currentUser.businessId || currentUser.id || currentUser.userId}/dashboard`} />
+                    ) : currentUser.role === "admin" ? (
+                      <Navigate replace to="/admin" />
+                    ) : (
+                      <Navigate replace to="/search" />
+                    )
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* User dashboard */}
+              <Route
+                path="/user/:id/dashboard"
+                element={
+                  currentUser && currentUser.role === "customer" ? (
+                    <UserDashboard user={currentUser} />
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* User profile (legacy - redirect to dashboard) */}
+              <Route
+                path="/profile/*"
+                element={
+                  currentUser && currentUser.role === "customer" ? (
+                    <Navigate replace to={`/user/${currentUser.id || currentUser.userId}/dashboard`} />
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* Business dashboard (new modern dashboard) */}
+              <Route
+                path="/business/:id/dashboard"
+                element={
+                  currentUser && currentUser.role === "business" ? (
+                    <NewBusinessDashboard user={currentUser} />
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* Business Reviews Page */}
+              <Route
+                path="/business/reviews"
+                element={
+                  currentUser && currentUser.role === "business" ? (
+                    <BusinessReviewsPage />
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* Service management for businesses */}
+              <Route
+                path="/services"
+                element={
+                  currentUser && currentUser.role === "business" ? (
+                    <ServiceManagement />
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* Calendar for businesses */}
+              <Route
+                path="/calendar"
+                element={
+                  currentUser && currentUser.role === "business" ? (
+                    <CalendarPage />
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* Appointment History for businesses */}
+              <Route
+                path="/appointments/history"
+                element={
+                  currentUser && currentUser.role === "business" ? (
+                    <AppointmentHistory user={currentUser} />
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* Reports page for businesses */}
+              <Route
+                path="/reports"
+                element={
+                  currentUser && currentUser.role === "business" ? (
+                    <ReportsPage user={currentUser} />
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* Business profile management interface */}
+              <Route
+                path="/business/:id/edit"
+                element={
+                  currentUser && currentUser.role === "business" ? (
+                    <BusinessEditPage />
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* Admin panel (for administrators) */}
+              <Route
+                path="/admin/*"
+                element={
+                  currentUser && currentUser.role === "admin" ? (
+                    <AdminPanel user={currentUser} />
+                  ) : (
+                    <Navigate replace to="/login" />
+                  )
+                }
+              />
+              {/* 404 */}
+              <Route path="*" element={<div>404 - Page Not Found</div>} />
+            </Routes>
+          </div>
+          <Footer />
         </div>
-        <Footer />
-      </div>
       </ToastProvider>
     </UserProvider>
   );

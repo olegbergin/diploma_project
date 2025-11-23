@@ -74,13 +74,13 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+    background: linear-gradient(135deg, var(--business-purple), var(--business-purple-dark));
     color: var(--text-inverse);
     box-shadow: var(--shadow-sm);
 }
 
 .favoriteButton:hover:not(:disabled) {
-    background: linear-gradient(135deg, var(--primary-blue-dark), var(--primary-blue));
+    background: linear-gradient(135deg, var(--business-purple-dark), var(--business-purple));
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
 }

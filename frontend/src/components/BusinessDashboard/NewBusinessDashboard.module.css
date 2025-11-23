@@ -18,45 +18,74 @@
   color: var(--text-primary);
 }
 
-.headerActions {
+.topSection {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.kpis {
+  flex: 6;
+  /* 60% */
+  margin-bottom: 0;
+}
+
+.actionsSection {
+  flex: 4;
+  /* 40% */
+}
+
+.actionsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  height: 100%;
 }
 
 .btn {
-  min-height: 44px;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  font-weight: var(--font-medium);
+  min-height: 56px;
+  /* Bigger button */
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-semibold);
   font-size: var(--text-base);
+  /* Larger font */
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  white-space: nowrap;
+  width: 100%;
+  /* Full width in grid cell */
 }
 
 .btnPrimary {
   background: var(--primary-blue);
   color: var(--text-inverse);
+  box-shadow: var(--shadow-md);
 }
+
 .btnPrimary:hover {
   background: var(--primary-blue-dark);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 .btnSecondary {
   background: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border-medium);
-}
-.btnSecondary:hover {
-  background: var(--bg-tertiary);
+  box-shadow: var(--shadow-sm);
 }
 
-.kpis {
-  margin-bottom: var(--space-6);
+.btnSecondary:hover {
+  background: var(--bg-secondary);
+  border-color: var(--text-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .mainContent {
@@ -65,7 +94,8 @@
   gap: var(--space-6);
 }
 
-.leftColumn, .rightColumn {
+.leftColumn,
+.rightColumn {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
@@ -133,7 +163,10 @@
   display: contents;
 }
 
-.appointmentTime, .customerName, .serviceName, .price {
+.appointmentTime,
+.customerName,
+.serviceName,
+.price {
   font-size: var(--text-sm);
   white-space: nowrap;
 }
@@ -173,7 +206,8 @@
   display: contents;
 }
 
-.approveButton, .rejectButton {
+.approveButton,
+.rejectButton {
   padding: var(--space-2) var(--space-2);
   border-radius: var(--radius-md);
   border: none;
@@ -231,7 +265,8 @@
 }
 
 /* Loading and Error states */
-.loadingContainer, .errorContainer {
+.loadingContainer,
+.errorContainer {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -250,13 +285,24 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
   .mainContent {
     grid-template-columns: 1fr;
+  }
+
+  .topSection {
+    flex-direction: column;
+  }
+
+  .kpis,
+  .actionsSection {
+    flex: auto;
   }
 }
 
@@ -265,5 +311,9 @@
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-4);
+  }
+
+  .actionsGrid {
+    grid-template-columns: 1fr;
   }
 }
