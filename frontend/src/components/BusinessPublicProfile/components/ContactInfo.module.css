@@ -94,20 +94,126 @@
     }
 }
 
+/* Working Hours Section */
+.hoursSection {
+    margin-top: var(--space-6);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border-light);
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-3);
+}
+
+.statusBadge.open {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.statusBadge.closed {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.statusDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.statusBadge.open .statusDot {
+    background-color: #10b981;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.statusBadge.closed .statusDot {
+    background-color: #ef4444;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.nextOpenInfo {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+    font-style: italic;
+}
+
+.scheduleList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.scheduleDay {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+}
+
+.dayName {
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    min-width: 80px;
+}
+
+.dayHours {
+    color: var(--text-secondary);
+    font-family: 'Courier New', monospace;
+    direction: ltr;
+}
+
+.dayHoursClosed {
+    color: var(--text-tertiary);
+    font-style: italic;
+}
+
 @media (max-width: 640px) {
     .contactContainer {
         margin: var(--space-3) 0;
         padding: var(--space-4);
     }
-    
+
     .contactItem {
         margin-bottom: var(--space-3);
         padding: var(--space-2);
     }
-    
+
     .contactItem strong {
         min-width: 70px;
         font-size: var(--text-sm);
     }
-    
+
+    .scheduleDay {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .dayName {
+        min-width: 60px;
+        font-size: var(--text-xs);
+    }
+
+    .dayHours {
+        font-size: var(--text-xs);
+    }
+
 }

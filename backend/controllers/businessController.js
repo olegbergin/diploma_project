@@ -1,5 +1,7 @@
 const db = require("../dbSingleton");
 
+console.log('🔥🔥🔥 businessController.js LOADED with schedule_exceptions fix! 🔥🔥🔥');
+
 exports.getAllBusinesses = async (req, res) => {
   try {
     const connection = db.getPromise();
@@ -16,19 +18,39 @@ exports.getAllBusinesses = async (req, res) => {
 
 // גרסה פשוטה לפי id – נשאיר, אבל נוודא שרק מאושר מוחזר
 exports.getBusinessById = async (req, res) => {
+  console.log('🚀 getBusinessById CALLED - ID:', req.params.id);
+
   try {
     const connection = db.getPromise();
+    console.log('📊 Executing query for business_id:', req.params.id);
+
     const [rows] = await connection.query(
-      "SELECT * FROM businesses WHERE business_id = ? AND status = 'approved'",
+      "SELECT business_id, owner_id, name, category, description, location, city, photos, schedule, schedule_exceptions, created_at FROM businesses WHERE business_id = ? AND status = 'approved'",
       [req.params.id]
     );
+
+    console.log('📦 Query returned', rows.length, 'rows');
+
     if (rows.length > 0) {
-      res.json(rows[0]);
+      const business = rows[0];
+      console.log('🔍 DEBUG - All Keys:', Object.keys(business));
+      console.log('🔍 DEBUG - schedule_exceptions value:', business.schedule_exceptions);
+      console.log('🔍 DEBUG - schedule_exceptions type:', typeof business.schedule_exceptions);
+
+      // Ensure schedule_exceptions is always present
+      if (!business.schedule_exceptions) {
+        console.log('⚠️  schedule_exceptions was NULL, setting to []');
+        business.schedule_exceptions = '[]';
+      }
+
+      console.log('✅ Sending response with keys:', Object.keys(business));
+      res.json(business);
     } else {
+      console.log('❌ No business found or not approved');
       res.status(404).json({ message: "Business not found or not approved" });
     }
   } catch (error) {
-    console.error("DB error fetching business by id:", error);
+    console.error("❌ DB error fetching business by id:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -81,6 +103,7 @@ exports.updateBusiness = async (req, res) => {
     email,
     address,
     working_hours = "",
+    schedule_exceptions = "",
     gallery = [],
   } = req.body;
 
@@ -99,13 +122,14 @@ exports.updateBusiness = async (req, res) => {
     }
 
     const businessSql = `
-      UPDATE businesses SET 
-        name = ?, 
-        category = ?, 
-        description = ?, 
-        location = ?, 
+      UPDATE businesses SET
+        name = ?,
+        category = ?,
+        description = ?,
+        location = ?,
         photos = ?,
-        schedule = ?
+        schedule = ?,
+        schedule_exceptions = ?
       WHERE business_id = ?
     `;
     const businessParams = [
@@ -115,6 +139,7 @@ exports.updateBusiness = async (req, res) => {
       address,
       photosJson,
       working_hours || "{}",
+      schedule_exceptions || "[]",
       businessId,
     ];
 
@@ -393,8 +418,9 @@ exports.getBusinessCalendar = async (req, res) => {
     const businessId = req.params.id;
     const { month, serviceId } = req.query;
 
+    // Fetch business with schedule and exceptions
     const [businessRows] = await connection.query(
-      'SELECT business_id FROM businesses WHERE business_id = ? AND status = "approved"',
+      'SELECT business_id, schedule, schedule_exceptions FROM businesses WHERE business_id = ? AND status = "approved"',
       [businessId]
     );
 
@@ -404,6 +430,13 @@ exports.getBusinessCalendar = async (req, res) => {
         .json({ error: "Business not found or not approved" });
     }
 
+    const business = businessRows[0];
+
+    // Parse business schedule and exceptions using utility functions
+    const scheduleUtils = require('../utils/scheduleUtils');
+    const schedule = scheduleUtils.parseSchedule(business.schedule);
+    const exceptions = scheduleUtils.parseExceptions(business.schedule_exceptions);
+
     const startDate = new Date(month + "-01");
     const endDate = new Date(
       startDate.getFullYear(),
@@ -411,16 +444,57 @@ exports.getBusinessCalendar = async (req, res) => {
       0
     );
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const availableDates = [];
+
     for (let day = 1; day <= endDate.getDate(); day++) {
       const date = new Date(startDate.getFullYear(), startDate.getMonth(), day);
-      const dayOfWeek = date.getDay();
 
-      if (date >= new Date() && dayOfWeek !== 0 && dayOfWeek !== 6) {
+      // Skip past dates
+      if (date < today) {
+        continue;
+      }
+
+      // Create date string in local timezone (avoid UTC conversion)
+      const year = date.getFullYear();
+      const monthNum = String(date.getMonth() + 1).padStart(2, '0');
+      const dayStr = String(date.getDate()).padStart(2, '0');
+      const dateString = `${year}-${monthNum}-${dayStr}`;
+
+      // Check if business is open on this date (including exceptions)
+      const isOpen = scheduleUtils.isBusinessOpenWithExceptions(schedule, date, exceptions);
+
+      if (isOpen) {
+        // Get existing appointments for this date
+        const [existingAppointments] = await connection.query(
+          'SELECT TIME(appointment_datetime) as time FROM appointments WHERE business_id = ? AND DATE(appointment_datetime) = ? AND status != "cancelled"',
+          [businessId, dateString]
+        );
+
+        const bookedTimes = existingAppointments.map((apt) => apt.time);
+
+        // Generate time slots based on actual business hours (including exception special hours)
+        const allSlots = scheduleUtils.generateTimeSlotsWithExceptions(schedule, date, exceptions, 30);
+
+        // Filter out booked slots
+        const availableSlots = allSlots.filter(slot => {
+          const timeSlotWithSeconds = `${slot}:00`;
+          return !bookedTimes.includes(timeSlotWithSeconds);
+        });
+
         availableDates.push({
-          date: date.toISOString().split("T")[0],
+          date: dateString,
           available: true,
-          availableSlots: Math.floor(Math.random() * 8) + 2,
+          availableSlots: availableSlots.length
+        });
+      } else {
+        // Business is closed (due to regular schedule or exception)
+        availableDates.push({
+          date: dateString,
+          available: false,
+          availableSlots: 0
         });
       }
     }
@@ -450,8 +524,9 @@ exports.getBusinessAvailability = async (req, res) => {
       return res.status(400).json({ error: "Date parameter is required" });
     }
 
+    // Fetch business with schedule and exceptions
     const [businessRows] = await connection.query(
-      'SELECT business_id FROM businesses WHERE business_id = ? AND status = "approved"',
+      'SELECT business_id, schedule, schedule_exceptions FROM businesses WHERE business_id = ? AND status = "approved"',
       [businessId]
     );
 
@@ -461,6 +536,43 @@ exports.getBusinessAvailability = async (req, res) => {
         .json({ error: "Business not found or not approved" });
     }
 
+    const business = businessRows[0];
+
+    // Parse business schedule and exceptions using utility functions
+    const scheduleUtils = require('../utils/scheduleUtils');
+    const schedule = scheduleUtils.parseSchedule(business.schedule);
+    const exceptions = scheduleUtils.parseExceptions(business.schedule_exceptions);
+
+    // Parse the date and check for exceptions
+    const requestDate = new Date(date);
+    const exception = scheduleUtils.getExceptionForDate(exceptions, requestDate);
+
+    // If there's a closure exception, return closed status with exception message
+    if (exception && exception.type === 'closure') {
+      return res.json({
+        businessId: parseInt(businessId),
+        serviceId: serviceId ? parseInt(serviceId) : null,
+        date,
+        availableSlots: [],
+        isClosed: true,
+        closureReason: 'exception',
+        message: exception.title + (exception.description ? ' - ' + exception.description : '')
+      });
+    }
+
+    // Check if business is open (considering exceptions)
+    if (!scheduleUtils.isBusinessOpenWithExceptions(schedule, requestDate, exceptions)) {
+      return res.json({
+        businessId: parseInt(businessId),
+        serviceId: serviceId ? parseInt(serviceId) : null,
+        date,
+        availableSlots: [],
+        isClosed: true,
+        message: "העסק סגור ביום זה"
+      });
+    }
+
+    // Get existing appointments for the date
     const [existingAppointments] = await connection.query(
       'SELECT TIME(appointment_datetime) as time FROM appointments WHERE business_id = ? AND DATE(appointment_datetime) = ? AND status != "cancelled"',
       [businessId, date]
@@ -468,28 +580,31 @@ exports.getBusinessAvailability = async (req, res) => {
 
     const bookedTimes = existingAppointments.map((apt) => apt.time);
 
-    const availableSlots = [];
-    for (let hour = 8; hour <= 20; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const timeSlot = `${hour.toString().padStart(2, "0")}:${minute
-          .toString()
-          .padStart(2, "0")}:00`;
-        const displayTime = `${hour.toString().padStart(2, "0")}:${minute
-          .toString()
-          .padStart(2, "0")}`;
+    // Generate time slots based on actual business hours (including exception special hours)
+    const allSlots = scheduleUtils.generateTimeSlotsWithExceptions(schedule, requestDate, exceptions, 30);
 
-        if (!bookedTimes.includes(timeSlot)) {
-          availableSlots.push(displayTime);
-        }
-      }
-    }
+    // Filter out booked slots
+    const availableSlots = allSlots.filter(slot => {
+      const timeSlotWithSeconds = `${slot}:00`;
+      return !bookedTimes.includes(timeSlotWithSeconds);
+    });
 
-    res.json({
+    // Build response with exception info if special hours
+    const response = {
       businessId: parseInt(businessId),
       serviceId: serviceId ? parseInt(serviceId) : null,
       date,
       availableSlots,
-    });
+      isClosed: false
+    };
+
+    // Add special hours message if applicable
+    if (exception && exception.type === 'special_hours') {
+      response.specialHours = true;
+      response.message = exception.title + (exception.description ? ' - ' + exception.description : '');
+    }
+
+    res.json(response);
   } catch (error) {
     console.error(
       `Error fetching availability for business ${req.params.id}:`,

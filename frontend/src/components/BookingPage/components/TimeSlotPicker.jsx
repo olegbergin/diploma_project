@@ -17,13 +17,15 @@ import React, { useMemo } from 'react';
 import { FiClock, FiCheck, FiX } from 'react-icons/fi';
 import styles from './TimeSlotPicker.module.css';
 
-export default function TimeSlotPicker({ 
-  date, 
-  availableSlots = [], 
-  onTimeSelect, 
-  selectedTime, 
+export default function TimeSlotPicker({
+  date,
+  availableSlots = [],
+  onTimeSelect,
+  selectedTime,
   serviceDuration = 60,
-  isLoading 
+  isLoading,
+  isClosed = false,
+  closedMessage = ''
 }) {
   
   /**
@@ -137,6 +139,26 @@ export default function TimeSlotPicker({
     );
   }
 
+  // Handle business closed state
+  if (isClosed) {
+    return (
+      <div className={styles.timePickerContainer}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>בחר שעה</h2>
+          <div className={styles.dateDisplay}>
+            <FiClock className={styles.clockIcon} />
+            <span>{formatDate(date)}</span>
+          </div>
+        </div>
+        <div className={styles.noSlotsMessage}>
+          <FiX className={styles.noSlotsIcon} />
+          <h3>העסק סגור</h3>
+          <p>{closedMessage || 'העסק סגור ביום זה. אנא בחר תאריך אחר.'}</p>
+        </div>
+      </div>
+    );
+  }
+
   const availableCount = timeSlots.filter(slot => slot.isAvailable).length;
 
   return (
@@ -147,13 +169,13 @@ export default function TimeSlotPicker({
           <FiClock className={styles.clockIcon} />
           <span>{formatDate(date)}</span>
         </div>
-        
+
         {serviceDuration && (
           <div className={styles.durationInfo}>
             <span>משך השירות: {serviceDuration} דקות</span>
           </div>
         )}
-        
+
         <div className={styles.availabilityInfo}>
           <span>{availableCount} זמנים פנויים</span>
         </div>
@@ -163,7 +185,7 @@ export default function TimeSlotPicker({
         <div className={styles.noSlotsMessage}>
           <FiX className={styles.noSlotsIcon} />
           <h3>אין זמנים פנויים</h3>
-          <p>לא נמצאו זמנים פנויים בתאריך זה. אנא בחר תאריך אחר.</p>
+          <p>כל הזמנים תפוסים בתאריך זה. אנא בחר תאריך אחר.</p>
         </div>
       ) : (
         <div className={styles.slotsContainer}>

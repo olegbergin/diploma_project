@@ -41,6 +41,8 @@ export default function BookingPage() {
   const [selectedTime, setSelectedTime] = useState(null);
   const [customerData, setCustomerData] = useState({});
   const [availableSlots, setAvailableSlots] = useState([]);
+  const [isBusinessClosed, setIsBusinessClosed] = useState(false);
+  const [closedMessage, setClosedMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -92,10 +94,14 @@ export default function BookingPage() {
         `/businesses/${businessId}/availability?date=${date}&serviceId=${serviceId}`
       );
       setAvailableSlots(response.data.availableSlots || []);
+      setIsBusinessClosed(response.data.isClosed || false);
+      setClosedMessage(response.data.message || '');
     } catch (err) {
       console.error('Failed to fetch availability:', err);
-      // Fallback to default slots
-      setAvailableSlots(['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']);
+      setAvailableSlots([]);
+      setIsBusinessClosed(false);
+      setClosedMessage('');
+      setError('שגיאה בטעינת זמנים פנויים');
     } finally {
       setIsLoading(false);
     }
@@ -284,6 +290,8 @@ export default function BookingPage() {
             selectedTime={selectedTime}
             serviceDuration={service.duration}
             isLoading={isLoading}
+            isClosed={isBusinessClosed}
+            closedMessage={closedMessage}
           />
         )}
 

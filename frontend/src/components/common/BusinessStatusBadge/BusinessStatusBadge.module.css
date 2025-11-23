@@ -1,0 +1,90 @@
+@import url('../../../styles/design-system-variables.css');
+
+.badgeContainer {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-semibold);
+  transition: all var(--transition-fast);
+}
+
+/* Size variants */
+.badge.small {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.badge.medium {
+  padding: var(--space-1-5) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.badge.large {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-base);
+}
+
+/* Status variants */
+.badge.open {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.badge.closed {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Status dot */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.badge.small .dot {
+  width: 5px;
+  height: 5px;
+}
+
+.badge.large .dot {
+  width: 8px;
+  height: 8px;
+}
+
+.badge.open .dot {
+  background-color: #10b981;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.badge.closed .dot {
+  background-color: #ef4444;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.text {
+  white-space: nowrap;
+}
+
+.nextOpening {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  font-style: italic;
+  padding: 0 var(--space-2);
+}

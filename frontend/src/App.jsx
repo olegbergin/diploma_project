@@ -23,7 +23,7 @@ import ReportsPage from "./components/ReportsPage/ReportsPage";
 import UserDashboard from "./components/UserDashboard/UserDashboard";
 import FavoritesPage from "./components/FavoritesPage/FavoritesPage";
 import SearchPage from "./components/SearchPage/SearchPage";
-import BookingPage from "./components/BookingPage/BookingPage";
+import BookingPageSingleScreen from "./components/BookingPage/BookingPageSingleScreen";
 import AdminPanel from "./components/AdminPanel/AdminPanel";
 import { UserProvider } from "./context/UserContext";
 import { ToastProvider } from "./context/ToastContext";
@@ -163,7 +163,7 @@ function App() {
               path="/booking/:businessId/:serviceId"
               element={
                 currentUser ? (
-                  <BookingPage />
+                  <BookingPageSingleScreen />
                 ) : (
                   <Navigate replace to="/login" />
                 )
