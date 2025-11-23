@@ -54,29 +54,7 @@ router.get("/", async (req, res) => {
       params.push(status);
     }
 
-    // Debug: Check database timezone
-    const [timezoneCheck] = await db.query('SELECT NOW() as server_time, @@session.time_zone as session_tz, @@global.time_zone as global_tz');
-    console.log('Database timezone info:', timezoneCheck[0]);
-
     const [rows] = await db.query(sql, params);
-    
-    // Debug: Check what services exist for this business
-    const [servicesCheck] = await db.query(
-      'SELECT service_id, business_id, name FROM services WHERE business_id = ? LIMIT 5',
-      [parseInt(businessId)]
-    );
-    console.log(`Services available for business ${businessId}:`, servicesCheck);
-    
-    // Debug logging to see what's happening with the JOIN and dates
-    console.log(`Appointments query for business ${businessId}, month ${month}:`);
-    console.log('Sample appointments with dates:', rows.slice(0, 3).map(row => ({
-      appointment_id: row.appointment_id,
-      date: row.date,
-      time: row.time,
-      appointment_datetime: row.appointment_datetime,
-      service_name: row.service_name,
-      customer_name: `${row.first_name} ${row.last_name}`
-    })));
     
     const transformedAppointments = rows.map(row => ({
       appointmentId: row.appointment_id,

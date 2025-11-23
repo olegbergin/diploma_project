@@ -1,7 +1,5 @@
 const db = require("../dbSingleton");
 
-console.log('🔥🔥🔥 businessController.js LOADED with schedule_exceptions fix! 🔥🔥🔥');
-
 exports.getAllBusinesses = async (req, res) => {
   try {
     const connection = db.getPromise();
@@ -13,45 +11,6 @@ exports.getAllBusinesses = async (req, res) => {
   } catch (error) {
     console.error("DB error fetching all businesses:", error);
     res.status(500).json({ error: "Failed to fetch businesses." });
-  }
-};
-
-// גרסה פשוטה לפי id – נשאיר, אבל נוודא שרק מאושר מוחזר
-exports.getBusinessById = async (req, res) => {
-  console.log('🚀 getBusinessById CALLED - ID:', req.params.id);
-
-  try {
-    const connection = db.getPromise();
-    console.log('📊 Executing query for business_id:', req.params.id);
-
-    const [rows] = await connection.query(
-      "SELECT business_id, owner_id, name, category, description, location, city, photos, schedule, schedule_exceptions, created_at FROM businesses WHERE business_id = ? AND status = 'approved'",
-      [req.params.id]
-    );
-
-    console.log('📦 Query returned', rows.length, 'rows');
-
-    if (rows.length > 0) {
-      const business = rows[0];
-      console.log('🔍 DEBUG - All Keys:', Object.keys(business));
-      console.log('🔍 DEBUG - schedule_exceptions value:', business.schedule_exceptions);
-      console.log('🔍 DEBUG - schedule_exceptions type:', typeof business.schedule_exceptions);
-
-      // Ensure schedule_exceptions is always present
-      if (!business.schedule_exceptions) {
-        console.log('⚠️  schedule_exceptions was NULL, setting to []');
-        business.schedule_exceptions = '[]';
-      }
-
-      console.log('✅ Sending response with keys:', Object.keys(business));
-      res.json(business);
-    } else {
-      console.log('❌ No business found or not approved');
-      res.status(404).json({ message: "Business not found or not approved" });
-    }
-  } catch (error) {
-    console.error("❌ DB error fetching business by id:", error);
-    res.status(500).json({ message: error.message });
   }
 };
 
@@ -286,6 +245,7 @@ exports.getBusinessById = async (req, res) => {
       location: business.location,
       photos: business.photos,
       schedule: business.schedule,
+      schedule_exceptions: business.schedule_exceptions,
       createdAt: business.created_at,
       phone: business.owner_phone, // phone from business owner
       email: business.owner_email, // email from business owner

@@ -3,14 +3,6 @@ const router = express.Router();
 const reportService = require("../services/reportService");
 const pdfService = require("../services/pdfService");
 
-console.log('Reports routes file loaded');
-
-// Add middleware to log all requests
-router.use((req, res, next) => {
-  console.log(`Reports router - ${req.method} ${req.originalUrl}`);
-  next();
-});
-
 /**
  * Generate and download business report
  * GET /api/businesses/:id/reports/generate?period=day&date=2025-01-15
