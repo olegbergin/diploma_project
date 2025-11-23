@@ -173,25 +173,25 @@ export default function NewBusinessDashboard({ user }) {
             </button>
             <button
               className={`${styles.btn} ${styles.btnSecondary}`}
-              onClick={() => navigate("/reports")}
+              onClick={() => navigate(`/business/${user?.businessId || user?.id}/reports`)}
             >
               📊 דוחות
             </button>
             <button
               className={`${styles.btn} ${styles.btnSecondary}`}
-              onClick={() => navigate("/appointments/history")}
+              onClick={() => navigate(`/business/${user?.businessId || user?.id}/appointments/history`)}
             >
               📋 היסטוריית תורים
             </button>
             <button
               className={`${styles.btn} ${styles.btnSecondary}`}
-              onClick={() => navigate("/calendar")}
+              onClick={() => navigate(`/business/${user?.businessId || user?.id}/calendar`)}
             >
               📅 הצג לוח שנה
             </button>
             <button
               className={`${styles.btn} ${styles.btnSecondary}`}
-              onClick={() => navigate("/services")}
+              onClick={() => navigate(`/business/${user?.businessId || user?.id}/services`)}
             >
               🔧 ניהול שירותים
             </button>

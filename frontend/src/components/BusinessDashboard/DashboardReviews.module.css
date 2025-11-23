@@ -46,6 +46,33 @@
     background-color: var(--primary-blue-light-10);
 }
 
+.actionButton {
+    min-height: 40px;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-lg);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    border: 1px solid var(--border-medium);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    white-space: nowrap;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.actionButton:hover {
+    background: var(--primary-purple);
+    color: white;
+    border-color: var(--primary-purple);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(155, 81, 224, 0.3);
+}
+
 .reviewsList {
     display: flex;
     flex-direction: column;

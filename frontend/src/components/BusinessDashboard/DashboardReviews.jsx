@@ -48,10 +48,10 @@ const DashboardReviews = ({ businessId }) => {
             <div className={styles.header}>
                 <h3 className={styles.title}>ביקורות אחרונות</h3>
                 <button
-                    className={styles.viewAllButton}
-                    onClick={() => navigate('/business/reviews')}
+                    className={styles.actionButton}
+                    onClick={() => navigate(`/business/${businessId}/reviews`)}
                 >
-                    לכל הביקורות ⬅️
+                    📊 דיווחים ורשימת ביקורות
                 </button>
             </div>
 

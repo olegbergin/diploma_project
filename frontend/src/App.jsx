@@ -245,7 +245,7 @@ function App() {
               />
               {/* Business Reviews Page */}
               <Route
-                path="/business/reviews"
+                path="/business/:id/reviews"
                 element={
                   currentUser && currentUser.role === "business" ? (
                     <BusinessReviewsPage />
@@ -256,7 +256,7 @@ function App() {
               />
               {/* Service management for businesses */}
               <Route
-                path="/services"
+                path="/business/:id/services"
                 element={
                   currentUser && currentUser.role === "business" ? (
                     <ServiceManagement />
@@ -267,7 +267,7 @@ function App() {
               />
               {/* Calendar for businesses */}
               <Route
-                path="/calendar"
+                path="/business/:id/calendar"
                 element={
                   currentUser && currentUser.role === "business" ? (
                     <CalendarPage />
@@ -278,7 +278,7 @@ function App() {
               />
               {/* Appointment History for businesses */}
               <Route
-                path="/appointments/history"
+                path="/business/:id/appointments/history"
                 element={
                   currentUser && currentUser.role === "business" ? (
                     <AppointmentHistory user={currentUser} />
@@ -289,7 +289,7 @@ function App() {
               />
               {/* Reports page for businesses */}
               <Route
-                path="/reports"
+                path="/business/:id/reports"
                 element={
                   currentUser && currentUser.role === "business" ? (
                     <ReportsPage user={currentUser} />
@@ -332,3 +332,4 @@ function App() {
 }
 
 export default App;
+
