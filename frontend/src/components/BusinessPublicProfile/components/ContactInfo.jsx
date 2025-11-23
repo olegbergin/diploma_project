@@ -10,7 +10,7 @@ const ContactInfo = ({ business }) => {
     };
 
     const formatPhoneNumber = (phone) => {
-        if (!phone) return 'Not provided';
+        if (!phone) return 'לא סופק';
         // Basic phone formatting
         const cleaned = phone.replace(/\D/g, '');
         if (cleaned.length === 10) {
@@ -34,11 +34,11 @@ const ContactInfo = ({ business }) => {
 
     return (
         <div className={styles.contactContainer}>
-            <h3 className={styles.sectionTitle}>Contact Information</h3>
+            <h3 className={styles.sectionTitle}>פרטי התקשרות</h3>
 
             <div className={styles.contactItem}>
-                <strong>Address:</strong>
-                <span>{business.address || 'Address not provided'}</span>
+                <strong>כתובת:</strong>
+                <span>{business.address || 'כתובת לא סופקה'}</span>
                 {business.address && (
                     <a
                         href={`https://maps.google.com/?q=${encodeURIComponent(business.address)}`}
@@ -46,13 +46,13 @@ const ContactInfo = ({ business }) => {
                         rel="noopener noreferrer"
                         className={styles.mapLink}
                     >
-                        📍 View on Map
+                        📍 צפה במפה
                     </a>
                 )}
             </div>
 
             <div className={styles.contactItem}>
-                <strong>Phone:</strong>
+                <strong>טלפון:</strong>
                 <span
                     className={business.phone ? styles.clickablePhone : ''}
                     onClick={business.phone ? handleCall : undefined}
@@ -60,12 +60,12 @@ const ContactInfo = ({ business }) => {
                     {formatPhoneNumber(business.phone)}
                 </span>
                 {business.phone && (
-                    <span className={styles.phoneHint}>📞 Tap to call</span>
+                    <span className={styles.phoneHint}>📞 הקש לחיוג</span>
                 )}
             </div>
 
             <div className={styles.contactItem}>
-                <strong>Email:</strong>
+                <strong>אימייל:</strong>
                 {business.email ? (
                     <a
                         href={`mailto:${business.email}`}
@@ -74,7 +74,7 @@ const ContactInfo = ({ business }) => {
                         {business.email} ✉️
                     </a>
                 ) : (
-                    <span>Not provided</span>
+                    <span>לא סופק</span>
                 )}
             </div>
 

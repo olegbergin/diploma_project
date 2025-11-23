@@ -40,12 +40,12 @@ const ProfileHeader = ({ business }) => {
 
     const handleToggleFavorite = async () => {
         if (!currentUser) {
-            showWarning('Please log in to add businesses to your favorites.', 4000);
+            showWarning('אנא התחבר כדי להוסיף עסקים למועדפים.', 4000);
             return;
         }
 
         if (!businessId) {
-            showError('Unable to add to favorites: Invalid business ID.', 3000);
+            showError('לא ניתן להוסיף למועדפים: מזהה עסק לא תקין.', 3000);
             return;
         }
 
@@ -56,19 +56,19 @@ const ProfileHeader = ({ business }) => {
                 // Remove from favorites
                 await axios.delete(`/users/${currentUser.id}/favorites/${businessId}`);
                 setIsFavorite(false);
-                showSuccess('Removed from favorites!', 3000);
+                showSuccess('הוסר מהמועדפים!', 3000);
             } else {
                 // Add to favorites
                 await axios.post(`/users/${currentUser.id}/favorites`, { 
                     businessId: businessId 
                 });
                 setIsFavorite(true);
-                showSuccess('Added to favorites!', 3000);
+                showSuccess('נוסף למועדפים!', 3000);
             }
         } catch (error) {
             console.error('Error toggling favorite:', error);
-            const errorMessage = error.response?.data?.message || 
-                               'Failed to update favorites. Please try again.';
+            const errorMessage = error.response?.data?.message ||
+                               'נכשל בעדכון המועדפים. אנא נסה שוב.';
             showError(errorMessage, 4000);
         } finally {
             setIsLoading(false);
@@ -92,27 +92,29 @@ const ProfileHeader = ({ business }) => {
 
     const formatRating = (rating) => {
         const numRating = parseFloat(rating);
-        return isNaN(numRating) ? 'No rating' : `(${numRating.toFixed(1)})`;
+        return isNaN(numRating) ? 'אין דירוג' : `(${numRating.toFixed(1)})`;
     };
 
     const getFavoriteButtonContent = () => {
         if (favoriteCheckLoading) {
-            return '⏳ Loading...';
+            return '⏳ טוען...';
         }
         if (isLoading) {
-            return isFavorite ? '💔 Removing...' : '❤️ Adding...';
+            return isFavorite ? '💔 מסיר...' : '❤️ מוסיף...';
         }
-        return isFavorite ? '💖 Remove from Favorites' : '🤍 Add to Favorites';
+        return isFavorite ? '💖 הסר מהמועדפים' : '🤍 הוסף למועדפים';
     };
 
     return (
         <div className={styles.headerContainer}>
-            <h1 className={styles.businessName}>
-                {business.business_name || business.name || 'Business Name'}
-            </h1>
-            <p className={styles.businessCategory}>
-                {business.category || 'Category not specified'}
-            </p>
+            <div className={styles.businessInfo}>
+                <h1 className={styles.businessName}>
+                    {business.business_name || business.name || 'שם העסק'}
+                </h1>
+                <p className={styles.businessCategory}>
+                    {business.category || 'קטגוריה לא צוינה'}
+                </p>
+            </div>
             <div className={styles.rating}>
                 {renderStars(business.average_rating || business.rating)}
                 <span className={styles.ratingText}>
@@ -124,7 +126,7 @@ const ProfileHeader = ({ business }) => {
                     </span>
                 )} */}
             </div>
-            <button 
+            <button
                 className={`${styles.favoriteButton} ${isFavorite ? styles.favoriteActive : ''} ${isLoading || favoriteCheckLoading ? styles.favoriteLoading : ''}`}
                 onClick={handleToggleFavorite}
                 disabled={isLoading || favoriteCheckLoading}
