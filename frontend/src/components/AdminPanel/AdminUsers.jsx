@@ -35,7 +35,7 @@ function AdminUsers() {
       };
 
       const response = await axiosInstance.get('/admin/users', { params });
-      
+
       // Map the API response to match expected frontend format
       const mappedUsers = response.data.users.map(user => ({
         id: user.user_id,
@@ -48,7 +48,7 @@ function AdminUsers() {
         createdAt: user.created_at,
         lastLogin: user.last_login
       }));
-      
+
       setUsers(mappedUsers);
       setPagination(response.data.pagination);
     } catch (error) {
@@ -75,10 +75,10 @@ function AdminUsers() {
   const handleStatusChange = async (userId, newStatus) => {
     try {
       await axiosInstance.put(`/admin/users/${userId}/status`, { status: newStatus });
-      
+
       // Update local state to reflect the change immediately
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
           user.id === userId ? { ...user, status: newStatus } : user
         )
       );
@@ -90,15 +90,32 @@ function AdminUsers() {
   const handleRoleChange = async (userId, newRole) => {
     try {
       await axiosInstance.put(`/admin/users/${userId}/role`, { role: newRole });
-      
+
       // Update local state to reflect the change immediately
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
           user.id === userId ? { ...user, role: newRole } : user
         )
       );
     } catch (error) {
       console.error("Failed to update user role:", error);
+    }
+  };
+
+  const handleDeleteUser = async (userId, userName) => {
+    if (!window.confirm(`האם אתה בטוח שברצונך למחוק את המשתמש ${userName}?`)) {
+      return;
+    }
+
+    try {
+      await axiosInstance.delete(`/admin/users/${userId}`);
+
+      // Remove user from local state
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+      setPagination(prev => ({ ...prev, total: prev.total - 1 }));
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+      alert('שגיאה במחיקת המשתמש');
     }
   };
 
@@ -147,7 +164,7 @@ function AdminUsers() {
   return (
     <div className={styles.usersContainer}>
       <h2 className={styles.sectionTitle}>ניהול משתמשים</h2>
-      
+
       <div className={styles.controls}>
         <div className={styles.searchContainer}>
           <input
@@ -158,7 +175,7 @@ function AdminUsers() {
             className={styles.searchInput}
           />
         </div>
-        
+
         <div className={styles.filterContainer}>
           <select
             value={filterRole}
@@ -170,7 +187,7 @@ function AdminUsers() {
             <option value="business">עסקים</option>
             <option value="admin">מנהלים</option>
           </select>
-          
+
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -193,7 +210,7 @@ function AdminUsers() {
           <div className={styles.headerCell}>תאריך הצטרפות</div>
           <div className={styles.headerCell}>פעולות</div>
         </div>
-        
+
         {users.map(user => (
           <div key={user.id} className={styles.tableRow}>
             <div className={styles.tableCell}>
@@ -213,9 +230,9 @@ function AdminUsers() {
               </span>
             </div>
             <div className={styles.tableCell}>
-              <span 
+              <span
                 className={styles.statusTag}
-                style={{ 
+                style={{
                   backgroundColor: getStatusColor(user.status) + "20",
                   color: getStatusColor(user.status)
                 }}
@@ -252,6 +269,12 @@ function AdminUsers() {
                     הפעל
                   </button>
                 )}
+                <button
+                  className={styles.deleteBtn}
+                  onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
+                >
+                  🗑️ מחק
+                </button>
               </div>
             </div>
           </div>
@@ -263,7 +286,7 @@ function AdminUsers() {
           <p>לא נמצאו משתמשים התואמים לחיפוש</p>
         </div>
       )}
-      
+
       {pagination.totalPages > 1 && (
         <div className={styles.pagination}>
           <button
@@ -273,11 +296,11 @@ function AdminUsers() {
           >
             הקודם
           </button>
-          
+
           <span className={styles.paginationInfo}>
             עמוד {pagination.page} מתוך {pagination.totalPages}
           </span>
-          
+
           <button
             className={styles.paginationBtn}
             onClick={() => handlePageChange(pagination.page + 1)}

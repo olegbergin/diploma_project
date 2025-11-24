@@ -33,8 +33,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Controls */
@@ -100,7 +105,7 @@
   background: #fff;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 
+  box-shadow:
     0 4px 15px rgba(201, 178, 245, 0.15),
     0 2px 8px rgba(103, 58, 183, 0.08);
   border: 1px solid rgba(201, 178, 245, 0.2);
@@ -244,6 +249,23 @@
   box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
 }
 
+.deleteBtn {
+  background: linear-gradient(135deg, #f44336 0%, #e57373 100%);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.deleteBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
+
 /* No Results */
 .noResults {
   text-align: center;
@@ -294,15 +316,16 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
+
   .tableHeader,
   .tableRow {
     grid-template-columns: 2fr 2fr 1fr 1fr 2fr;
   }
-  
+
   .tableCell:nth-child(5) {
     display: none;
   }
-  
+
   .headerCell:nth-child(5) {
     display: none;
   }
@@ -312,28 +335,28 @@
   .controls {
     flex-direction: column;
   }
-  
+
   .searchContainer,
   .filterContainer {
     width: 100%;
     min-width: auto;
   }
-  
+
   .usersTable {
     overflow-x: auto;
   }
-  
+
   .tableHeader,
   .tableRow {
     grid-template-columns: 1.5fr 2fr 1fr 1.5fr;
     min-width: 600px;
   }
-  
+
   .tableCell:nth-child(4),
   .tableCell:nth-child(5) {
     display: none;
   }
-  
+
   .headerCell:nth-child(4),
   .headerCell:nth-child(5) {
     display: none;
@@ -344,23 +367,23 @@
   .sectionTitle {
     font-size: 1.5rem;
   }
-  
+
   .userInfo {
     flex-direction: column;
     gap: 0.4rem;
     text-align: center;
   }
-  
+
   .userAvatar {
     width: 32px;
     height: 32px;
     font-size: 0.8rem;
   }
-  
+
   .userName {
     font-size: 0.9rem;
   }
-  
+
   .tableHeader,
   .tableRow {
     min-width: 500px;

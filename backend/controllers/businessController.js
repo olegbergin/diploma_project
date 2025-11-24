@@ -64,6 +64,7 @@ exports.updateBusiness = async (req, res) => {
     working_hours = "",
     schedule_exceptions = "",
     gallery = [],
+    vat_percentage,
   } = req.body;
 
   try {
@@ -80,6 +81,16 @@ exports.updateBusiness = async (req, res) => {
       photosJson = JSON.stringify(photoUrls);
     }
 
+    // Validate VAT percentage if provided
+    if (vat_percentage !== undefined && vat_percentage !== null) {
+      const vatNum = parseFloat(vat_percentage);
+      if (isNaN(vatNum) || vatNum < 0 || vatNum > 100) {
+        return res.status(400).json({
+          error: "Invalid VAT percentage. Must be between 0 and 100."
+        });
+      }
+    }
+
     const businessSql = `
       UPDATE businesses SET
         name = ?,
@@ -89,6 +100,7 @@ exports.updateBusiness = async (req, res) => {
         photos = ?,
         schedule = ?,
         schedule_exceptions = ?
+        ${vat_percentage !== undefined && vat_percentage !== null ? ', vat_percentage = ?' : ''}
       WHERE business_id = ?
     `;
     const businessParams = [
@@ -99,8 +111,13 @@ exports.updateBusiness = async (req, res) => {
       photosJson,
       working_hours || "{}",
       schedule_exceptions || "[]",
-      businessId,
     ];
+
+    if (vat_percentage !== undefined && vat_percentage !== null) {
+      businessParams.push(parseFloat(vat_percentage));
+    }
+
+    businessParams.push(businessId);
 
     const [result] = await connection.query(businessSql, businessParams);
 
@@ -246,6 +263,7 @@ exports.getBusinessById = async (req, res) => {
       photos: business.photos,
       schedule: business.schedule,
       schedule_exceptions: business.schedule_exceptions,
+      vat_percentage: business.vat_percentage || 17.00,
       createdAt: business.created_at,
       phone: business.owner_phone, // phone from business owner
       email: business.owner_email, // email from business owner

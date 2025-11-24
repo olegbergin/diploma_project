@@ -2,12 +2,16 @@ import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
 import axiosInstance from '../api/axiosInstance';
+import ReviewReportModal from '../components/BusinessPublicProfile/components/ReviewReportModal';
 import styles from './BusinessReviewsPage.module.css';
 
 const BusinessReviewsPage = () => {
-    const { user } = useContext(UserContext);
+    const { currentUser } = useContext(UserContext);
     const navigate = useNavigate();
-    const businessId = user?.businessId || user?.id;
+    const businessId = currentUser?.businessId || currentUser?.id;
+
+    console.log('BusinessReviewsPage - currentUser:', currentUser);
+    console.log('BusinessReviewsPage - businessId:', businessId);
 
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,26 +26,35 @@ const BusinessReviewsPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
+    // Report modal
+    const [reportModalOpen, setReportModalOpen] = useState(false);
+    const [selectedReview, setSelectedReview] = useState(null);
+
     useEffect(() => {
         fetchReviews();
     }, [businessId]);
 
     const fetchReviews = async () => {
         if (!businessId) {
+            console.log('No businessId available');
             setLoading(false);
             return;
         }
         try {
             setLoading(true);
+            console.log('Fetching reviews for businessId:', businessId);
             // Fetch all reviews and filter client-side for this implementation
             // In a real large-scale app, you'd want server-side filtering
             const response = await axiosInstance.get(`/reviews/business/${businessId}`, {
                 params: { limit: 1000 } // Get enough reviews to filter
             });
+            console.log('Reviews response:', response.data);
+            console.log('Number of reviews:', response.data.reviews?.length || 0);
             setReviews(response.data.reviews || []);
             setError(null);
         } catch (error) {
             console.error('Error fetching reviews:', error);
+            console.error('Error response:', error.response?.data);
             setError('שגיאה בטעינת הביקורות');
         } finally {
             setLoading(false);
@@ -101,6 +114,17 @@ const BusinessReviewsPage = () => {
         setCurrentPage(1);
     };
 
+    const handleReportClick = (review) => {
+        setSelectedReview(review);
+        setReportModalOpen(true);
+    };
+
+    const handleReportSuccess = () => {
+        setReportModalOpen(false);
+        setSelectedReview(null);
+        // Optionally refresh reviews or show success message
+    };
+
     if (loading) {
         return (
             <div className={styles.dashboard}>
@@ -134,7 +158,7 @@ const BusinessReviewsPage = () => {
                 <h1>ניהול ביקורות</h1>
                 <button
                     className={`${styles.btn} ${styles.btnSecondary}`}
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => navigate(`/business/${businessId}/dashboard`)}
                 >
                     חזרה לדשבורד
                 </button>
@@ -205,7 +229,16 @@ const BusinessReviewsPage = () => {
                                             <span className={styles.customerName}>{review.customerName}</span>
                                             <span className={styles.rating}>{renderStars(review.rating)}</span>
                                         </div>
-                                        <span className={styles.reviewDate}>{formatDate(review.createdAt)}</span>
+                                        <div className={styles.reviewActions}>
+                                            <span className={styles.reviewDate}>{formatDate(review.createdAt)}</span>
+                                            <button
+                                                className={styles.reportButton}
+                                                onClick={() => handleReportClick(review)}
+                                                title="דווח על ביקורת"
+                                            >
+                                                דווח
+                                            </button>
+                                        </div>
                                     </div>
                                     {review.text && <p className={styles.reviewText}>{review.text}</p>}
                                 </li>
@@ -238,6 +271,17 @@ const BusinessReviewsPage = () => {
                     </>
                 )}
             </div>
+
+            {/* Report Modal */}
+            <ReviewReportModal
+                review={selectedReview}
+                isOpen={reportModalOpen}
+                onClose={() => {
+                    setReportModalOpen(false);
+                    setSelectedReview(null);
+                }}
+                onSuccess={handleReportSuccess}
+            />
         </div>
     );
 };

@@ -193,7 +193,7 @@ export default function NewBusinessDashboard({ user }) {
               className={`${styles.btn} ${styles.btnSecondary}`}
               onClick={() => navigate(`/business/${user?.businessId || user?.id}/services`)}
             >
-              🔧 ניהול שירותים
+              🔧 ניהול שירותים ומחירים
             </button>
             <button
               className={`${styles.btn} ${styles.btnSecondary}`}

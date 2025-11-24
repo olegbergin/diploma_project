@@ -10,6 +10,8 @@ export default function ServiceManagement() {
   const [error, setError] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingService, setEditingService] = useState(null);
+  const [vatPercentage, setVatPercentage] = useState(18);
+  const [savingVat, setSavingVat] = useState(false);
   const { currentUser } = useContext(UserContext);
   const navigate = useNavigate();
 
@@ -21,12 +23,12 @@ export default function ServiceManagement() {
     description: '',
     price: '',
     duration_minutes: '',
-    category: 'Services'
+    category: ''
   });
 
   const fetchServices = useCallback(async () => {
     if (!businessId) return;
-    
+
     try {
       setLoading(true);
       const response = await axiosInstance.get(`/businesses/${businessId}/services`);
@@ -40,9 +42,23 @@ export default function ServiceManagement() {
     }
   }, [businessId]);
 
+  const fetchBusinessData = useCallback(async () => {
+    if (!businessId) return;
+
+    try {
+      const response = await axiosInstance.get(`/businesses/${businessId}`);
+      if (response.data.vat_percentage !== undefined) {
+        setVatPercentage(response.data.vat_percentage);
+      }
+    } catch (error) {
+      console.error('Error fetching business data:', error);
+    }
+  }, [businessId]);
+
   useEffect(() => {
     fetchServices();
-  }, [fetchServices]);
+    fetchBusinessData();
+  }, [fetchServices, fetchBusinessData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -58,7 +74,7 @@ export default function ServiceManagement() {
       description: '',
       price: '',
       duration_minutes: '',
-      category: 'Services'
+      category: ''
     });
     setShowCreateForm(false);
     setEditingService(null);
@@ -66,7 +82,7 @@ export default function ServiceManagement() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.price || !formData.duration_minutes) {
       setError('נא למלא את כל השדות הנדרשים');
       return;
@@ -88,7 +104,7 @@ export default function ServiceManagement() {
           duration_minutes: parseInt(formData.duration_minutes)
         });
       }
-      
+
       resetForm();
       fetchServices();
     } catch (error) {
@@ -103,7 +119,7 @@ export default function ServiceManagement() {
       description: service.description || '',
       price: service.price.toString(),
       duration_minutes: service.durationMinutes.toString(),
-      category: service.category || 'Services'
+      category: service.category
     });
     setEditingService(service);
     setShowCreateForm(true);
@@ -123,6 +139,21 @@ export default function ServiceManagement() {
     }
   };
 
+  const handleSaveVat = async () => {
+    try {
+      setSavingVat(true);
+      await axiosInstance.put(`/businesses/${businessId}`, {
+        vat_percentage: parseFloat(vatPercentage)
+      });
+      setError(null);
+    } catch (error) {
+      console.error('Error saving VAT:', error);
+      setError('שגיאה בשמירת אחוז המע"מ');
+    } finally {
+      setSavingVat(false);
+    }
+  };
+
   if (loading) {
     return <div className={styles.loadingContainer}><div className={styles.loadingSpinner}></div><p>טוען שירותים...</p></div>;
   }
@@ -131,15 +162,15 @@ export default function ServiceManagement() {
     <div className={styles.serviceManagement}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <button 
-            className={`${styles.btn} ${styles.btnSecondary}`} 
+          <button
+            className={`${styles.btn} ${styles.btnSecondary}`}
             onClick={() => navigate(`/business/${businessId}/dashboard`)}
           >
             ← חזרה לדשבורד
           </button>
-          <h1>ניהול שירותים</h1>
+          <h1>ניהול שירותים ומחירים</h1>
         </div>
-        <button 
+        <button
           className={`${styles.btn} ${styles.btnPrimary}`}
           onClick={() => setShowCreateForm(true)}
         >
@@ -152,6 +183,36 @@ export default function ServiceManagement() {
           {error}
         </div>
       )}
+
+      {/* VAT Settings Section */}
+      <div className={styles.vatSection}>
+        <h2 className={styles.vatTitle}>הגדרות מע"מ</h2>
+        <div className={styles.vatContent}>
+          <div className={styles.vatInputGroup}>
+            <label htmlFor="vat">אחוז מע"מ (%)</label>
+            <div className={styles.vatInputWrapper}>
+              <input
+                type="number"
+                id="vat"
+                value={vatPercentage}
+                onChange={(e) => setVatPercentage(e.target.value)}
+                min="0"
+                max="100"
+                step="1"
+                className={styles.vatInput}
+              />
+              <button
+                onClick={handleSaveVat}
+                disabled={savingVat}
+                className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSmall}`}
+              >
+                {savingVat ? 'שומר...' : 'שמור'}
+              </button>
+            </div>
+          </div>
+          <p className={styles.vatNote}>💡 המחירים המוצגים כוללים מע"מ</p>
+        </div>
+      </div>
 
       {showCreateForm && (
         <div className={styles.formOverlay}>
@@ -193,7 +254,7 @@ export default function ServiceManagement() {
                     value={formData.price}
                     onChange={handleInputChange}
                     min="0"
-                    step="0.01"
+                    step="1"
                     required
                     className={styles.formInput}
                   />
@@ -258,24 +319,24 @@ export default function ServiceManagement() {
                   <h3 className={styles.serviceName}>{service.name}</h3>
                   <span className={styles.serviceCategory}>{service.category}</span>
                 </div>
-                
+
                 {service.description && (
                   <p className={styles.serviceDescription}>{service.description}</p>
                 )}
-                
+
                 <div className={styles.serviceDetails}>
                   <div className={styles.servicePrice}>₪{service.price}</div>
                   <div className={styles.serviceDuration}>{service.durationMinutes} דקות</div>
                 </div>
 
                 <div className={styles.serviceActions}>
-                  <button 
+                  <button
                     onClick={() => handleEdit(service)}
                     className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSmall}`}
                   >
                     ✏️ עריכה
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDelete(service.serviceId)}
                     className={`${styles.btn} ${styles.btnDanger} ${styles.btnSmall}`}
                   >
@@ -289,7 +350,7 @@ export default function ServiceManagement() {
           <div className={styles.emptyState}>
             <h3>אין שירותים עדיין</h3>
             <p>התחל בהוספת השירות הראשון שלך</p>
-            <button 
+            <button
               className={`${styles.btn} ${styles.btnPrimary}`}
               onClick={() => setShowCreateForm(true)}
             >

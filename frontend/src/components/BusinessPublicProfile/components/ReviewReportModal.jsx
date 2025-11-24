@@ -9,7 +9,7 @@ const ReviewReportModal = ({ review, isOpen, onClose, onSuccess }) => {
   const [complaintText, setComplaintText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { user } = useContext(UserContext);
+  const { currentUser } = useContext(UserContext);
 
   const complaintTypes = [
     { value: 'inappropriate', label: 'תוכן לא מתאים' },
@@ -27,7 +27,7 @@ const ReviewReportModal = ({ review, isOpen, onClose, onSuccess }) => {
       return;
     }
 
-    if (!user) {
+    if (!currentUser) {
       setError('יש להתחבר כדי לדווח על ביקורת');
       return;
     }
@@ -37,7 +37,7 @@ const ReviewReportModal = ({ review, isOpen, onClose, onSuccess }) => {
 
     try {
       await axiosInstance.post(`/reviews/${review.reviewId}/report`, {
-        reporterId: user.id,
+        reporterId: currentUser.id,
         complaintType,
         complaintText: complaintText.trim() || null
       });

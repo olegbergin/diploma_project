@@ -41,7 +41,10 @@ exports.getAdminStats = async (req, res) => {
       "SELECT COUNT(*) as total FROM businesses WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
     );
 
-    const pendingReviewDeletions = 0;
+    // Get pending review complaints count
+    const [pendingComplaints] = await connection.query(
+      "SELECT COUNT(*) as total FROM review_complaints WHERE status = 'pending'"
+    );
 
     res.json({
       totalUsers: userCount[0].total || 0,
@@ -53,7 +56,7 @@ exports.getAdminStats = async (req, res) => {
       weeklyNewBusinesses: weeklyBusinesses[0].total || 0,
       monthlyNewUsers: monthlyUsers[0].total || 0,
       monthlyNewBusinesses: monthlyBusinesses[0].total || 0,
-      pendingReviewDeletions,
+      pendingReviewDeletions: pendingComplaints[0].total || 0,
       systemStatus: "operational",
     });
   } catch (error) {
