@@ -314,25 +314,7 @@ function BusinessRegistration({ onRegistrationSuccess }) {
       )}
 
       <form onSubmit={handleSubmit}>
-        {/* Quick Fill Buttons */}
-        <div className={styles.quickLoginContainer}>
-          <button
-            type="button"
-            className={styles.quickLoginButton}
-            onClick={() => handleQuickFill("yoga")}
-            disabled={isLoading}
-          >
-            🧘 יוגה סטודיו
-          </button>
-          <button
-            type="button"
-            className={styles.quickLoginButton}
-            onClick={() => handleQuickFill("cafe")}
-            disabled={isLoading}
-          >
-            ☕ בית קפה
-          </button>
-        </div>
+
 
         {/* Owner Details Section */}
         <div className={styles.sectionHeader}>

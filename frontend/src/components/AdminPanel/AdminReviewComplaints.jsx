@@ -177,52 +177,61 @@ const AdminReviewComplaints = () => {
         </div>
       </div>
     );
-    value = { statusFilter }
-    onChange = {(e) => {
-  setStatusFilter(e.target.value);
-  setCurrentPage(1);
-}}
-className = { styles.select }
-  >
+  }
+
+  return (
+    <div className={styles.container}>
+      <h1 className={styles.title}>ניהול תלונות על ביקורות</h1>
+
+      <div className={styles.filters}>
+        <div className={styles.filterGroup}>
+          <label>סינון לפי סטטוס:</label>
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className={styles.select}
+          >
             <option value="all">הכל</option>
             <option value="pending">ממתין</option>
             <option value="reviewed">נבדק</option>
             <option value="resolved">טופל</option>
             <option value="dismissed">נדחה</option>
-          </select >
-        </div >
+          </select>
+        </div>
 
-  <div className={styles.filterGroup}>
-    <input
-      type="text"
-      placeholder="חיפוש לפי עסק, לקוח או תוכן..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className={styles.searchInput}
-    />
-  </div>
-      </div >
+        <div className={styles.filterGroup}>
+          <input
+            type="text"
+            placeholder="חיפוש לפי עסק, לקוח או תוכן..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={styles.searchInput}
+          />
+        </div>
+      </div>
 
-  { error && (
-    <div className={styles.error}>
-      {error}
-      <button onClick={fetchComplaints} className={styles.retryButton}>
-        נסה שוב
-      </button>
-    </div>
-  )}
+      {error && (
+        <div className={styles.error}>
+          {error}
+          <button onClick={fetchComplaints} className={styles.retryButton}>
+            נסה שוב
+          </button>
+        </div>
+      )}
 
-{/* Complaints List */ }
-{
-  filteredComplaints.length === 0 ? (
-    <div className={styles.empty}>
-      <p>לא נמצאו תלונות</p>
-    </div>
-  ) : (
-  <>
-    <div className={styles.complaintsTable}>
-      {filteredComplaints.map((complaint) => (
-        <div key={complaint.complaint_id} className={styles.complaintCard}>
+      {/* Complaints List */}
+      {filteredComplaints.length === 0 ? (
+        <div className={styles.empty}>
+          <p>לא נמצאו תלונות</p>
+        </div>
+      ) : (
+        <>
+          <div className={styles.complaintsTable}>
+            {filteredComplaints.map((complaint) => (
+              <div key={complaint.complaint_id} className={styles.complaintCard}>
           <div className={styles.complaintHeader}>
             <div className={styles.complaintInfo}>
               <h3>{complaint.business_name}</h3>

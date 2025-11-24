@@ -333,7 +333,7 @@ export default function BookingPageSingleScreen() {
         serviceId,
         date: selectedDate,
         time: selectedTime,
-        customerInfo: customerData,
+        ...customerData,
         serviceName: service.service_name,
         servicePrice: service.price,
         serviceDuration: service.duration
@@ -341,17 +341,30 @@ export default function BookingPageSingleScreen() {
 
       await axiosInstance.post('/appointments', appointmentData);
 
+      // Get user ID for redirection
+      const userInfo = localStorage.getItem('userInfo');
+      let userId;
+      if (userInfo) {
+        const user = JSON.parse(userInfo);
+        userId = user.id || user.userId;
+      }
+
       // Navigate to success page or dashboard
-      navigate('/dashboard', {
-        state: {
-          successMessage: 'התור נקבע בהצלחה!',
-          appointment: {
-            business: business.business_name,
-            service: service.service_name,
-            dateTime: formatDateTime(selectedDate, selectedTime)
+      if (userId) {
+        navigate(`/user/${userId}/dashboard`, {
+          state: {
+            successMessage: 'התור נקבע בהצלחה!',
+            appointment: {
+              business: business.business_name,
+              service: service.service_name,
+              dateTime: formatDateTime(selectedDate, selectedTime)
+            }
           }
-        }
-      });
+        });
+      } else {
+        // Fallback if no user ID found (shouldn't happen for logged in users)
+        navigate('/');
+      }
     } catch (err) {
       console.error('Error creating appointment:', err);
       setError(err.response?.data?.message || 'שגיאה ביצירת התור. נסה שוב.');

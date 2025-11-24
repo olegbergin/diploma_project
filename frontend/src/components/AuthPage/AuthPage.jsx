@@ -135,37 +135,7 @@ function AuthPage({ onLoginSuccess }) {
     }
   };
 
-  // ---------------------------------------------------
-  // מילוי מהיר של משתמשי בדיקה (Quick Login)
-  // עובד רק במצב התחברות
-  // ---------------------------------------------------
-  const handleQuickFill = (userType) => {
-    switch (userType) {
-      case "customer":
-        setFormData((prev) => ({
-          ...prev,
-          email: "bergin.oleg@gmail.com",
-          password: "pass123",
-        }));
-        break;
-      case "business_owner":
-        setFormData((prev) => ({
-          ...prev,
-          email: "newbiz1@example.com",
-          password: "newpass1",
-        }));
-        break;
-      case "admin":
-        setFormData((prev) => ({
-          ...prev,
-          email: "jane.doe@example.com",
-          password: "pass456",
-        }));
-        break;
-      default:
-        break;
-    }
-  };
+
 
   // ---------------------------------------------------
   // שליחת הטופס:
@@ -361,35 +331,7 @@ function AuthPage({ onLoginSuccess }) {
         )}
       </div>
 
-      {/* כפתורי מילוי מהיר (רק במצב התחברות) */}
-      {isLoginMode && (
-        <div className={styles.quickLoginContainer}>
-          <button
-            type="button"
-            className={styles.quickLoginButton}
-            onClick={() => handleQuickFill("customer")}
-            disabled={isLoading}
-          >
-            User
-          </button>
-          <button
-            type="button"
-            className={styles.quickLoginButton}
-            onClick={() => handleQuickFill("business_owner")}
-            disabled={isLoading}
-          >
-            Owner
-          </button>
-          <button
-            type="button"
-            className={styles.quickLoginButton}
-            onClick={() => handleQuickFill("admin")}
-            disabled={isLoading}
-          >
-            Admin
-          </button>
-        </div>
-      )}
+
 
       {/* כפתור שליחה לטופס */}
       <button
@@ -409,8 +351,8 @@ function AuthPage({ onLoginSuccess }) {
             ? "מתחבר..."
             : "רושם..."
           : isLoginMode
-          ? "התחבר"
-          : "הרשם"}
+            ? "התחבר"
+            : "הרשם"}
       </button>
 
       {/* מעבר בין התחברות להרשמה */}

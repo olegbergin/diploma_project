@@ -159,7 +159,7 @@ export default function UserDashboard({ user }) {
     // Refresh dashboard data when a review is submitted
     const fetchDashboardData = async () => {
       if (!user?.id) return;
-      
+
       try {
         const response = await axiosInstance.get(`/users/${user.id}/dashboard`);
         setDashboardData(response.data);
@@ -169,6 +169,48 @@ export default function UserDashboard({ user }) {
     };
 
     fetchDashboardData();
+  };
+
+  const canCancelAppointment = (appointment) => {
+    // Can only cancel pending or confirmed appointments
+    const cancellableStatuses = ['pending', 'confirmed'];
+    if (!cancellableStatuses.includes(appointment.status)) {
+      return false;
+    }
+
+    // Can only cancel future appointments
+    const appointmentDate = new Date(appointment.date || appointment.appointment_datetime);
+    const now = new Date();
+    if (appointmentDate < now) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleCancelAppointment = async (appointmentId) => {
+    // Show confirmation dialog
+    if (!window.confirm('האם אתה בטוח שברצונך לבטל את התור?')) {
+      return;
+    }
+
+    try {
+      await axiosInstance.put(`/appointments/${appointmentId}/status`, {
+        status: 'cancelled_by_user'
+      });
+
+      // Refresh dashboard data
+      const response = await axiosInstance.get(`/users/${user.id}/dashboard`);
+      setDashboardData(response.data);
+      setError(null);
+
+      // Show success message
+      alert('התור בוטל בהצלחה');
+    } catch (error) {
+      console.error('Error cancelling appointment:', error);
+      // Show error message
+      setError('שגיאה בביטול התור. אנא נסה שוב.');
+    }
   };
 
   return (
@@ -227,7 +269,7 @@ export default function UserDashboard({ user }) {
           <h2>התורים הקרובים שלי</h2>
           <div className={styles.appointmentsGrid}>
             {dashboardData.upcomingAppointments.slice(0, 3).map(appointment => (
-              <div key={appointment.id} className={styles.appointmentTile}>
+              <div key={appointment.appointmentId} className={styles.appointmentTile}>
                 <div className={styles.appointmentDate}>
                   {formatDate(appointment.date)}
                 </div>
@@ -237,11 +279,22 @@ export default function UserDashboard({ user }) {
                 <div className={styles.appointmentService}>
                   {appointment.serviceName}
                 </div>
-                {appointment.price && (
-                  <div className={styles.appointmentPrice}>
-                    ₪{appointment.price}
-                  </div>
-                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-2)' }}>
+                  {appointment.price && (
+                    <div className={styles.appointmentPrice}>
+                      ₪{appointment.price}
+                    </div>
+                  )}
+                  {canCancelAppointment(appointment) && (
+                    <button
+                      className={styles.cancelButton}
+                      onClick={() => handleCancelAppointment(appointment.appointmentId)}
+                      title="ביטול תור"
+                    >
+                      ביטול תור
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -263,10 +316,15 @@ export default function UserDashboard({ user }) {
 
       {dashboardData.favorites.length > 0 && (
         <div className={styles.section}>
-          <h2>העסקים המועדפים שלי</h2>
+          <h2>הביקור האחרון</h2>
           <div className={styles.favoritesGrid}>
             {dashboardData.favorites.map((business, index) => (
-              <div key={business.id || `favorite-${index}`} className={styles.favoriteTile}>
+              <div
+                key={business.businessId || `favorite-${index}`}
+                className={styles.favoriteTile}
+                onClick={() => window.location.href = `/business/${business.businessId}`}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className={styles.businessName}>{business.name}</div>
                 <div className={styles.businessCategory}>{business.category}</div>
                 <div className={styles.businessAddress}>{business.address}</div>
@@ -294,7 +352,7 @@ export default function UserDashboard({ user }) {
                 </div>
                 <div className={styles.allAppointmentsGrid}>
                   {getAllAppointments().map((appointment, index) => (
-                    <div key={appointment.id || `appointment-${index}`} className={styles.appointmentTile}>
+                    <div key={appointment.appointmentId || `appointment-${index}`} className={styles.appointmentTile}>
                       <div className={styles.appointmentDate}>
                         {formatDate(appointment.date || appointment.appointment_datetime)}
                       </div>

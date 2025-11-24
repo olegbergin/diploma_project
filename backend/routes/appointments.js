@@ -2,27 +2,101 @@ const express = require("express");
 const router = express.Router();
 const db = require("../dbSingleton").getPromise();
 const emailService = require("../services/emailService");
+const jwt = require("jsonwebtoken");
+
+const JWT_SECRET = process.env.JWT_SECRET || "my_name_is_oleg";
+
+/**
+ * Middleware: Verify JWT token and extract user information
+ */
+const authenticateUser = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res.status(401).json({ error: "Missing authorization header" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    if (!decoded) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Add user info to request
+    req.user = decoded; // { userId, role, iat, exp }
+    next();
+  } catch (err) {
+    console.error("Authentication error:", err);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+};
+
+/**
+ * Middleware: Verify that the user owns the appointment they're trying to modify
+ */
+const verifyAppointmentOwnership = async (req, res, next) => {
+  try {
+    const appointmentId = req.params.id;
+    const userId = req.user.userId;
+
+    // Check if appointment exists
+    const [appointments] = await db.query(
+      "SELECT customer_id, business_id FROM appointments WHERE appointment_id = ?",
+      [appointmentId]
+    );
+
+    if (appointments.length === 0) {
+      return res.status(404).json({ error: "Appointment not found" });
+    }
+
+    const appointment = appointments[0];
+
+    // Allow if user is the customer or if user is admin
+    if (appointment.customer_id === userId || req.user.role === "admin") {
+      return next();
+    }
+
+    // Check if user is the business owner
+    const [businesses] = await db.query(
+      "SELECT owner_id FROM businesses WHERE business_id = ?",
+      [appointment.business_id]
+    );
+
+    if (businesses.length > 0 && businesses[0].owner_id === userId) {
+      return next();
+    }
+
+    return res.status(403).json({
+      error: "You don't have permission to modify this appointment"
+    });
+  } catch (err) {
+    console.error("Error verifying appointment ownership:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 /* GET /api/appointments?businessId=1&month=2025-05&status=pending */
 router.get("/", async (req, res) => {
   try {
     const { businessId, month, status } = req.query; // month = 'YYYY-MM'
-    
+
     // Validation
     const errors = {};
-    
+
     if (!businessId || isNaN(parseInt(businessId))) {
       errors.businessId = "Valid business ID is required / נדרש מזהה עסק תקין";
     }
-    
+
     if (!month || !/^\d{4}-\d{2}$/.test(month)) {
       errors.month = "Month must be in YYYY-MM format / חודש חייב להיות בפורמט YYYY-MM";
     }
-    
+
     if (status && !['pending', 'approved', 'cancelled'].includes(status)) {
       errors.status = "Status must be pending, approved, or cancelled / סטטוס חייב להיות pending, approved או cancelled";
     }
-    
+
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ errors });
     }
@@ -55,7 +129,7 @@ router.get("/", async (req, res) => {
     }
 
     const [rows] = await db.query(sql, params);
-    
+
     const transformedAppointments = rows.map(row => ({
       appointmentId: row.appointment_id,
       appointment_id: row.appointment_id,
@@ -78,7 +152,7 @@ router.get("/", async (req, res) => {
       debug_joined_service_id: row.joined_service_id,
       debug_service_business_id: row.service_business_id
     }));
-    
+
     res.json(transformedAppointments);
   } catch (error) {
     console.error("Error fetching appointments:", error);
@@ -103,19 +177,19 @@ router.post("/", async (req, res) => {
 
     // Validation
     const errors = {};
-    
+
     if (!businessId || isNaN(parseInt(businessId))) {
       errors.businessId = "Valid business ID is required / נדרש מזהה עסק תקין";
     }
-    
+
     if (!serviceId || isNaN(parseInt(serviceId))) {
       errors.serviceId = "Valid service ID is required / נדרש מזהה שירות תקין";
     }
-    
+
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       errors.date = "Date must be in YYYY-MM-DD format / תאריך חייב להיות בפורמט YYYY-MM-DD";
     }
-    
+
     if (!time || !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time)) {
       errors.time = "Time must be in HH:MM format / שעה חייבת להיות בפורמט HH:MM";
     }
@@ -123,7 +197,7 @@ router.post("/", async (req, res) => {
     if (!firstName || !lastName || !phone) {
       errors.customer = "Customer information is required / פרטי לקוח נדרשים";
     }
-    
+
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ errors });
     }
@@ -131,7 +205,7 @@ router.post("/", async (req, res) => {
     // *** הגנה - לא ניתן לקבוע תור לעבר ***
     const appointmentDateTime = new Date(`${date}T${time}:00`);
     if (appointmentDateTime < new Date()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         errors: { date: "אי אפשר לקבוע תור לתאריך שכבר עבר / Cannot schedule appointment in the past" }
       });
     }
@@ -141,9 +215,9 @@ router.post("/", async (req, res) => {
       "SELECT business_id FROM businesses WHERE business_id = ?",
       [parseInt(businessId)]
     );
-    
+
     if (businessCheck.length === 0) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         errors: { businessId: "Business not found / עסק לא נמצא" }
       });
     }
@@ -155,9 +229,9 @@ router.post("/", async (req, res) => {
        WHERE business_id = ? AND appointment_datetime = ? AND status != 'cancelled'`,
       [parseInt(businessId), datetime]
     );
-    
+
     if (existingAppointment.length > 0) {
-      return res.status(409).json({ 
+      return res.status(409).json({
         errors: { time: "זמן זה כבר תפוס / This time slot is already booked" }
       });
     }
@@ -166,7 +240,7 @@ router.post("/", async (req, res) => {
     let customerId;
     const findCustomerQuery = 'SELECT user_id FROM users WHERE phone = ?';
     const [existingCustomer] = await db.query(findCustomerQuery, [phone]);
-    
+
     if (existingCustomer.length > 0) {
       customerId = existingCustomer[0].user_id;
     } else {
@@ -330,7 +404,7 @@ router.put("/:id", async (req, res) => {
 });
 
 /* POST /api/appointments/:id/cancel – ביטול תור */
-router.post("/:id/cancel", async (req, res) => {
+router.post("/:id/cancel", authenticateUser, verifyAppointmentOwnership, async (req, res) => {
   try {
     // Fetch appointment details before cancellation
     const [appointmentDetails] = await db.query(
@@ -413,7 +487,7 @@ router.get("/user/:userId", async (req, res) => {
       `,
       params
     );
-    
+
     const transformedAppointments = rows.map(row => ({
       appointmentId: row.appointment_id,
       customerId: row.customer_id,
@@ -428,7 +502,7 @@ router.get("/user/:userId", async (req, res) => {
       price: row.price,
       durationMinutes: row.duration_minutes
     }));
-    
+
     res.json(transformedAppointments);
   } catch (e) {
     console.error(e);
@@ -437,7 +511,7 @@ router.get("/user/:userId", async (req, res) => {
 });
 
 // עדכון סטטוס (approve/cancel וכו')
-router.put("/:id/status", async (req, res) => {
+router.put("/:id/status", authenticateUser, verifyAppointmentOwnership, async (req, res) => {
   const { status } = req.body;
   if (!status) {
     return res.status(400).json({ message: "status is required" });

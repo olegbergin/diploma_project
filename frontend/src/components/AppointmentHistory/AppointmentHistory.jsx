@@ -110,6 +110,48 @@ export default function AppointmentHistory({ user }) {
   };
 
   // ---------------------------------------------------
+  // בדיקה האם ניתן לבטל תור
+  // ---------------------------------------------------
+  const canCancelAppointment = (appointment) => {
+    // ניתן לבטל רק תורים מאושרים (תורים ממתינים ניתן לדחות)
+    if (appointment.status !== 'confirmed') {
+      return false;
+    }
+
+    // ניתן לבטל רק תורים עתידיים
+    const appointmentDate = new Date(appointment.appointment_datetime);
+    const now = new Date();
+    if (appointmentDate < now) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // ---------------------------------------------------
+  // ביטול תור
+  // ---------------------------------------------------
+  const handleCancelAppointment = async (appointmentId) => {
+    if (!window.confirm('האם אתה בטוח שברצונך לבטל את התור? הלקוח יקבל הודעת ביטול.')) {
+      return;
+    }
+
+    try {
+      await axiosInstance.put(`/appointments/${appointmentId}/status`, {
+        status: 'cancelled_by_business'
+      });
+
+      // רענון רשימת התורים
+      fetchAllAppointments();
+
+      alert('התור בוטל בהצלחה');
+    } catch (error) {
+      console.error('Error cancelling appointment:', error);
+      setError('שגיאה בביטול התור. אנא נסה שוב.');
+    }
+  };
+
+  // ---------------------------------------------------
   // תרגום סטטוס מהשרת לטקסט בעברית לתצוגה
   // ---------------------------------------------------
   const translateStatus = (status) => {
@@ -461,6 +503,16 @@ export default function AppointmentHistory({ user }) {
                       {translateStatus(apt.status)}
                     </span>
                   </div>
+                  {canCancelAppointment(apt) && (
+                    <div className={styles.appointmentActions}>
+                      <button
+                        className={styles.cancelBtn}
+                        onClick={() => handleCancelAppointment(apt.appointment_id)}
+                      >
+                        בטל תור
+                      </button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

@@ -394,11 +394,10 @@ router.put("/users/:id/status", requireAdmin, adminController.updateUserStatus);
 // DELETE /api/admin/users/:id
 router.delete("/users/:id", requireAdmin, async (req, res) => {
   try {
-    const connection = db.getPromise();
     const userId = req.params.id;
 
     // Check if user exists
-    const [user] = await connection.query(
+    const [user] = await db.query(
       "SELECT user_id FROM users WHERE user_id = ?",
       [userId]
     );
@@ -408,7 +407,7 @@ router.delete("/users/:id", requireAdmin, async (req, res) => {
     }
 
     // Delete user
-    await connection.query("DELETE FROM users WHERE user_id = ?", [userId]);
+    await db.query("DELETE FROM users WHERE user_id = ?", [userId]);
 
     res.json({ message: "User deleted successfully" });
   } catch (error) {

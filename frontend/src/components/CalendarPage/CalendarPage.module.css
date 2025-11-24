@@ -416,6 +416,23 @@
   background: var(--error-red-dark);
 }
 
+.cancelBtn {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 60px;
+  background: var(--error-red);
+  color: var(--text-inverse);
+}
+.cancelBtn:hover {
+  background: var(--error-red-dark);
+}
+
 .status {
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
@@ -552,7 +569,7 @@
     gap: var(--space-1);
   }
   
-  .approveBtn, .rejectBtn {
+  .approveBtn, .rejectBtn, .cancelBtn {
     width: 100%;
   }
 }

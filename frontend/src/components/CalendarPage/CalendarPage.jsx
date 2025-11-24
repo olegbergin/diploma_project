@@ -217,6 +217,44 @@ export default function CalendarPage() {
     }
   };
 
+  // Check if appointment can be cancelled
+  const canCancelAppointment = (appointment) => {
+    // Can only cancel confirmed appointments (pending ones can be rejected)
+    if (appointment.status !== 'confirmed') {
+      return false;
+    }
+
+    // Can only cancel future appointments
+    const appointmentDate = new Date(appointment.appointment_datetime || appointment.appointmentDatetime);
+    const now = new Date();
+    if (appointmentDate < now) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Handle appointment cancellation
+  const handleCancelAppointment = async (appointmentId) => {
+    if (!window.confirm('האם אתה בטוח שברצונך לבטל את התור? הלקוח יקבל הודעת ביטול.')) {
+      return;
+    }
+
+    try {
+      await axiosInstance.put(`/appointments/${appointmentId}/status`, {
+        status: 'cancelled_by_business'
+      });
+
+      // Refresh appointments
+      fetchAppointments();
+
+      alert('התור בוטל בהצלחה');
+    } catch (error) {
+      console.error('Error cancelling appointment:', error);
+      setError('שגיאה בביטול התור. אנא נסה שוב.');
+    }
+  };
+
   const calendarDays = generateCalendarDays();
 
   if (loading) {
@@ -398,13 +436,13 @@ export default function CalendarPage() {
                         <div className={styles.appointmentActions}>
                           {apt.status === 'pending' && (
                             <>
-                              <button 
+                              <button
                                 className={styles.approveBtn}
                                 onClick={() => handleStatusChange(apt.appointmentId || apt.appointment_id, 'confirmed')}
                               >
                                 אשר
                               </button>
-                              <button 
+                              <button
                                 className={styles.rejectBtn}
                                 onClick={() => handleStatusChange(apt.appointmentId || apt.appointment_id, 'cancelled_by_business')}
                               >
@@ -412,9 +450,19 @@ export default function CalendarPage() {
                               </button>
                             </>
                           )}
+
+                          {apt.status === 'confirmed' && canCancelAppointment(apt) && (
+                            <button
+                              className={styles.cancelBtn}
+                              onClick={() => handleCancelAppointment(apt.appointmentId || apt.appointment_id)}
+                            >
+                              בטל תור
+                            </button>
+                          )}
+
                           <div className={`${styles.status} ${styles[apt.status] || styles.pending}`}>
-                            {apt.status === 'confirmed' ? 'מאושר' : 
-                             apt.status === 'pending' ? 'ממתין' : 
+                            {apt.status === 'confirmed' ? 'מאושר' :
+                             apt.status === 'pending' ? 'ממתין' :
                              apt.status === 'completed' ? 'הושלם' : 'בוטל'}
                           </div>
                         </div>
