@@ -232,9 +232,7 @@ router.post("/", checkRateLimit, (req, res) => {
               optimizedPath,
               thumbnailPath
             );
-            
-            console.log(`Image optimization result for ${req.file.filename}:`, optimizationResult);
-            
+
             // Return optimized filename if successful, otherwise original
             const finalFilename = optimizationResult.optimized ? optimizedFilename : req.file.filename;
             const fileUrl = `/uploads/${finalFilename}`;

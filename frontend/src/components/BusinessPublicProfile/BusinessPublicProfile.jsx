@@ -38,7 +38,7 @@ const BusinessPublicProfile = () => {
                 }
             } catch (err) {
                 console.error('Error fetching business:', err);
-                const errorMessage = err.response?.data?.message || err.message || 'Failed to load business information';
+                const errorMessage = err.response?.data?.message || err.message || 'נכשל בטעינת מידע העסק';
                 setError(errorMessage);
             } finally {
                 setLoading(false);
@@ -48,7 +48,7 @@ const BusinessPublicProfile = () => {
         if (id) {
             fetchBusiness();
         } else {
-            setError('Invalid business ID');
+            setError('מזהה עסק לא תקין');
             setLoading(false);
         }
     }, [id, retryCount]);
@@ -61,10 +61,16 @@ const BusinessPublicProfile = () => {
         return (
             <div className={styles.profileContainer}>
                 <ProfileHeaderSkeleton />
-                <ContactInfoSkeleton />
-                <AboutSkeleton />
-                <ImageGallerySkeleton />
-                <ServiceListSkeleton />
+                <div className={styles.twoColumnLayout}>
+                    <div className={styles.leftColumn}>
+                        <ContactInfoSkeleton />
+                        <AboutSkeleton />
+                    </div>
+                    <div className={styles.rightColumn}>
+                        <ImageGallerySkeleton />
+                        <ServiceListSkeleton />
+                    </div>
+                </div>
                 {/* <ReviewsListSkeleton /> */}
             </div>
         );
@@ -75,14 +81,14 @@ const BusinessPublicProfile = () => {
             <div className={styles.profileContainer}>
                 <div className={styles.errorContainer}>
                     <div className={styles.errorIcon}>⚠️</div>
-                    <h2 className={styles.errorTitle}>Unable to Load Business</h2>
+                    <h2 className={styles.errorTitle}>לא ניתן לטעון את העסק</h2>
                     <p className={styles.errorMessage}>{error}</p>
                     <button 
                         className={styles.retryButton}
                         onClick={handleRetry}
                         disabled={loading}
                     >
-                        {loading ? 'Loading...' : 'Try Again'}
+                        {loading ? 'טוען...' : 'נסה שוב'}
                     </button>
                 </div>
             </div>
@@ -94,9 +100,9 @@ const BusinessPublicProfile = () => {
             <div className={styles.profileContainer}>
                 <div className={styles.notFoundContainer}>
                     <div className={styles.notFoundIcon}>🔍</div>
-                    <h2 className={styles.notFoundTitle}>Business Not Found</h2>
+                    <h2 className={styles.notFoundTitle}>העסק לא נמצא</h2>
                     <p className={styles.notFoundMessage}>
-                        The business you're looking for doesn't exist or has been removed.
+                        העסק שאתה מחפש לא קיים או הוסר.
                     </p>
                 </div>
             </div>
@@ -106,10 +112,16 @@ const BusinessPublicProfile = () => {
     return (
         <div className={styles.profileContainer}>
             <ProfileHeader business={business} />
-            <ContactInfo business={business} />
-            <About business={business} />
-            <ImageGallery business={business} />
-            <ServiceList businessId={id} />
+            <div className={styles.twoColumnLayout}>
+                <div className={styles.leftColumn}>
+                    <ContactInfo business={business} />
+                    <About business={business} />
+                </div>
+                <div className={styles.rightColumn}>
+                    <ImageGallery business={business} />
+                    <ServiceList businessId={id} />
+                </div>
+            </div>
             <ReviewsList businessId={id} />
         </div>
     );

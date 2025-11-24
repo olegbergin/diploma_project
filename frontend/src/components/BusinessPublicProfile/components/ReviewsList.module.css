@@ -1,10 +1,10 @@
 /* Reviews List Component Styles */
 .container {
-  background: var(--color-white);
-  border-radius: var(--radius-3);
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
   padding: var(--space-6);
-  box-shadow: var(--shadow-1);
-  border: 1px solid var(--color-gray-200);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
   margin-bottom: var(--space-5);
 }
 
@@ -18,9 +18,9 @@
 
 .header h2 {
   margin: 0;
-  font-size: var(--font-size-4);
-  font-weight: var(--font-weight-6);
-  color: var(--color-gray-900);
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
 }
 
 .overallRating {
@@ -37,29 +37,29 @@
 }
 
 .ratingNumber {
-  font-size: var(--font-size-5);
-  font-weight: var(--font-weight-7);
-  color: var(--color-gray-900);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
 }
 
 .ratingText {
   margin: 0;
-  font-size: var(--font-size-1);
-  color: var(--color-gray-600);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
 }
 
 .star {
-  font-size: var(--font-size-3);
-  color: var(--color-gray-300);
+  font-size: var(--text-lg);
+  color: var(--border-medium);
 }
 
 .star.filled {
-  color: #fbbf24;
+  color: var(--reviews-yellow);
 }
 
 .ratingDistribution {
-  background: var(--color-gray-50);
-  border-radius: var(--radius-2);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
   padding: var(--space-4);
   margin-bottom: var(--space-5);
 }
@@ -80,31 +80,31 @@
   align-items: center;
   gap: var(--space-1);
   min-width: 80px;
-  font-size: var(--font-size-1);
-  color: var(--color-gray-700);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
 }
 
 .starsLabel .star {
-  font-size: var(--font-size-1);
+  font-size: var(--text-sm);
 }
 
 .progressBar {
   flex: 1;
   height: 8px;
-  background: var(--color-gray-200);
-  border-radius: var(--radius-1);
+  background: var(--border-light);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background: #fbbf24;
-  transition: width 0.3s ease;
+  background: var(--reviews-yellow);
+  transition: width var(--transition-normal);
 }
 
 .ratingCount {
-  font-size: var(--font-size-1);
-  color: var(--color-gray-600);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
   min-width: 30px;
   text-align: center;
 }
@@ -117,8 +117,8 @@
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--color-gray-200);
-  border-top: 3px solid var(--color-primary-600);
+  border: 3px solid var(--border-light);
+  border-top: 3px solid var(--primary-blue);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto var(--space-3) auto;
@@ -130,17 +130,17 @@
 }
 
 .loading p {
-  color: var(--color-gray-600);
+  color: var(--text-secondary);
   margin: 0;
 }
 
 .error {
   text-align: center;
   padding: var(--space-5);
-  background: var(--color-error-50);
-  border: 1px solid var(--color-error-200);
-  border-radius: var(--radius-2);
-  color: var(--color-error-700);
+  background: #fef2f2; /* Error bg light */
+  border: 1px solid var(--error-red-light);
+  border-radius: var(--radius-md);
+  color: var(--error-red-dark);
 }
 
 .error p {
@@ -148,24 +148,24 @@
 }
 
 .retryButton {
-  background: var(--color-error-600);
-  color: var(--color-white);
+  background: var(--error-red);
+  color: var(--text-inverse);
   border: none;
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-2);
-  font-size: var(--font-size-1);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color var(--transition-normal);
 }
 
 .retryButton:hover {
-  background: var(--color-error-700);
+  background: var(--error-red-dark);
 }
 
 .emptyState {
   text-align: center;
   padding: var(--space-8);
-  color: var(--color-gray-600);
+  color: var(--text-secondary);
 }
 
 .emptyIcon {
@@ -176,14 +176,14 @@
 
 .emptyState h3 {
   margin: 0 0 var(--space-2) 0;
-  font-size: var(--font-size-3);
-  color: var(--color-gray-700);
+  font-size: var(--text-lg);
+  color: var(--text-primary);
 }
 
 .emptyState p {
   margin: 0;
-  font-size: var(--font-size-2);
-  line-height: 1.5;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
 }
 
 .controls {
@@ -194,17 +194,18 @@
 
 .sortSelect {
   padding: var(--space-2) var(--space-3);
-  border: 2px solid var(--color-gray-200);
-  border-radius: var(--radius-2);
-  font-size: var(--font-size-2);
-  background: var(--color-white);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--transition-normal);
 }
 
 .sortSelect:focus {
   outline: none;
-  border-color: var(--color-primary-500);
+  border-color: var(--primary-blue);
 }
 
 .reviewsList {
@@ -214,16 +215,16 @@
 }
 
 .reviewCard {
-  background: var(--color-white);
-  border: 2px solid var(--color-gray-100);
-  border-radius: var(--radius-2);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
   padding: var(--space-5);
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .reviewCard:hover {
-  border-color: var(--color-gray-200);
-  box-shadow: var(--shadow-2);
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-md);
 }
 
 .reviewHeader {
@@ -240,9 +241,9 @@
 
 .reviewerName {
   margin: 0 0 var(--space-2) 0;
-  font-size: var(--font-size-2);
-  font-weight: var(--font-weight-6);
-  color: var(--color-gray-900);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
 }
 
 .reviewRating {
@@ -251,7 +252,7 @@
 }
 
 .reviewRating .star {
-  font-size: var(--font-size-2);
+  font-size: var(--text-base);
 }
 
 .reviewMeta {
@@ -262,74 +263,20 @@
 }
 
 .reviewDate {
-  font-size: var(--font-size-1);
-  color: var(--color-gray-500);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
 }
 
 .serviceName {
-  font-size: var(--font-size-1);
-  color: var(--color-primary-600);
-  font-weight: var(--font-weight-5);
+  font-size: var(--text-sm);
+  color: var(--primary-blue);
+  font-weight: var(--font-medium);
 }
 
 .reviewText {
-  margin-bottom: var(--space-4);
-  line-height: 1.6;
-  color: var(--color-gray-800);
-  font-size: var(--font-size-2);
-}
-
-.businessResponse {
-  background: var(--color-primary-50);
-  border: 1px solid var(--color-primary-200);
-  border-radius: var(--radius-2);
-  padding: var(--space-4);
-  margin-bottom: var(--space-3);
-}
-
-.responseHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-2);
-  gap: var(--space-2);
-}
-
-.responseHeader strong {
-  color: var(--color-primary-700);
-  font-size: var(--font-size-1);
-}
-
-.responseDate {
-  font-size: var(--font-size-0);
-  color: var(--color-gray-500);
-}
-
-.responseText {
-  color: var(--color-gray-800);
-  line-height: 1.5;
-  font-size: var(--font-size-2);
-}
-
-.reviewActions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.reportButton {
-  background: none;
-  border: none;
-  color: var(--color-gray-500);
-  font-size: var(--font-size-1);
-  cursor: pointer;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-1);
-  transition: all 0.2s ease;
-}
-
-.reportButton:hover {
-  background: var(--color-gray-100);
-  color: var(--color-gray-700);
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+  font-size: var(--text-base);
 }
 
 /* RTL Support */
@@ -380,9 +327,5 @@
   .reviewMeta {
     text-align: right;
     direction: rtl;
-  }
-  
-  .businessResponse {
-    padding: var(--space-3);
   }
 }

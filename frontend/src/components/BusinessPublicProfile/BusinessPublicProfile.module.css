@@ -28,6 +28,33 @@
     }
 }
 
+/* Two-Column Grid Layout */
+.twoColumnLayout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+    margin: var(--space-4) 0;
+}
+
+@media (min-width: 1024px) {
+    .twoColumnLayout {
+        grid-template-columns: 2fr 3fr; /* 40/60 split */
+        gap: var(--space-6);
+    }
+}
+
+.leftColumn {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.rightColumn {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
 /* Error and Not Found States */
 .errorContainer,
 .notFoundContainer {

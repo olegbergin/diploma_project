@@ -7,7 +7,7 @@ const adminController = require("../controllers/adminController");
 const JWT_SECRET = process.env.JWT_SECRET || "my_name_is_oleg";
 
 /**
- * Middleware: בדיקה שהמשתמש הוא אדמין לפי ה-JWT
+ * Middleware:בדיקה שהמשתמש הוא אדמין לפי ה-JWT
  */
 const requireAdmin = (req, res, next) => {
   try {
@@ -50,7 +50,21 @@ router.get("/activity", requireAdmin, adminController.getRecentActivity);
  */
 router.get("/reviews/complaints", requireAdmin, async (req, res) => {
   try {
-    const { status = "pending", limit = 50, offset = 0 } = req.query;
+    const { status, limit = 50, offset = 0 } = req.query;
+
+    // Build WHERE clause based on status filter
+    const whereClause = status && status !== 'all' ? 'WHERE rc.status = ?' : '';
+    const statusParam = status && status !== 'all' ? [status] : [];
+
+    // Get total count
+    const [countResult] = await db.query(
+      `
+      SELECT COUNT(*) as total
+      FROM review_complaints rc
+      ${whereClause}
+    `,
+      statusParam
+    );
 
     const [complaints] = await db.query(
       `
@@ -78,11 +92,11 @@ router.get("/reviews/complaints", requireAdmin, async (req, res) => {
       JOIN users u_customer ON r.customer_id = u_customer.user_id
       JOIN users u_reporter ON rc.reporter_id = u_reporter.user_id
       JOIN businesses b ON r.business_id = b.business_id
-      WHERE rc.status = ?
+      ${whereClause}
       ORDER BY rc.created_at DESC
       LIMIT ? OFFSET ?
     `,
-      [status, parseInt(limit), parseInt(offset)]
+      [...statusParam, parseInt(limit), parseInt(offset)]
     );
 
     res.json({
@@ -106,6 +120,7 @@ router.get("/reviews/complaints", requireAdmin, async (req, res) => {
         },
         reporterName: `${complaint.reporter_first_name} ${complaint.reporter_last_name}`,
       })),
+      total: countResult[0].total,
     });
   } catch (error) {
     console.error("Error fetching review complaints:", error);
@@ -360,7 +375,50 @@ router.get("/reviews", requireAdmin, async (req, res) => {
 });
 
 /* =======================================================================
-   חלק 2 – ניהול עסקים (Business Management) – אישור / דחייה / מחיקה
+   חלק 2 – ניהול משתמשים (User Management)
+   ======================================================================= */
+
+// רשימת משתמשים עם פילטרים (role, search, pagination)
+// GET /api/admin/users
+router.get("/users", requireAdmin, adminController.getAllUsers);
+
+// עדכון תפקיד משתמש
+// PUT /api/admin/users/:id/role
+router.put("/users/:id/role", requireAdmin, adminController.updateUserRole);
+
+// עדכון סטטוס משתמש
+// PUT /api/admin/users/:id/status
+router.put("/users/:id/status", requireAdmin, adminController.updateUserStatus);
+
+// מחיקת משתמש
+// DELETE /api/admin/users/:id
+router.delete("/users/:id", requireAdmin, async (req, res) => {
+  try {
+    const connection = db.getPromise();
+    const userId = req.params.id;
+
+    // Check if user exists
+    const [user] = await connection.query(
+      "SELECT user_id FROM users WHERE user_id = ?",
+      [userId]
+    );
+
+    if (user.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Delete user
+    await connection.query("DELETE FROM users WHERE user_id = ?", [userId]);
+
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Failed to delete user" });
+  }
+});
+
+/* =======================================================================
+   חלק 3 – ניהול עסקים (Business Management) – אישור / דחייה / מחיקה
    משתמש בפונקציות שכבר קיימות אצלך ב-adminController
    ======================================================================= */
 

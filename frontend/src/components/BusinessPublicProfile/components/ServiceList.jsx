@@ -27,56 +27,83 @@ const ServiceList = ({ businessId }) => {
     }, [businessId]);
 
     const handleBookService = (service) => {
-        // Check if we have valid service data
         if (!service.serviceId || !businessId) {
-            showError('Unable to book service: Invalid service information');
+            showError('לא ניתן להזמין שירות');
             return;
         }
 
-        // Navigate to booking page with service and business IDs
         navigate(`/booking/${businessId}/${service.serviceId}`, {
-            state: { 
-                service: service,
-                businessId: businessId
-            }
+            state: { service, businessId }
         });
     };
 
+    // Loading State
     if (loading) {
-        return <div>Loading services...</div>;
+        return (
+            <div className={styles.container}>
+                <h2 className={styles.title}>שירותים</h2>
+                <div className={styles.skeleton}>
+                    <div className={styles.skeletonCard}></div>
+                    <div className={styles.skeletonCard}></div>
+                </div>
+            </div>
+        );
     }
 
+    // Error State
     if (error) {
-        return <div>Error: {error}</div>;
+        return (
+            <div className={styles.container}>
+                <h2 className={styles.title}>שירותים</h2>
+                <p className={`${styles.message} ${styles.error}`}>
+                    שגיאה בטעינת שירותים: {error}
+                </p>
+            </div>
+        );
     }
 
+    // Empty State
+    if (services.length === 0) {
+        return (
+            <div className={styles.container}>
+                <h2 className={styles.title}>שירותים</h2>
+                <p className={styles.message}>אין שירותים זמינים</p>
+            </div>
+        );
+    }
+
+    // Services List
     return (
-        <div className={styles.serviceListContainer}>
-            <h2>Services</h2>
-            {services.length > 0 ? (
-                <ul className={styles.serviceList}>
-                    {services.map(service => (
-                        <li key={service.serviceId} className={styles.serviceItem}>
-                            <div className={styles.serviceInfo}>
-                                <h3>{service.name}</h3>
-                                <p>{service.description || 'No description available'}</p>
-                                <p className={styles.serviceDetails}>
-                                    <span className={styles.price}>${service.price}</span>
-                                    <span className={styles.duration}>{service.duration || service.durationMinutes} mins</span>
-                                </p>
-                            </div>
-                            <button 
-                                className={styles.bookButton}
+        <div className={styles.container}>
+            <h2 className={styles.title}>Services</h2>
+            <ul className={styles.grid}>
+                {services.map(service => (
+                    <li key={service.serviceId} className={styles.card}>
+                        <h3 className={styles.name}>{service.name}</h3>
+
+                        <p className={styles.description}>
+                            {service.description || 'אין תיאור זמין'}
+                        </p>
+
+                        <div className={styles.footer}>
+                            <span className={styles.duration}>
+                                ⏱️ {service.duration || service.durationMinutes} דקות
+                            </span>
+
+                            <span className={styles.price}>
+                                ₪{service.price}
+                            </span>
+
+                            <button
+                                className={styles.button}
                                 onClick={() => handleBookService(service)}
                             >
-                                📅 Book Now
+                                הזמן
                             </button>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p>No services found for this business.</p>
-            )}
+                        </div>
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 };

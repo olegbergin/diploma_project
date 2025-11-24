@@ -1,13 +1,9 @@
 /**
  * Admin Users Management Component
  * Allows administrators to view and manage system users
- *
+ * 
  * @component
  * @returns {JSX.Element} Users management interface
- *
- * קומפוננטה לניהול משתמשים עבור אדמין:
- * מאפשרת צפייה בכל המשתמשים, חיפוש, סינון לפי תפקיד/סטטוס,
- * שינוי סטטוס משתמשים, ופאג'ינציה.
  */
 
 import React, { useState, useEffect } from "react";
@@ -15,126 +11,74 @@ import axiosInstance from "../../api/axiosInstance";
 import styles from "./AdminUsers.module.css";
 
 function AdminUsers() {
-  // ---------------------------------------------------
-  // משתני מצב (State) של הקומפוננטה
-  // ---------------------------------------------------
-
-  // רשימת המשתמשים שמוצגים בטבלה
   const [users, setUsers] = useState([]);
-
-  // מצב טעינה כדי להציג ספינר עד שהתשובה מהשרת מגיעה
   const [loading, setLoading] = useState(true);
-
-  // טקסט חיפוש שהאדמין מקליד
   const [searchTerm, setSearchTerm] = useState("");
-
-  // פילטר לפי תפקיד (all / customer / business / admin)
   const [filterRole, setFilterRole] = useState("all");
-
-  // פילטר לפי סטטוס (all / active / suspended / deleted וכו')
   const [filterStatus, setFilterStatus] = useState("all");
-
-  // אובייקט פאג'ינציה:
-  // page = עמוד נוכחי
-  // limit = כמות משתמשים בעמוד
-  // total = סך כל המשתמשים שתואמים לפילטרים
-  // totalPages = כמות העמודים הכוללת
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
     total: 0,
-    totalPages: 0,
+    totalPages: 0
   });
 
-  // ---------------------------------------------------
-  // פונקציה לטעינת משתמשים מהשרת לפי הפילטרים והפאג'ינציה
-  // ---------------------------------------------------
   const loadUsers = async () => {
     try {
       setLoading(true);
-
-      // הכנת פרמטרים לבקשה לשרת
       const params = {
         page: pagination.page,
         limit: pagination.limit,
         search: searchTerm,
-        role: filterRole !== "all" ? filterRole : "",
-        status: filterStatus !== "all" ? filterStatus : "",
+        role: filterRole !== 'all' ? filterRole : '',
+        status: filterStatus !== 'all' ? filterStatus : ''
       };
 
-      // קריאה לשרת לקבלת משתמשים
-      const response = await axiosInstance.get("/admin/users", { params });
+      const response = await axiosInstance.get('/admin/users', { params });
 
       // Map the API response to match expected frontend format
-      // מיפוי התשובה מהשרת לפורמט שצד הלקוח מצפה לו
-      const mappedUsers = response.data.users.map((user) => ({
+      const mappedUsers = response.data.users.map(user => ({
         id: user.user_id,
         firstName: user.first_name,
         lastName: user.last_name,
         email: user.email,
         phone: user.phone,
         role: user.role,
-        status: user.status || "active",
+        status: user.status || 'active',
         createdAt: user.created_at,
-        lastLogin: user.last_login,
+        lastLogin: user.last_login
       }));
 
-      // עדכון רשימת המשתמשים
       setUsers(mappedUsers);
-
-      // עדכון הפאג'ינציה לפי מה שהשרת החזיר
       setPagination(response.data.pagination);
     } catch (error) {
-      // טיפול בשגיאה אם הבקשה נכשלה
       console.error("Failed to load users:", error);
     } finally {
-      // בכל מצב מסיימים טעינה
       setLoading(false);
     }
   };
 
-  // ---------------------------------------------------
-  // אפקט ראשון:
-  // בכל שינוי של עמוד או כמות לעמוד - טוענים מחדש משתמשים
-  // ---------------------------------------------------
   useEffect(() => {
     loadUsers();
   }, [pagination.page, pagination.limit]);
 
-  // ---------------------------------------------------
-  // אפקט שני:
-  // בכל שינוי של חיפוש/תפקיד/סטטוס:
-  // מאפסים לעמוד ראשון וטוענים מחדש עם השהייה קצרה (Debounce)
-  // ---------------------------------------------------
   useEffect(() => {
     // Reset to first page when filters change
-    // איפוס העמוד ל-1 כאשר פילטר משתנה
-    setPagination((prev) => ({ ...prev, page: 1 }));
-
-    // השהייה של 300ms כדי לא לשלוח בקשה על כל אות
+    setPagination(prev => ({ ...prev, page: 1 }));
     const timeoutId = setTimeout(() => {
       loadUsers();
     }, 300); // Debounce search
 
-    // ניקוי טיימר אם המשתמש המשיך להקליד/שינה פילטר
     return () => clearTimeout(timeoutId);
   }, [searchTerm, filterRole, filterStatus]);
 
-  // ---------------------------------------------------
-  // פונקציה לשינוי סטטוס משתמש (Active / Inactive / Pending)
-  // שולחת בקשה לשרת ומעדכנת מיד גם את ה-UI
-  // ---------------------------------------------------
   const handleStatusChange = async (userId, newStatus) => {
     try {
-      // עדכון סטטוס בשרת
-      await axiosInstance.put(`/admin/users/${userId}/status`, {
-        status: newStatus,
-      });
+      await axiosInstance.put(`/admin/users/${userId}/status`, { status: newStatus });
 
       // Update local state to reflect the change immediately
-      // עדכון מקומי כדי שהטבלה תשתנה מיד בלי לחכות לטעינה מחדש
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
           user.id === userId ? { ...user, status: newStatus } : user
         )
       );
@@ -143,19 +87,13 @@ function AdminUsers() {
     }
   };
 
-  // ---------------------------------------------------
-  // פונקציה לשינוי תפקיד משתמש (Role)
-  // כרגע אין כפתורים שמפעילים אותה ב-UI, אבל היא מוכנה לשימוש
-  // ---------------------------------------------------
   const handleRoleChange = async (userId, newRole) => {
     try {
-      // עדכון תפקיד בשרת
       await axiosInstance.put(`/admin/users/${userId}/role`, { role: newRole });
 
       // Update local state to reflect the change immediately
-      // עדכון מקומי של התפקיד בטבלה
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
           user.id === userId ? { ...user, role: newRole } : user
         )
       );
@@ -164,54 +102,54 @@ function AdminUsers() {
     }
   };
 
-  // ---------------------------------------------------
-  // שינוי עמוד בפאג'ינציה
-  // מפעיל טעינה מחדש דרך האפקט הראשון
-  // ---------------------------------------------------
-  const handlePageChange = (newPage) => {
-    setPagination((prev) => ({ ...prev, page: newPage }));
+  const handleDeleteUser = async (userId, userName) => {
+    if (!window.confirm(`האם אתה בטוח שברצונך למחוק את המשתמש ${userName}?`)) {
+      return;
+    }
+
+    try {
+      await axiosInstance.delete(`/admin/users/${userId}`);
+
+      // Remove user from local state
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+      setPagination(prev => ({ ...prev, total: prev.total - 1 }));
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+      alert('שגיאה במחיקת המשתמש');
+    }
   };
 
-  // ---------------------------------------------------
-  // המרת קוד תפקיד לטקסט בעברית לתצוגה בטבלה
-  // ---------------------------------------------------
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+  };
+
   const getRoleText = (role) => {
     const roleMap = {
       customer: "לקוח",
       business: "עסק",
-      admin: "מנהל",
+      admin: "מנהל"
     };
     return roleMap[role] || role;
   };
 
-  // ---------------------------------------------------
-  // המרת סטטוס לטקסט בעברית לתצוגה בטבלה
-  // ---------------------------------------------------
   const getStatusText = (status) => {
     const statusMap = {
       active: "פעיל",
       inactive: "לא פעיל",
-      pending: "ממתין לאישור",
+      pending: "ממתין לאישור"
     };
     return statusMap[status] || status;
   };
 
-  // ---------------------------------------------------
-  // החזרת צבע בהתאם לסטטוס המשתמש (לצבע התגית)
-  // ---------------------------------------------------
   const getStatusColor = (status) => {
     const colorMap = {
       active: "#4caf50",
       inactive: "#9e9e9e",
-      pending: "#ff9800",
+      pending: "#ff9800"
     };
     return colorMap[status] || "#9e9e9e";
   };
 
-  // ---------------------------------------------------
-  // תצוגת טעינה:
-  // אם עדיין טוענים נתונים - מציגים ספינר
-  // ---------------------------------------------------
   if (loading) {
     return (
       <div className={styles.usersContainer}>
@@ -223,15 +161,10 @@ function AdminUsers() {
     );
   }
 
-  // ---------------------------------------------------
-  // תצוגה ראשית של המסך:
-  // כוללת חיפוש+פילטרים, טבלה, הודעת אין תוצאות ופאג'ינציה
-  // ---------------------------------------------------
   return (
     <div className={styles.usersContainer}>
       <h2 className={styles.sectionTitle}>ניהול משתמשים</h2>
 
-      {/* אזור חיפוש וסינון משתמשים */}
       <div className={styles.controls}>
         <div className={styles.searchContainer}>
           <input
@@ -243,7 +176,6 @@ function AdminUsers() {
           />
         </div>
 
-        {/* פילטר לפי תפקיד וסטטוס */}
         <div className={styles.filterContainer}>
           <select
             value={filterRole}
@@ -269,7 +201,6 @@ function AdminUsers() {
         </div>
       </div>
 
-      {/* טבלת המשתמשים */}
       <div className={styles.usersTable}>
         <div className={styles.tableHeader}>
           <div className={styles.headerCell}>שם</div>
@@ -280,49 +211,38 @@ function AdminUsers() {
           <div className={styles.headerCell}>פעולות</div>
         </div>
 
-        {/* שורות הטבלה - כל משתמש בשורה */}
-        {users.map((user) => (
+        {users.map(user => (
           <div key={user.id} className={styles.tableRow}>
             <div className={styles.tableCell}>
               <div className={styles.userInfo}>
-                {/* אווטאר עם האות הראשונה של השם והמשפחה */}
                 <div className={styles.userAvatar}>
-                  {user.firstName.charAt(0)}
-                  {user.lastName.charAt(0)}
+                  {user.firstName.charAt(0)}{user.lastName.charAt(0)}
                 </div>
                 <div className={styles.userName}>
                   {user.firstName} {user.lastName}
                 </div>
               </div>
             </div>
-
-            {/* אימייל המשתמש */}
             <div className={styles.tableCell}>{user.email}</div>
-
-            {/* תגית תפקיד */}
             <div className={styles.tableCell}>
-              <span className={styles.roleTag}>{getRoleText(user.role)}</span>
+              <span className={styles.roleTag}>
+                {getRoleText(user.role)}
+              </span>
             </div>
-
-            {/* תגית סטטוס עם צבע */}
             <div className={styles.tableCell}>
               <span
                 className={styles.statusTag}
                 style={{
                   backgroundColor: getStatusColor(user.status) + "20",
-                  color: getStatusColor(user.status),
+                  color: getStatusColor(user.status)
                 }}
               >
                 {getStatusText(user.status)}
               </span>
             </div>
-
-            {/* תאריך הצטרפות */}
             <div className={styles.tableCell}>
-              {new Date(user.createdAt).toLocaleDateString("he-IL")}
+              {new Date(user.createdAt).toLocaleDateString('he-IL')}
             </div>
-
-            {/* כפתורי פעולה לפי סטטוס */}
             <div className={styles.tableCell}>
               <div className={styles.actions}>
                 {user.status === "pending" && (
@@ -349,20 +269,24 @@ function AdminUsers() {
                     הפעל
                   </button>
                 )}
+                <button
+                  className={styles.deleteBtn}
+                  onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
+                >
+                  🗑️ מחק
+                </button>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* הודעה אם אין משתמשים אחרי סינון */}
       {users.length === 0 && !loading && (
         <div className={styles.noResults}>
           <p>לא נמצאו משתמשים התואמים לחיפוש</p>
         </div>
       )}
 
-      {/* פאג'ינציה - תופיע רק אם יש יותר מעמוד אחד */}
       {pagination.totalPages > 1 && (
         <div className={styles.pagination}>
           <button

@@ -11,13 +11,11 @@ const bcrypt = require("bcryptjs");
 // GET /api/users/:id
 router.get("/:id", async (req, res) => {
   const userId = req.params.id;
-  console.log(`Fetching user with ID: ${userId}`);
   try {
     const sql =
       "SELECT user_id, first_name, last_name, email, phone, role FROM users WHERE user_id = ?";
     const [rows] = await db.query(sql, [userId]);
-    console.log(`Query result for user ${userId}:`, rows);
-    
+
     if (rows.length === 0)
       return res.status(404).json({ message: "User not found" });
 
@@ -31,7 +29,6 @@ router.get("/:id", async (req, res) => {
       role: user.role,
       avatarUrl: null, // No avatar support in current DB schema
     };
-    console.log(`Sending user data:`, response);
     res.json(response);
   } catch (err) {
     console.error('Error in GET /users/:id:', err);

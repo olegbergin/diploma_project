@@ -25,19 +25,57 @@
   --business-purple: #7c3aed;
   --business-purple-light: #8b5cf6;
   --business-purple-dark: #6d28d9;
-  
+
   --reviews-yellow: #eab308;
   --reviews-yellow-light: #facc15;
   --reviews-yellow-dark: #ca8a04;
-  
+
   --stats-cyan: #0891b2;
   --stats-cyan-light: #06b6d4;
   --stats-cyan-dark: #0e7490;
-  
+
   /* Нейтральные цвета */
   --neutral-gray: #6b7280;
   --neutral-gray-light: #9ca3af;
   --neutral-gray-dark: #4b5563;
+
+  /* ==================== PURPLE THEME (Business Pages) ==================== */
+
+  /* Primary Purple Colors */
+  --primary-purple: #c9b2f5;
+  --primary-purple-light: #d4c4f7;
+  --primary-purple-dark: #b19cd9;
+  --primary-purple-darker: #9b87c4;
+
+  /* Purple Backgrounds */
+  --purple-bg-light: #f8f4ff;
+  --purple-bg-medium: #f0ebff;
+  --purple-bg-dark: #e8e0ff;
+
+  /* Purple Text */
+  --purple-text-primary: #2d1b4e;
+  --purple-text-secondary: #4a3768;
+  --purple-text-tertiary: #6b5585;
+
+  /* Purple Borders */
+  --purple-border-light: rgba(201, 178, 245, 0.2);
+  --purple-border-medium: rgba(201, 178, 245, 0.3);
+  --purple-border-dark: rgba(201, 178, 245, 0.5);
+
+  /* Purple Shadows */
+  --purple-shadow-sm: 0 2px 8px rgba(201, 178, 245, 0.2);
+  --purple-shadow-md: 0 4px 12px rgba(201, 178, 245, 0.3);
+  --purple-shadow-lg: 0 8px 20px rgba(201, 178, 245, 0.4);
+  --purple-shadow-dark: 0 4px 20px rgba(45, 27, 78, 0.08);
+
+  /* Purple Focus States */
+  --purple-focus-ring: 0 0 0 3px rgba(201, 178, 245, 0.2);
+  --purple-focus-border: #c9b2f5;
+
+  /* Purple Highlights */
+  --purple-highlight-subtle: rgba(201, 178, 245, 0.05);
+  --purple-highlight-light: rgba(201, 178, 245, 0.1);
+  --purple-highlight-medium: rgba(201, 178, 245, 0.15);
   
   /* ==================== СИСТЕМНЫЕ ЦВЕТА ==================== */
   

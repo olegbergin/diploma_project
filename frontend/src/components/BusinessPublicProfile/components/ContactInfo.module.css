@@ -4,33 +4,33 @@
     background: var(--bg-primary);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
-    padding: var(--space-6);
-    margin: var(--space-4) 0;
+    padding: var(--space-4);
+    margin: 0;
     border: 1px solid var(--border-light);
     animation: slideUp var(--transition-normal) var(--ease-out);
 }
 
 .sectionTitle {
-    font-size: var(--text-xl);
+    font-size: var(--text-lg);
     font-weight: var(--font-bold);
     color: var(--text-primary);
-    margin: 0 0 var(--space-4) 0;
+    margin: 0 0 var(--space-3) 0;
     line-height: var(--leading-tight);
     border-bottom: 2px solid var(--primary-blue);
-    padding-bottom: var(--space-2);
+    padding-bottom: var(--space-1);
 }
 
 .contactItem {
-    margin-bottom: var(--space-4);
-    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+    padding: var(--space-3);
     background: var(--bg-secondary);
     border-radius: var(--radius-md);
-    border-left: 4px solid var(--primary-blue);
-    font-size: var(--text-base);
+    border-left: 3px solid var(--primary-blue);
+    font-size: var(--text-sm);
     line-height: var(--leading-normal);
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-1);
 }
 
 .contactItem strong {
@@ -94,20 +94,131 @@
     }
 }
 
+/* Working Hours Section */
+.hoursSection {
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-light);
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-3);
+}
+
+.statusBadge.open {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.statusBadge.closed {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.statusDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.statusBadge.open .statusDot {
+    background-color: #10b981;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.statusBadge.closed .statusDot {
+    background-color: #ef4444;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.nextOpenInfo {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+    font-style: italic;
+}
+
+.scheduleList {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+}
+
+@media (min-width: 640px) {
+    .scheduleList {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-2);
+    }
+}
+
+.scheduleDay {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+}
+
+.dayName {
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    min-width: 60px;
+    font-size: var(--text-xs);
+}
+
+.dayHours {
+    color: var(--text-secondary);
+    font-family: 'Courier New', monospace;
+    direction: ltr;
+    font-size: var(--text-xs);
+}
+
+.dayHoursClosed {
+    color: var(--text-tertiary);
+    font-style: italic;
+}
+
 @media (max-width: 640px) {
     .contactContainer {
-        margin: var(--space-3) 0;
-        padding: var(--space-4);
+        padding: var(--space-3);
     }
-    
+
     .contactItem {
-        margin-bottom: var(--space-3);
+        margin-bottom: var(--space-2);
         padding: var(--space-2);
     }
-    
+
     .contactItem strong {
-        min-width: 70px;
-        font-size: var(--text-sm);
+        font-size: var(--text-xs);
     }
-    
+
+    .scheduleList {
+        grid-template-columns: 1fr;
+    }
+
+    .scheduleDay {
+        padding: var(--space-2);
+    }
+
+    .dayName {
+        min-width: 50px;
+    }
 }

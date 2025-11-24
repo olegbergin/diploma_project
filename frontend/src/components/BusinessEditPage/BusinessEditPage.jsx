@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import useImageUpload from '../../hooks/useImageUpload';
 import DragDropUpload from '../shared/DragDropUpload/DragDropUpload';
+import ExceptionsEditor from './components/ExceptionsEditor';
 import styles from './BusinessEditPage.module.css';
 
 const CATEGORY_OPTIONS = [
@@ -55,6 +56,9 @@ export default function BusinessEditPage() {
     saturday: { isOpen: false, openTime: '09:00', closeTime: '17:00' }
   });
 
+  // Exceptions state
+  const [exceptions, setExceptions] = useState([]);
+
   // Portfolio state
   const [portfolio, setPortfolio] = useState([]);
   
@@ -101,14 +105,34 @@ export default function BusinessEditPage() {
         image_url: parsedPhotos.length > 0 ? parsedPhotos[0] : ''
       });
 
-      // Parse schedule if available
-      if (data.working_hours) {
+      // Parse schedule if available (column name is 'schedule' in database)
+      if (data.schedule) {
         try {
-          const parsedSchedule = JSON.parse(data.working_hours);
+          const parsedSchedule = JSON.parse(data.schedule);
           setSchedule(parsedSchedule);
         } catch (e) {
-          console.warn('Could not parse working hours:', e);
+          console.warn('Could not parse schedule:', e);
         }
+      }
+
+      // Parse exceptions if available
+      console.log('🔍 DEBUG: data.schedule_exceptions =', data.schedule_exceptions);
+      console.log('🔍 DEBUG: typeof schedule_exceptions =', typeof data.schedule_exceptions);
+
+      if (data.schedule_exceptions) {
+        try {
+          const parsedExceptions = JSON.parse(data.schedule_exceptions);
+          console.log('✅ DEBUG: Parsed exceptions:', parsedExceptions);
+          console.log('✅ DEBUG: Is array?', Array.isArray(parsedExceptions));
+          setExceptions(Array.isArray(parsedExceptions) ? parsedExceptions : []);
+        } catch (e) {
+          console.warn('❌ Could not parse schedule exceptions:', e);
+          setExceptions([]);
+        }
+      } else {
+        console.warn('⚠️ DEBUG: No schedule_exceptions in response data');
+        console.log('🔍 DEBUG: Full data object keys:', Object.keys(data));
+        setExceptions([]);
       }
 
       // Set portfolio images (all photos except the first one which is profile image)
@@ -205,6 +229,7 @@ export default function BusinessEditPage() {
       const updateData = {
         ...businessInfo,
         working_hours: JSON.stringify(schedule),
+        schedule_exceptions: JSON.stringify(exceptions),
         gallery: allPhotos
       };
 
@@ -407,6 +432,14 @@ export default function BusinessEditPage() {
         {activeTab === 'schedule' && (
           <div className={styles.formSection}>
             <h2>שעות פתיחה</h2>
+
+            {/* Exceptions Editor */}
+            <ExceptionsEditor
+              exceptions={exceptions}
+              onChange={setExceptions}
+            />
+
+            {/* Regular Schedule */}
             <div className={styles.scheduleContainer}>
               {DAYS_OF_WEEK.map(({ key, name }) => (
                 <div key={key} className={styles.scheduleDay}>

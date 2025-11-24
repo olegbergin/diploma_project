@@ -3,6 +3,7 @@
  * Displays system-wide statistics and metrics
  * 
  * @component
+ * @param {Function} onNavigate - Callback to navigate to different sections
  * @returns {JSX.Element} Statistics dashboard with key metrics
  */
 
@@ -11,7 +12,7 @@ import LoadingSpinner from "../shared/LoadingSpinner/LoadingSpinner";
 import axiosInstance from "../../api/axiosInstance";
 import styles from "./AdminStats.module.css";
 
-function AdminStats() {
+function AdminStats({ onNavigate }) {
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalBusinesses: 0,
@@ -23,9 +24,6 @@ function AdminStats() {
     systemStatus: 'operational',
     loading: true
   });
-
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [activityLoading, setActivityLoading] = useState(true);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -41,19 +39,7 @@ function AdminStats() {
       }
     };
 
-    const loadRecentActivity = async () => {
-      try {
-        const response = await axiosInstance.get('/admin/activity?limit=5');
-        setRecentActivity(response.data);
-      } catch (error) {
-        console.error("Failed to load recent activity:", error);
-      } finally {
-        setActivityLoading(false);
-      }
-    };
-
     loadStats();
-    loadRecentActivity();
   }, []);
 
   const statsCards = [
@@ -63,7 +49,8 @@ function AdminStats() {
       emoji: "👥",
       color: "#673ab7",
       bgColor: "#f7eafd",
-      subtitle: `השבוע: +${stats.weeklyNewUsers}`
+      subtitle: `השבוע: +${stats.weeklyNewUsers}`,
+      navigateTo: "users"
     },
     {
       title: "עסקים חדשים החודש",
@@ -71,7 +58,8 @@ function AdminStats() {
       emoji: "🏢",
       color: "#9c27b0",
       bgColor: "#f3e6fa",
-      subtitle: `השבוע: +${stats.weeklyNewBusinesses}`
+      subtitle: `השבוע: +${stats.weeklyNewBusinesses}`,
+      navigateTo: "businesses"
     },
     {
       title: "ביקורות ממתינות למחיקה",
@@ -79,7 +67,8 @@ function AdminStats() {
       emoji: "⚠️",
       color: "#f44336",
       bgColor: "#ffebee",
-      subtitle: "דורש תשומת לב"
+      subtitle: "דורש תשומת לב",
+      navigateTo: "complaints"
     },
     {
       title: "ממתינים לאישור",
@@ -87,7 +76,8 @@ function AdminStats() {
       emoji: "⏳",
       color: "#f57c00",
       bgColor: "#fff8e1",
-      subtitle: "עסקים חדשים"
+      subtitle: "עסקים חדשים",
+      navigateTo: "businesses"
     }
   ];
 
@@ -102,27 +92,28 @@ function AdminStats() {
   return (
     <div className={styles.statsContainer}>
       <h2 className={styles.sectionTitle}>סטטיסטיקות המערכת</h2>
-      
+
       <div className={styles.statsGrid}>
         {statsCards.map((card, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className={styles.statCard}
-            style={{ 
+            style={{
               backgroundColor: card.bgColor,
               borderColor: card.color + "40"
             }}
+            onClick={() => onNavigate && onNavigate(card.navigateTo)}
           >
             <div className={styles.cardHeader}>
               <span className={styles.cardEmoji}>{card.emoji}</span>
-              <h3 
+              <h3
                 className={styles.cardTitle}
                 style={{ color: card.color }}
               >
                 {card.title}
               </h3>
             </div>
-            <div 
+            <div
               className={styles.cardValue}
               style={{ color: card.color }}
             >
@@ -135,64 +126,6 @@ function AdminStats() {
             )}
           </div>
         ))}
-      </div>
-
-
-      <div className={styles.additionalInfo}>
-        <div className={styles.infoCard}>
-          <h3 className={styles.infoTitle}>פעילות אחרונה</h3>
-          <div className={styles.activityList}>
-            {activityLoading ? (
-              <div className={styles.emptyState}>
-                <p>טוען פעילות...</p>
-              </div>
-            ) : recentActivity.length > 0 ? (
-              recentActivity.map((activity, index) => (
-                <div key={activity.id || index} className={styles.activityItem}>
-                  <div className={styles.activityIcon}>
-                    {activity.type === 'user_registration' && '👤'}
-                    {activity.type === 'business_registration' && '🏢'}
-                    {activity.type === 'new_appointment' && '📅'}
-                  </div>
-                  <div className={styles.activityContent}>
-                    <p className={styles.activityMessage}>{activity.message}</p>
-                    <span className={styles.activityTime}>
-                      {new Date(activity.timestamp).toLocaleString('he-IL')}
-                    </span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className={styles.emptyState}>
-                <p>אין פעילות אחרונה</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className={styles.infoCard}>
-          <h3 className={styles.infoTitle}>סטטוס המערכת</h3>
-          <div className={styles.systemStatus}>
-            <div className={styles.statusItem}>
-              <div className={`${styles.statusIndicator} ${styles.online}`}></div>
-              <span>שרת פעיל</span>
-            </div>
-            <div className={styles.statusItem}>
-              <div className={`${styles.statusIndicator} ${styles.online}`}></div>
-              <span>בסיס נתונים פעיל</span>
-            </div>
-            <div className={styles.statusItem}>
-              <div className={`${styles.statusIndicator} ${
-                stats.systemStatus === 'operational' ? styles.online : 
-                stats.systemStatus === 'degraded' ? styles.warning : styles.offline
-              }`}></div>
-              <span>
-                {stats.systemStatus === 'operational' ? 'מערכת תקינה' :
-                 stats.systemStatus === 'degraded' ? 'מערכת איטית' : 'מערכת לא פעילה'}
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
